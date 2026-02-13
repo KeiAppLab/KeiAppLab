@@ -5,43 +5,448 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>啓 App Lab - 公式サイト</title>
     <style>
-        body { font-family: 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; background-color: #f4f7f9; }
-        header { text-align: center; padding: 60px 0; }
-        h1 { color: #2c3e50; font-size: 2.5em; margin-bottom: 10px; }
-        .intro { text-align: center; color: #7f8c8d; margin-bottom: 40px; }
-        .app-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; }
-        .app-card { background: white; border-radius: 15px; padding: 25px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: transform 0.3s; }
-        .app-card:hover { transform: translateY(-5px); }
-        .app-icon { font-size: 60px; margin-bottom: 15px; }
-        .btn { display: inline-block; background: #3498db; color: white; padding: 10px 25px; border-radius: 25px; text-decoration: none; font-weight: bold; }
-        footer { text-align: center; margin-top: 80px; color: #bdc3c7; border-top: 1px solid #ddd; padding-top: 20px; }
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700;900&family=Roboto:wght@400;500;900&display=swap');
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100vh;
+            background: 
+                radial-gradient(circle at 10% 10%, #ffffff 0%, #d8d8d8 45%, #b0b0b0 100%);
+            background-attachment: fixed; /* 背景を固定 */
+            font-family: 'Roboto', 'Noto Serif JP', sans-serif;
+            color: #111;
+            overflow-x: hidden; /* 横スクロール防止 */
+        }
+
+        /* --- ヘッダー（メニュー） --- */
+        header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding-top: 20px;
+            padding-left: 2em;
+            display: flex;
+            justify-content: center;
+            z-index: 200;
+        }
+
+        nav {
+            display: flex;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .menu-group {
+            display: flex;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .menu-link {
+            text-decoration: none;
+            font-family: 'Noto Serif JP', serif;
+            font-weight: 900;
+            font-size: 1rem;
+            color: #0056b3;
+            transition: color 0.3s;
+            white-space: nowrap;
+        }
+
+        .menu-link:hover { color: #003d82; }
+
+        .lang-switch {
+            font-family: 'Roboto', sans-serif;
+            border: 1px solid #0056b3;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            color: #0056b3;
+            transition: all 0.3s;
+            white-space: nowrap;
+            user-select: none;
+        }
+
+        .lang-switch:hover { background: #0056b3; color: white; }
+
+        /* --- ヒーローセクション（ロゴエリア） --- */
+        .hero-section {
+            height: 100vh; /* 全画面表示 */
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            z-index: 10;
+            perspective: 1500px;
+        }
+
+        .logo-container {
+            position: relative;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .main-row { display: flex; align-items: baseline; }
+
+        .kanji-svg {
+            width: 10rem;
+            height: auto;
+            display: block;
+            opacity: 0;
+            animation: fade-in-scale 3s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
+        }
+
+        .app-lab {
+            font-family: 'Roboto', sans-serif;
+            font-size: 5rem;
+            color: #111;
+            margin-left: 15px;
+            letter-spacing: 0.03em;
+            opacity: 0;
+            animation: emerge-long-shadow 3s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
+        }
+
+        .sub-row {
+            display: flex;
+            align-items: baseline;
+            margin-top: 5px;
+            margin-left: 18px;
+        }
+
+        .furigana {
+            font-family: 'Roboto', sans-serif;
+            font-size: 4rem;
+            letter-spacing: 0.2em;
+            color: #111;
+            opacity: 0;
+            line-height: 1;
+            animation: emerge-long-shadow 3s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
+        }
+
+        .tagline {
+            font-family: 'Noto Serif JP', serif;
+            font-size: 1.2rem;
+            color: #111;
+            margin-left: 80px;
+            font-weight: 900;
+            letter-spacing: 0.1em;
+            opacity: 0;
+            animation: emerge-long-shadow 3s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards;
+        }
+        
+        rt { font-size: 0.6em; font-weight: normal; }
+
+        /* --- アプリ一覧セクション --- */
+        .apps-section {
+            padding: 80px 20px;
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 20;
+        }
+
+        .section-title {
+            text-align: center;
+            font-family: 'Noto Serif JP', serif;
+            font-size: 2rem;
+            margin-bottom: 50px;
+            color: #333;
+            text-shadow: 2px 2px 4px rgba(255,255,255,0.5);
+        }
+
+        .app-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+
+        /* すりガラス風カードデザイン */
+        .app-card {
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-align: center;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+            transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.4s;
+        }
+
+        .app-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 45px 0 rgba(31, 38, 135, 0.15);
+            background: rgba(255, 255, 255, 0.65);
+        }
+
+        .app-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+            display: inline-block;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+        }
+
+        .app-card h3 {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 900;
+            font-size: 1.5rem;
+            margin: 0 0 15px 0;
+            color: #2c3e50;
+        }
+
+        .app-card p {
+            font-family: 'Noto Serif JP', serif;
+            font-size: 0.95rem;
+            color: #444;
+            margin-bottom: 25px;
+            line-height: 1.8;
+            height: 3.6em; /* 2行分確保して高さを揃える */
+        }
+
+        .btn {
+            display: inline-block;
+            background: #0056b3;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-family: 'Roboto', sans-serif;
+            font-weight: 500;
+            font-size: 0.9rem;
+            letter-spacing: 0.05em;
+            transition: background 0.3s, transform 0.2s;
+            box-shadow: 0 4px 15px rgba(0, 86, 179, 0.3);
+        }
+
+        .btn:hover {
+            background: #003d82;
+            transform: scale(1.05);
+        }
+
+        /* Coming Soon カードの特別スタイル */
+        .card-disabled {
+            opacity: 0.7;
+            background: rgba(255, 255, 255, 0.25);
+        }
+        .card-disabled:hover {
+            transform: none;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+        }
+
+        /* --- フッター --- */
+        footer {
+            text-align: center;
+            padding: 40px 0;
+            margin-top: 40px;
+            color: #666;
+            font-size: 0.8rem;
+            position: relative;
+            z-index: 20;
+            border-top: 1px solid rgba(0,0,0,0.05);
+            background: linear-gradient(to top, rgba(255,255,255,0.5), transparent);
+        }
+
+        footer a {
+            color: #0056b3;
+            text-decoration: none;
+            margin-left: 10px;
+        }
+
+        /* --- 共通クラス --- */
+        .overlay-shadow {
+            position: fixed; /* 固定に変更 */
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, transparent 30%, rgba(0,0,0,0.2) 90%);
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        #dust-container {
+            position: fixed; /* 粒子も固定 */
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .dust {
+            position: absolute; top: 0; border-radius: 50%; pointer-events: none; z-index: 100; animation: drift 20s infinite linear;
+        }
+
+        /* 英語用フォント調整 */
+        .lang-en { display: none; }
+        .lang-en-text { font-family: 'Roboto', sans-serif; font-weight: 500; letter-spacing: 0.02em; }
+
+        /* --- アニメーション定義 --- */
+        @keyframes fade-in-scale {
+            0% { opacity: 0; transform: translateY(20px) scale(0.98); filter: drop-shadow(0 0 0 rgba(0,0,0,0)); }
+            100% { opacity: 1; transform: translateY(0) scale(1); filter: drop-shadow(4px 4px 8px rgba(0,0,0,0.4)) drop-shadow(12px 12px 25px rgba(0,0,0,0.35)) drop-shadow(30px 30px 50px rgba(0,0,0,0.3)); }
+        }
+        @keyframes emerge-long-shadow {
+            0% { opacity: 0; transform: translateY(20px) scale(0.98); text-shadow: 0 0 0 rgba(0,0,0,0); }
+            100% { opacity: 1; transform: translateY(0) scale(1); text-shadow: 4px 4px 8px rgba(0,0,0,0.4), 12px 12px 25px rgba(0,0,0,0.35), 30px 30px 50px rgba(0,0,0,0.3), 70px 70px 90px rgba(0,0,0,0.25), 120px 120px 150px rgba(0,0,0,0.15); }
+        }
+        @keyframes drift {
+            0% { transform: translateY(110vh) translateX(0) rotate(0deg); opacity: 0; }
+            20% { opacity: 1; } 80% { opacity: 1; }
+            100% { transform: translateY(-10vh) translateX(150px) rotate(360deg); opacity: 0; }
+        }
+
+        /* --- スマホ対応 --- */
+        @media screen and (max-width: 768px) {
+            header { padding-top: 15px; width: 90%; }
+            nav { flex-direction: column; width: 100%; gap: 8px; }
+            .menu-group { width: 100%; gap: 15px; }
+            .menu-left { justify-content: flex-start; }
+            .menu-right { justify-content: flex-end; }
+            .menu-link { font-size: 0.9rem; }
+            .lang-switch { font-size: 0.75rem; padding: 4px 8px; }
+            
+            .hero-section { height: 90vh; }
+            .logo-container { align-items: center; }
+            .kanji-svg { width: 7rem; }
+            .app-lab { font-size: 3.2rem; margin-left: 10px; }
+            .sub-row { flex-direction: column; align-items: flex-start; margin-left: 10px; margin-top: 10px; }
+            .furigana { font-size: 2.8rem; }
+            .tagline { margin-left: 0; margin-top: 5px; font-size: 1rem; text-align: center; width: 100%; }
+            
+            .apps-section { padding: 40px 20px; }
+            .app-grid { grid-template-columns: 1fr; }
+            .app-card p { height: auto; }
+        }
     </style>
 </head>
 <body>
+
     <header>
-        <h1>啓 App Lab</h1>
-        <p class="intro">スマートで便利な体験を、あなたの手に。</p>
+        <nav>
+            <div class="menu-group menu-left">
+                <a href="about.html" class="menu-link" data-jp="私たちについて" data-en="About Us">私たちについて</a>
+                <a href="#" class="menu-link" data-jp="開発実績" data-en="Portfolio">開発実績</a>
+                <a href="#" class="menu-link" data-jp="お知らせ" data-en="News">お知らせ</a>
+            </div>
+            <div class="menu-group menu-right">
+                <a href="#" class="menu-link" data-jp="アンケート" data-en="Survey">アンケート</a>
+                <a href="#" class="menu-link" data-jp="お問い合わせ" data-en="Contact">お問い合わせ</a>
+                <div class="lang-switch" id="langSwitch">JP / EN</div>
+            </div>
+        </nav>
     </header>
 
-    <main class="app-grid">
-        <!-- FreeCallApp -->
-        <div class="app-card">
-            <div class="app-icon">📞</div>
-            <h3>FreeCallApp</h3>
-            <p>広告を見るだけで、固定電話への通話が無料に。</p>
-            <a href="freecall/index.html" class="btn">アプリを見る</a>
-        </div>
+    <div class="overlay-shadow"></div>
+    <div id="dust-container"></div>
 
-        <!-- 次のアプリ用（サンプル） -->
-        <div class="app-card" style="opacity: 0.6;">
-            <div class="app-icon">🚀</div>
-            <h3>Coming Soon</h3>
-            <p>次のアプリを開発するかもです。</p>
+    <!-- ヒーローセクション -->
+    <section class="hero-section">
+        <div class="logo-container">
+            <div class="main-row">
+                <img src="啓.svg" alt="啓" class="kanji-svg">
+                <div class="app-lab">App Lab</div>
+            </div>
+            <div class="sub-row">
+                <div class="furigana">KEI</div>
+                <div class="tagline">
+                    <span class="lang-jp">
+                        日常を<ruby>啓<rt>ひら</rt></ruby>く便利さ。心を<ruby>啓<rt>ひら</rt></ruby>く遊び心。
+                    </span>
+                    <span class="lang-en lang-en-text">
+                        Opening up daily life with convenience.<br>Opening up hearts with playfulness.
+                    </span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- アプリ一覧セクション -->
+    <main class="apps-section">
+        <h2 class="section-title">
+            <span class="lang-jp">プロダクト</span>
+            <span class="lang-en lang-en-text">Products</span>
+        </h2>
+        
+        <div class="app-grid">
+            <!-- FreeCallApp -->
+            <div class="app-card">
+                <div class="app-icon">📞</div>
+                <h3>FreeCallApp</h3>
+                <p>
+                    <span class="lang-jp">広告を見るだけで、固定電話への通話が無料になる、新しい通話体験を提供します。</span>
+                    <span class="lang-en lang-en-text">Get free calls to landlines just by watching ads. A new calling experience in your hands.</span>
+                </p>
+                <a href="freecall/index.html" class="btn">
+                    <span class="lang-jp">アプリを見る</span>
+                    <span class="lang-en lang-en-text">View App</span>
+                </a>
+            </div>
+
+            <!-- Coming Soon -->
+            <div class="app-card card-disabled">
+                <div class="app-icon">🚀</div>
+                <h3>Coming Soon</h3>
+                <p>
+                    <span class="lang-jp">次の革新的なアプリを構想中です。ご期待ください。</span>
+                    <span class="lang-en lang-en-text">We are brainstorming the next innovative app. Stay tuned.</span>
+                </p>
+            </div>
         </div>
     </main>
 
     <footer>
-        <p>&copy; 2026 啓 App Lab | <a href="app-ads.txt" style="color: #bdc3c7;">app-ads.txt</a></p>
+        <p>
+            &copy; 2026 啓 App Lab | 
+            <a href="app-ads.txt">app-ads.txt</a>
+        </p>
     </footer>
+
+    <script>
+        // 光の粒子アニメーション
+        const container = document.getElementById('dust-container');
+        for (let i = 0; i < 35; i++) {
+            const d = document.createElement('div');
+            d.classList.add('dust');
+            const xPos = Math.random() * 100;
+            d.style.left = xPos + 'vw';
+            const alpha = 1.0 - (xPos / 140); 
+            d.style.background = `rgba(255, 255, 255, ${alpha})`;
+            const size = Math.random() * 5 + 1 + 'px';
+            d.style.width = size;
+            d.style.height = size;
+            d.style.animationDuration = Math.random() * 15 + 10 + 's';
+            d.style.animationDelay = '-' + (Math.random() * 30) + 's';
+            container.appendChild(d);
+        }
+
+        // 言語切り替えスクリプト
+        const langSwitchBtn = document.getElementById('langSwitch');
+        let currentLang = 'jp';
+
+        langSwitchBtn.addEventListener('click', () => {
+            currentLang = currentLang === 'jp' ? 'en' : 'jp';
+            
+            // 1. メニューリンクの属性切り替え
+            const links = document.querySelectorAll('.menu-link');
+            links.forEach(link => {
+                link.textContent = link.getAttribute(`data-${currentLang}`);
+            });
+
+            // 2. 本文中のクラスベース切り替え (tagline, card text, button, title)
+            const jpElements = document.querySelectorAll('.lang-jp');
+            const enElements = document.querySelectorAll('.lang-en');
+
+            if (currentLang === 'en') {
+                jpElements.forEach(el => el.style.display = 'none');
+                enElements.forEach(el => el.style.display = 'inline-block');
+            } else {
+                jpElements.forEach(el => el.style.display = 'inline-block');
+                enElements.forEach(el => el.style.display = 'none');
+            }
+        });
+    </script>
 </body>
 </html>
