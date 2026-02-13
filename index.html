@@ -7,7 +7,7 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700;900&family=Roboto:wght@400;500;900&display=swap');
 
-        /* --- 修正点1: 全要素のサイズ計算を統一（はみ出し防止） --- */
+        /* --- はみ出し防止 --- */
         *, *::before, *::after {
             box-sizing: border-box;
         }
@@ -64,7 +64,7 @@
         .lang-switch {
             font-family: 'Roboto', sans-serif;
             border: 1px solid #0056b3;
-            padding: 5px 10px;
+            padding: 5px 15px; /* 文字が長くなったので少し広げました */
             border-radius: 20px;
             font-size: 0.9rem;
             cursor: pointer;
@@ -165,7 +165,6 @@
 
         .app-grid {
             display: grid;
-            /* --- 修正点2: 最小幅を300pxから280pxに変更し、狭い画面に対応 --- */
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 40px;
             width: 100%;
@@ -181,7 +180,7 @@
             text-align: center;
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
             transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.4s;
-            width: 100%; /* カード幅を親に合わせる */
+            width: 100%;
         }
 
         .app-card:hover {
@@ -211,7 +210,7 @@
             color: #444;
             margin-bottom: 25px;
             line-height: 1.8;
-            min-height: 3.6em; /* 高さ確保の方法を変更 */
+            min-height: 3.6em;
         }
 
         .btn {
@@ -227,7 +226,7 @@
             letter-spacing: 0.05em;
             transition: background 0.3s, transform 0.2s;
             box-shadow: 0 4px 15px rgba(0, 86, 179, 0.3);
-            max-width: 100%; /* ボタンのはみ出し防止 */
+            max-width: 100%;
         }
 
         .btn:hover {
@@ -281,7 +280,7 @@
             position: absolute; top: 0; border-radius: 50%; pointer-events: none; z-index: 100; animation: drift 20s infinite linear;
         }
 
-        .lang-en { display: none; }
+        /* 英語用のフォント調整 */
         .lang-en-text { font-family: 'Roboto', sans-serif; font-weight: 500; letter-spacing: 0.02em; }
 
         @keyframes fade-in-scale {
@@ -315,10 +314,9 @@
             .furigana { font-size: 2.8rem; }
             .tagline { margin-left: 0; margin-top: 5px; font-size: 1rem; text-align: center; width: 100%; }
             
-            /* --- 修正点3: スマホ時の余白とグリッド設定 --- */
-            .apps-section { padding: 40px 15px; } /* 左右のpaddingを減らす */
-            .app-grid { grid-template-columns: 1fr; } /* 強制的に1カラムにする */
-            .app-card { padding: 30px 20px; } /* カード内の余白も少し減らす */
+            .apps-section { padding: 40px 15px; }
+            .app-grid { grid-template-columns: 1fr; }
+            .app-card { padding: 30px 20px; }
             .app-card p { min-height: auto; }
         }
     </style>
@@ -335,7 +333,8 @@
             <div class="menu-group menu-right">
                 <a href="#" class="menu-link" data-jp="アンケート" data-en="Survey">アンケート</a>
                 <a href="#" class="menu-link" data-jp="お問い合わせ" data-en="Contact">お問い合わせ</a>
-                <div class="lang-switch" id="langSwitch">JP / EN</div>
+                <!-- ボタン名を Language に変更 -->
+                <div class="lang-switch" id="langSwitch">Language</div>
             </div>
         </nav>
     </header>
@@ -352,12 +351,8 @@
             <div class="sub-row">
                 <div class="furigana">KEI</div>
                 <div class="tagline">
-                    <span class="lang-jp">
-                        日常を<ruby>啓<rt>ひら</rt></ruby>く便利さ。心を<ruby>啓<rt>ひら</rt></ruby>く遊び心。
-                    </span>
-                    <span class="lang-en lang-en-text">
-                        Opening up daily life with convenience.<br>Opening up hearts with playfulness.
-                    </span>
+                    <span class="lang-jp">日常を<ruby>啓<rt>ひら</rt></ruby>く便利さ。心を<ruby>啓<rt>ひら</rt></ruby>く遊び心。</span>
+                    <span class="lang-en lang-en-text">Opening up daily life with convenience.<br>Opening up hearts with playfulness.</span>
                 </div>
             </div>
         </div>
@@ -402,7 +397,7 @@
     </footer>
 
     <script>
-        // --- 1. 光の粒子アニメーション（変更なし） ---
+        // --- 1. 光の粒子アニメーション ---
         const container = document.getElementById('dust-container');
         for (let i = 0; i < 35; i++) {
             const d = document.createElement('div');
@@ -419,50 +414,59 @@
             container.appendChild(d);
         }
 
-        // --- 2. 言語切り替え処理 ---
-        const langSwitchBtn = document.getElementById('langSwitch');
-        let currentLang = 'jp'; // 初期状態
+        // --- 2. 言語管理システム ---
 
-        // 言語を切り替える共通関数を作成
+        // 言語を切り替える関数
         function setLanguage(lang) {
-            currentLang = lang;
+            // ブラウザに設定を保存
+            localStorage.setItem('preferredLang', lang);
 
-            // 1. メニューリンクの文字切り替え
-            const links = document.querySelectorAll('.menu-link');
-            links.forEach(link => {
-                const text = link.getAttribute(`data-${currentLang}`);
-                if (text) link.textContent = text;
-            });
-
-            // 2. 本文テキストの表示/非表示切り替え
             const jpElements = document.querySelectorAll('.lang-jp');
             const enElements = document.querySelectorAll('.lang-en');
+            const menuLinks = document.querySelectorAll('.menu-link');
 
-            if (currentLang === 'en') {
+            if (lang === 'en') {
+                // 英語表示
                 jpElements.forEach(el => el.style.display = 'none');
                 enElements.forEach(el => el.style.display = 'inline-block');
+                menuLinks.forEach(link => {
+                    link.textContent = link.getAttribute('data-en');
+                });
             } else {
+                // 日本語表示
                 jpElements.forEach(el => el.style.display = 'inline-block');
                 enElements.forEach(el => el.style.display = 'none');
+                menuLinks.forEach(link => {
+                    link.textContent = link.getAttribute('data-jp');
+                });
             }
         }
 
-        // ボタンクリック時のイベント
-        langSwitchBtn.addEventListener('click', () => {
-            // 現在がjpならenへ、enならjpへ切り替え
-            const nextLang = currentLang === 'jp' ? 'en' : 'jp';
-            setLanguage(nextLang);
+        // 初期化処理
+        document.addEventListener('DOMContentLoaded', () => {
+            // A. まず保存された設定を確認
+            const savedLang = localStorage.getItem('preferredLang');
+            
+            if (savedLang) {
+                setLanguage(savedLang);
+            } else {
+                // B. 設定がない場合はブラウザの言語を確認
+                const browserLang = (window.navigator.language || window.navigator.userLanguage || 'ja').slice(0, 2).toLowerCase();
+                if (browserLang !== 'ja') {
+                    setLanguage('en');
+                } else {
+                    setLanguage('jp');
+                }
+            }
         });
 
-        // --- 3. ブラウザ言語の自動判定（ここに追加しました） ---
-        window.addEventListener('load', () => {
-            // ブラウザの言語を取得 (例: 'en-US' -> 'en', 'ja' -> 'ja')
-            const browserLang = (window.navigator.language || window.navigator.userLanguage || 'ja').slice(0, 2).toLowerCase();
-
-            // 日本語以外の場合は英語モードに切り替える
-            if (browserLang !== 'ja') {
-                setLanguage('en');
-            }
+        // ボタンクリックイベント
+        const langSwitchBtn = document.getElementById('langSwitch');
+        langSwitchBtn.addEventListener('click', () => {
+            // 現在の保存設定を確認して反転させる
+            const current = localStorage.getItem('preferredLang') || 'jp';
+            const next = current === 'jp' ? 'en' : 'jp';
+            setLanguage(next);
         });
     </script>
 </body>
