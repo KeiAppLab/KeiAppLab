@@ -30,7 +30,7 @@
             padding-top: 20px;
             display: flex;
             justify-content: center;
-            z-index: 200; /* 粒子(100)より手前に配置してクリック可能にする */
+            z-index: 200;
         }
 
         nav ul {
@@ -38,32 +38,31 @@
             list-style: none;
             padding: 0;
             margin: 0;
-            gap: 40px; /* メニュー間の余白 */
+            gap: 40px;
             align-items: center;
         }
 
         nav li a {
             text-decoration: none;
-            font-family: 'Noto Serif JP', serif; /* メニューも少し上品に */
+            font-family: 'Noto Serif JP', serif;
             font-weight: 900;
             font-size: 1rem;
-            color: #0056b3; /* ご指定の青色 (少し深みのある青) */
+            color: #0056b3;
             position: relative;
             transition: color 0.3s;
         }
 
         nav li a:hover {
-            color: #003d82; /* ホバー時に少し暗く */
+            color: #003d82;
         }
 
-        /* 言語切り替えボタン */
         .lang-switch {
             font-family: 'Roboto', sans-serif;
             border: 1px solid #0056b3;
             padding: 5px 10px;
             border-radius: 20px;
             font-size: 0.9rem;
-            margin-left: 20px; /* 他のメニューより少し離す */
+            margin-left: 20px;
             cursor: pointer;
             color: #0056b3;
             transition: all 0.3s;
@@ -123,7 +122,7 @@
         /* --- 2行目（KEI と タグライン）のコンテナ --- */
         .sub-row {
             display: flex;
-            align-items: baseline; /* ベースラインを揃える */
+            align-items: baseline;
             margin-top: 5px;
             margin-left: 18px;
         }
@@ -141,14 +140,19 @@
         /* --- タグラインのスタイル --- */
         .tagline {
             font-family: 'Noto Serif JP', serif;
-            font-size: 1.2rem; /* KEI(4rem)より小さく設定 */
-            color: #333;
-            margin-left: 30px; /* KEIとの間隔 */
+            font-size: 1.2rem;
+            color: #111;
+            margin-left: 80px;
             font-weight: 900;
             letter-spacing: 0.1em;
             opacity: 0;
-            /* KEIと同じタイミングで出現 */
             animation: emerge-long-shadow 6s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards;
+        }
+        
+        /* ルビ（ふりがな）の微調整 */
+        rt {
+            font-size: 0.6em; /* ふりがなのサイズ調整 */
+            font-weight: normal; /* ふりがなは少し細くして読みやすく */
         }
 
         /* --- アニメーション定義 --- */
@@ -192,7 +196,7 @@
             top: 0;
             border-radius: 50%;
             pointer-events: none;
-            z-index: 100; /* ロゴ(10)より手前、メニュー(200)より奥 */
+            z-index: 100;
             animation: drift 20s infinite linear;
         }
         @keyframes drift {
@@ -214,7 +218,6 @@
                 <li><a href="#">お知らせ</a></li>
                 <li><a href="#">アンケート</a></li>
                 <li><a href="#">お問い合わせ</a></li>
-                <!-- 言語切り替え -->
                 <li class="lang-switch">JP / EN</li>
             </ul>
         </nav>
@@ -231,7 +234,10 @@
         <!-- 2行目：KEI と タグライン -->
         <div class="sub-row">
             <div class="furigana">KEI</div>
-            <div class="tagline">日常を啓く便利さ。心を啓く遊び心。</div>
+            <!-- ここを変更しました -->
+            <div class="tagline">
+                日常を<ruby>啓<rt>ひろ</rt></ruby>く便利さ。心を<ruby>啓<rt>ひろ</rt></ruby>く遊び心。
+            </div>
         </div>
     </div>
 
