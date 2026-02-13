@@ -2,23 +2,188 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>プライバシーポリシー - FreeCallApp</title>
-    <style>body { font-family: sans-serif; max-width: 700px; margin: 0 auto; padding: 40px; line-height: 1.8; }</style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>プライバシーポリシー | FreeCallApp</title>
+    <style>
+        body {
+            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-radius: 8px;
+        }
+        h1 {
+            font-size: 24px;
+            border-bottom: 2px solid #F39C12; /* アプリのテーマカラー */
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+        h2 {
+            font-size: 18px;
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-left: 5px solid #F39C12;
+            margin-top: 30px;
+        }
+        h3 {
+            font-size: 16px;
+            margin-top: 20px;
+            color: #555;
+        }
+        p {
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        ul {
+            margin-bottom: 15px;
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        .date {
+            text-align: right;
+            font-size: 12px;
+            color: #777;
+            margin-bottom: 40px;
+        }
+        .footer {
+            margin-top: 50px;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+            font-size: 12px;
+            text-align: center;
+            color: #777;
+        }
+        .important {
+            color: #d9534f;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
-    <h1>プライバシーポリシー</h1>
-    <p>啓 App Lab（以下「当方」）が提供するスマートフォン用アプリ「FreeCallApp」（以下「本アプリ」）における、利用者情報の取り扱いについて以下の通り定めます。</p>
 
-    <h3>1. 取得する情報と利用目的</h3>
-    <p>本アプリでは、以下の情報を取得し、それぞれの目的で利用します。</p>
+<div class="container">
+    <h1>プライバシーポリシー</h1>
+    
+    <div class="date">
+        制定日：2026年2月13日<br>
+        啓 App Lab
+    </div>
+
+    <p>啓 App Lab（以下、「当方」といいます）は、当方が提供するスマートフォン用アプリケーション「FreeCallApp」（以下、「本アプリ」といいます）における、ユーザーの個人情報を含む利用者情報の取扱いについて、以下のとおりプライバシーポリシー（以下、「本ポリシー」といいます）を定めます。</p>
+    <p>本アプリのご利用にあたっては、本ポリシーの内容をご確認いただき、同意された場合のみご利用ください。</p>
+
+    <h2>第1条（収集する情報および収集方法）</h2>
+    <p>本アプリの提供にあたり、当方は以下の情報を取得・利用する場合があります。</p>
+
+    <h3>1. 音声データ（マイクロフォン）</h3>
+    <p>本アプリは、VoIP（Voice over IP）技術を用いた通話機能を提供するために、端末のマイクロフォンへのアクセス権限を使用します。</p>
     <ul>
-        <li><b>広告識別子:</b> 広告表示および効果測定のため。</li>
-        <li><b>マイクへのアクセス:</b> 通話音声の伝送のため。※録音は行いません。</li>
-        <li><b>通話可能時間のデータ:</b> Firebase上に保存し、ユーザーの利便性のために利用します。</li>
+        <li><strong>利用目的：</strong> ユーザーの音声をリアルタイムで通話相手に送信するため。</li>
+        <li><strong>データの保存：</strong> 取得された音声データは、通信回線を通じて通話相手に送信されるのみであり、<span class="important">当方のサーバーに録音・保存されることは一切ありません。</span></li>
     </ul>
 
-    <h3>2. 第三者提供</h3>
-    <p>当方は、法令に基づく場合を除き、利用者の同意なく個人情報を第三者に提供することはありません。広告配信においてGoogle AdMobを使用しており、Googleが情報を取得する場合があります。</p>
+    <h3>2. 連絡先情報（電話帳）</h3>
+    <p>本アプリは、ユーザーの利便性向上のため、端末内の連絡先データへのアクセス権限を使用する場合があります。</p>
+    <ul>
+        <li><strong>利用目的：</strong> アプリ内の発信履歴や発信先選択画面において、電話番号に対応する登録名を表示するため、および連絡先から直接発信操作を行うため。</li>
+        <li><strong>データの送信：</strong> 連絡先データ（名前、電話番号等）が当方のサーバーにアップロード・保存されることはありません。処理は端末内でのみ行われます。</li>
+    </ul>
+
+    <h3>3. 端末情報・識別子</h3>
+    <p>サービス品質の維持、広告配信、不正利用防止のために以下の情報を自動的に取得します。</p>
+    <ul>
+        <li>IPアドレス、アクセスログ</li>
+        <li>端末のモデル名、OSバージョン</li>
+        <li>広告識別子（Google Advertising ID）</li>
+        <li>Firebase Installation ID（アプリのインストール識別子）</li>
+    </ul>
+
+    <h3>4. 通話ログ情報</h3>
+    <p>通信の接続およびポイント（通話可能時間）管理のために、以下の情報をサーバーに記録します。</p>
+    <ul>
+        <li>発信日時、通話時間</li>
+        <li>発信先電話番号（国番号を含む）</li>
+        <li>広告視聴によるリワード獲得履歴</li>
+    </ul>
+
+    <h2>第2条（利用目的）</h2>
+    <p>当方は、取得した利用者情報を以下の目的で利用します。</p>
+    <ol>
+        <li><strong>本サービスの提供・維持：</strong> インターネット回線を通じた固定電話網への接続（SIP通信）および通話品質の確保のため。</li>
+        <li><strong>通話可能時間の管理：</strong> 動画広告の視聴実績に基づき、ユーザーに対して無料通話可能時間（秒数）を付与・減算・管理するため。</li>
+        <li><strong>広告の配信：</strong> ユーザーに適した広告（Google AdMob等）を表示するため。</li>
+        <li><strong>不正利用の防止：</strong> 通話可能時間の不正な改ざん、自動化ツール（ボット）による広告視聴、サーバーへの攻撃等を検知・防止するため。</li>
+        <li><strong>お問い合わせ対応：</strong> ユーザーからの不具合報告や質問に対応するため。</li>
+    </ol>
+
+    <h2>第3条（第三者への情報提供・情報収集モジュール）</h2>
+    <p>当方は、法令に基づく場合を除き、ユーザーの同意なく個人情報を第三者に提供しません。ただし、本アプリの機能提供に不可欠な以下の提携事業者（情報収集モジュール提供者を含む）に対し、必要な範囲で利用者情報が送信されます。</p>
+
+    <h3>1. Google AdMob（広告配信）</h3>
+    <ul>
+        <li><strong>提供者：</strong> Google LLC</li>
+        <li><strong>送信される情報：</strong> 広告識別子、端末情報、アプリの操作履歴</li>
+        <li><strong>目的：</strong> リワード広告の配信および広告視聴完了の検証（SSV: Server-Side Verification）</li>
+        <li><a href="https://policies.google.com/privacy" target="_blank">Google プライバシーポリシー</a></li>
+    </ul>
+
+    <h3>2. Firebase（バックエンド・解析）</h3>
+    <ul>
+        <li><strong>提供者：</strong> Google LLC</li>
+        <li><strong>送信される情報：</strong> IPアドレス、認証ID、データベース上の通話可能時間情報、クラッシュログ</li>
+        <li><strong>目的：</strong> ユーザー認証（匿名ログイン）、通話可能時間のデータベース管理、アプリの安定性向上のため</li>
+    </ul>
+
+    <h3>3. Telnyx 等のSIPプロバイダ（通信キャリア）</h3>
+    <ul>
+        <li><strong>提供者：</strong> Telnyx LLC および接続先の通信事業者</li>
+        <li><strong>送信される情報：</strong> 発信先電話番号、音声データパケット、シグナリング情報</li>
+        <li><strong>目的：</strong> 公衆電話網（PSTN）への接続および通話の確立のため</li>
+        <li>※これは通常の電話をかける際に電話会社に番号を通知するのと同様の仕組みです。</li>
+    </ul>
+
+    <h2>第4条（通話可能時間の管理と有効期限）</h2>
+    <p>本アプリにおいて、広告視聴により獲得された「通話可能時間」は、以下のルールに基づいて管理されます。</p>
+    <ul>
+        <li><strong>権利の性質：</strong> 通話可能時間は、本アプリ内でのみ使用可能なサービス利用権であり、金銭的価値を持つものではありません。換金・返金はできません。</li>
+        <li><strong>有効期限とリセット：</strong> サーバーリソースの適正化およびセキュリティの観点から、<span class="important">本アプリへの最終アクセスから30日間経過した場合、保有している通話可能時間は自動的にリセット（または上限設定値まで減算）されます。</span></li>
+        <li><strong>サービスの終了：</strong> 当方が本アプリのサービスを終了する場合、保有している通話可能時間はすべて失効するものとします。</li>
+    </ul>
+
+    <h2>第5条（発信者番号通知に関する免責）</h2>
+    <p>本アプリを利用して固定電話等へ発信する場合、技術的仕様および日本の電気通信事業法の規定に基づき、ユーザー自身の携帯電話番号は相手方に通知されません。</p>
+    <ul>
+        <li>発信は「非通知」または「システム共通の電話番号（050番号等）」として行われます。</li>
+        <li>相手方が非通知拒否設定を行っている場合、通話が成立しないことがあります。当方はこれによる損害について責任を負いません。</li>
+    </ul>
+
+    <h2>第6条（プライバシーポリシーの変更）</h2>
+    <p>当方は、法令の改正や事業上の必要性等に応じて、本ポリシーを変更することがあります。重要な変更がある場合には、本アプリ内または公式サイト上で告知します。変更後のポリシーは、本アプリ内に掲載された時点で効力を生じるものとします。</p>
+
+    <h2>第7条（お問い合わせ窓口）</h2>
+    <p>本ポリシーおよび利用者情報の取扱いに関するお問い合わせは、以下の窓口までご連絡ください。</p>
+    
+    <p>
+        <strong>啓 App Lab (KEI App Lab)</strong><br>
+        Email: [ここにお父様が作成したサポート用メールアドレスを入れてください]<br>
+        （例： support@keiapplab.com または keiapplab.contact@gmail.com など）
+    </p>
+
+    <div class="footer">
+        &copy; 2026 KEI App Lab. All Rights Reserved.
+    </div>
+</div>
 
     <p><a href="index.html">FreeCallApp紹介ページへ戻る</a></p>
 </body>
