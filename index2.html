@@ -34,21 +34,18 @@
             z-index: 200;
         }
 
-        /* ナビゲーション全体のコンテナ */
         nav {
             display: flex;
-            gap: 40px; /* PCでの左グループと右グループの間隔 */
+            gap: 40px;
             align-items: center;
         }
 
-        /* メニューのグループ共通設定 */
         .menu-group {
             display: flex;
-            gap: 40px; /* リンク同士の間隔 */
+            gap: 40px;
             align-items: center;
         }
 
-        /* リンクのデザイン */
         .menu-link {
             text-decoration: none;
             font-family: 'Noto Serif JP', serif;
@@ -74,6 +71,7 @@
             color: #0056b3;
             transition: all 0.3s;
             white-space: nowrap;
+            user-select: none; /* 選択不可にする */
         }
 
         .lang-switch:hover {
@@ -130,7 +128,7 @@
             display: flex;
             align-items: baseline;
             margin-top: 5px;
-            margin-left: 7px;
+            margin-left: 18px;
         }
 
         .furigana {
@@ -156,56 +154,47 @@
         
         rt { font-size: 0.6em; font-weight: normal; }
 
+        /* 英語用スタイルの微調整（英語はRobotoフォントの方が綺麗に見えるため） */
+        .lang-en-text {
+            font-family: 'Roboto', sans-serif; 
+            font-weight: 500;
+            font-size: 1rem;
+            letter-spacing: 0.05em;
+        }
+
         /* --- スマホ対応 (レスポンシブ設定) --- */
         @media screen and (max-width: 768px) {
-            /* ヘッダー全体の設定 */
             header {
                 padding-top: 15px;
-                width: 95%; /* 画面幅を有効活用 */
+                width: 90%;
             }
 
-            /* ナビゲーションコンテナ：縦並びにする */
             nav {
-                flex-direction: column; /* 上下に積む */
+                flex-direction: column;
                 width: 100%;
-                gap: 8px; /* 上段と下段の間隔 */
+                gap: 8px;
             }
 
-            /* メニューグループ共通：横幅いっぱい使う */
             .menu-group {
                 width: 100%;
-                gap: 15px; /* リンク同士の間隔 */
+                gap: 15px;
             }
 
-            /* 上段（左グループ）：左寄せ ＋ 左に2文字分スペース */
-            .menu-left {
-                justify-content: flex-start;
-                padding-left: 0em; /* ★ここが変更点：左に0文字分の空き */
-            }
+            .menu-left { justify-content: flex-start; }
+            .menu-right { justify-content: flex-end; }
 
-            /* 下段（右グループ）：右寄せ ＋ 右に4文字分スペース（バランスのため） */
-            .menu-right {
-                justify-content: flex-end;
-                padding-right: 4em; /* ★バランスよく右にも空きを追加 */
-            }
+            .menu-link { font-size: 0.9rem; }
+            .lang-switch { font-size: 0.75rem; padding: 4px 8px; }
 
-            /* 文字サイズをPCの80%程度に縮小 */
-            .menu-link {
-                font-size: 0.9rem; /* 1rem -> 0.9rem */
-            }
-            .lang-switch {
-                font-size: 0.75rem; /* ボタンも少し小さく */
-                padding: 4px 8px;
-            }
-
-
-            /* --- 以下ロゴの縮小設定 --- */
             .logo-container { align-items: center; }
             .kanji-svg { width: 7rem; }
             .app-lab { font-size: 3.2rem; margin-left: 10px; }
             .sub-row { flex-direction: column; align-items: flex-start; margin-left: 10px; margin-top: 10px; }
             .furigana { font-size: 2.8rem; }
             .tagline { margin-left: 0; margin-top: 5px; font-size: 1rem; }
+            
+            /* スマホで英語タグラインが長くなりすぎる場合の調整 */
+            .lang-en-text { font-size: 0.9rem; }
         }
 
         /* --- アニメーション --- */
@@ -230,21 +219,21 @@
 </head>
 <body>
 
-    <!-- ヘッダーメニュー（グループ分け版） -->
     <header>
         <nav>
-            <!-- 左グループ：上段・左寄せ + 左スペース -->
+            <!-- 左グループ -->
             <div class="menu-group menu-left">
-                <a href="about.html" class="menu-link">私たちについて</a>
-                <a href="#" class="menu-link">開発実績</a>
-                <a href="#" class="menu-link">お知らせ</a>
+                <!-- data-jp と data-en 属性にそれぞれの言語を設定 -->
+                <a href="about.html" class="menu-link" data-jp="私たちについて" data-en="About Us">私たちについて</a>
+                <a href="#" class="menu-link" data-jp="開発実績" data-en="Portfolio">開発実績</a>
+                <a href="#" class="menu-link" data-jp="お知らせ" data-en="News">お知らせ</a>
             </div>
             
-            <!-- 右グループ：下段・右寄せ + 右スペース -->
+            <!-- 右グループ -->
             <div class="menu-group menu-right">
-                <a href="#" class="menu-link">アンケート</a>
-                <a href="#" class="menu-link">お問い合わせ</a>
-                <div class="lang-switch">JP / EN</div>
+                <a href="#" class="menu-link" data-jp="アンケート" data-en="Survey">アンケート</a>
+                <a href="#" class="menu-link" data-jp="お問い合わせ" data-en="Contact">お問い合わせ</a>
+                <div class="lang-switch" id="langSwitch">JP / EN</div>
             </div>
         </nav>
     </header>
@@ -259,13 +248,22 @@
         </div>
         <div class="sub-row">
             <div class="furigana">KEI</div>
+            
             <div class="tagline">
-                日常を<ruby>啓<rt>ひら</rt></ruby>く便利さ。心を<ruby>啓<rt>ひら</rt></ruby>く遊び心。
+                <!-- 日本語版タグライン（デフォルト表示） -->
+                <span class="lang-jp">
+                    日常を<ruby>啓<rt>ひら</rt></ruby>く便利さ。心を<ruby>啓<rt>ひら</rt></ruby>く遊び心。
+                </span>
+                <!-- 英語版タグライン（初期状態は非表示） -->
+                <span class="lang-en lang-en-text" style="display: none;">
+                    Opening up daily life with convenience.<br>Opening up hearts with playfulness.
+                </span>
             </div>
         </div>
     </div>
 
     <script>
+        // 光の粒子（既存コード）
         const container = document.getElementById('dust-container');
         for (let i = 0; i < 35; i++) {
             const d = document.createElement('div');
@@ -281,6 +279,34 @@
             d.style.animationDelay = '-' + (Math.random() * 30) + 's';
             container.appendChild(d);
         }
+
+        // --- 言語切り替えスクリプト（追加分） ---
+        const langSwitchBtn = document.getElementById('langSwitch');
+        let currentLang = 'jp'; // 現在の言語
+
+        langSwitchBtn.addEventListener('click', () => {
+            // 言語をトグル（切り替え）
+            currentLang = currentLang === 'jp' ? 'en' : 'jp';
+            
+            // 1. メニューリンクの文字を切り替え
+            const links = document.querySelectorAll('.menu-link');
+            links.forEach(link => {
+                // data-jp または data-en の属性値を取得して表示
+                link.textContent = link.getAttribute(`data-${currentLang}`);
+            });
+
+            // 2. タグライン（キャッチコピー）の切り替え
+            const tagJP = document.querySelector('.tagline .lang-jp');
+            const tagEN = document.querySelector('.tagline .lang-en');
+
+            if (currentLang === 'en') {
+                tagJP.style.display = 'none';
+                tagEN.style.display = 'inline-block'; // 英語を表示
+            } else {
+                tagJP.style.display = 'inline-block'; // 日本語を表示
+                tagEN.style.display = 'none';
+            }
+        });
     </script>
 </body>
 </html>
