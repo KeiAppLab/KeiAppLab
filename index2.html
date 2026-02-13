@@ -95,7 +95,7 @@
         }
 
         /* アニメーション：影を濃く、長く伸ばす設定 */
-        /* @keyframes emerge-long-shadow {
+        @keyframes emerge-long-shadow {
             0% {
                 opacity: 0;
                 transform: translateY(20px) scale(0.98);
@@ -111,25 +111,6 @@
                     30px 30px 50px rgba(0,0,0,0.3),
                     70px 70px 90px rgba(0,0,0,0.25),
                     120px 120px 150px rgba(0,0,0,0.15); /* 最も長いぼんやりした影 */
-            }
-        } */
-        @keyframes emerge-long-shadow {
-            0% {
-                opacity: 0;
-                transform: translateY(20px) scale(0.98);
-                filter: drop-shadow(0 0 0 rgba(0,0,0,0)); /* 初期状態では影なし */
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-                /* filter: drop-shadow() で影を表現。
-                   元の複数のtext-shadowを完全に再現するのは難しいため、
-                   最も長くぼんやりした影を基に調整します。
-                   (Xオフセット Yオフセット ぼかし半径 色) */
-                filter: drop-shadow(70px 70px 90px rgba(0,0,0,0.25)); /* 適度な長さと濃さの影 */
-                /* もし影が薄いと感じる場合は、rgbaのアルファ値を上げるか、
-                   Xオフセット, Yオフセット, ぼかし半径の値を調整してください。
-                   例: drop-shadow(100px 100px 120px rgba(0,0,0,0.2)) */
             }
         }
 
