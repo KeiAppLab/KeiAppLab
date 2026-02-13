@@ -33,16 +33,22 @@
             z-index: 200;
         }
 
-        nav ul {
+        /* ナビゲーション全体のコンテナ */
+        nav {
             display: flex;
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            gap: 40px;
+            gap: 40px; /* PCでの左グループと右グループの間隔 */
             align-items: center;
         }
 
-        nav li a {
+        /* メニューのグループ共通設定 */
+        .menu-group {
+            display: flex;
+            gap: 40px; /* リンク同士の間隔 */
+            align-items: center;
+        }
+
+        /* リンクのデザイン */
+        .menu-link {
             text-decoration: none;
             font-family: 'Noto Serif JP', serif;
             font-weight: 900;
@@ -50,10 +56,10 @@
             color: #0056b3;
             position: relative;
             transition: color 0.3s;
-            white-space: nowrap; /* 文字の折り返し禁止 */
+            white-space: nowrap;
         }
 
-        nav li a:hover {
+        .menu-link:hover {
             color: #003d82;
         }
 
@@ -63,7 +69,6 @@
             padding: 5px 10px;
             border-radius: 20px;
             font-size: 0.9rem;
-            margin-left: 20px;
             cursor: pointer;
             color: #0056b3;
             transition: all 0.3s;
@@ -102,13 +107,11 @@
             align-items: baseline;
         }
 
-        /* SVG画像のスタイル */
         .kanji-svg {
             width: 10rem;
             height: auto;
             display: block;
             opacity: 0;
-            /* 影はフィルターで適用 */
             animation: fade-in-scale 6s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
         }
 
@@ -122,7 +125,6 @@
             animation: emerge-long-shadow 6s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
         }
 
-        /* --- 2行目（KEI と タグライン） --- */
         .sub-row {
             display: flex;
             align-items: baseline;
@@ -151,130 +153,96 @@
             animation: emerge-long-shadow 6s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards;
         }
         
-        rt {
-            font-size: 0.6em;
-            font-weight: normal;
-        }
+        rt { font-size: 0.6em; font-weight: normal; }
 
         /* --- スマホ対応 (レスポンシブ設定) --- */
         @media screen and (max-width: 768px) {
-            /* ヘッダー：2列で表示、文字サイズ縮小 */
+            /* ヘッダー全体の設定 */
             header {
-                padding-top: 10px;
-                width: 95%; /* 画面端ギリギリにならないように */
+                padding-top: 15px;
+                width: 90%; /* 左右に少し余白 */
             }
-            nav ul {
-                flex-wrap: wrap; /* 折り返しを許可 */
-                justify-content: center; /* 中央揃えで見やすく */
-                gap: 10px 15px; /* 上下左右の間隔 */
+
+            /* ナビゲーションコンテナ：縦並びにする */
+            nav {
+                flex-direction: column; /* 上下に積む */
+                width: 100%;
+                gap: 8px; /* 上段と下段の間隔 */
             }
-            nav li a {
-                font-size: 0.8rem; /* 文字を小さく */
+
+            /* メニューグループ共通：横幅いっぱい使う */
+            .menu-group {
+                width: 100%;
+                gap: 15px; /* リンク同士の間隔 */
+            }
+
+            /* 上段（左グループ）：左寄せ */
+            .menu-left {
+                justify-content: flex-start;
+            }
+
+            /* 下段（右グループ）：右寄せ */
+            .menu-right {
+                justify-content: flex-end;
+            }
+
+            /* 文字サイズをPCの80%程度に縮小 */
+            .menu-link {
+                font-size: 0.8rem; /* 1rem -> 0.8rem (80%) */
             }
             .lang-switch {
-                font-size: 0.75rem;
-                margin-left: 10px;
-                padding: 3px 8px;
+                font-size: 0.75rem; /* ボタンも少し小さく */
+                padding: 4px 8px;
             }
 
-            /* ロゴ：全体を約70%に縮小 */
-            .logo-container {
-                align-items: center; /* 中央寄せ気味に */
-            }
-            
-            .kanji-svg {
-                width: 7rem; /* 10rem -> 7rem */
-            }
 
-            .app-lab {
-                font-size: 3.2rem; /* 5rem -> 3.2rem */
-                margin-left: 10px;
-            }
-
-            /* サブ行：縦並びに変更 */
-            .sub-row {
-                flex-direction: column; /* 縦並び */
-                align-items: flex-start; /* 左揃え */
-                margin-left: 10px; /* 位置調整 */
-                margin-top: 10px;
-            }
-
-            .furigana {
-                font-size: 2.8rem; /* 4rem -> 2.8rem */
-            }
-
-            .tagline {
-                margin-left: 0; /* 左マージンを削除 */
-                margin-top: 5px; /* 上に少し隙間 */
-                font-size: 1rem; /* 少し小さく */
-            }
+            /* --- 以下ロゴの縮小設定（前回と同じ） --- */
+            .logo-container { align-items: center; }
+            .kanji-svg { width: 7rem; }
+            .app-lab { font-size: 3.2rem; margin-left: 10px; }
+            .sub-row { flex-direction: column; align-items: flex-start; margin-left: 10px; margin-top: 10px; }
+            .furigana { font-size: 2.8rem; }
+            .tagline { margin-left: 0; margin-top: 5px; font-size: 1rem; }
         }
 
-        /* --- アニメーション定義 --- */
+        /* --- アニメーション --- */
         @keyframes fade-in-scale {
-            0% {
-                opacity: 0;
-                transform: translateY(20px) scale(0.98);
-                filter: drop-shadow(0 0 0 rgba(0,0,0,0));
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-                filter: 
-                    drop-shadow(4px 4px 8px rgba(0,0,0,0.4))
-                    drop-shadow(12px 12px 25px rgba(0,0,0,0.35))
-                    drop-shadow(30px 30px 50px rgba(0,0,0,0.3));
-            }
+            0% { opacity: 0; transform: translateY(20px) scale(0.98); filter: drop-shadow(0 0 0 rgba(0,0,0,0)); }
+            100% { opacity: 1; transform: translateY(0) scale(1); filter: drop-shadow(4px 4px 8px rgba(0,0,0,0.4)) drop-shadow(12px 12px 25px rgba(0,0,0,0.35)) drop-shadow(30px 30px 50px rgba(0,0,0,0.3)); }
         }
-        
         @keyframes emerge-long-shadow {
-            0% {
-                opacity: 0;
-                transform: translateY(20px) scale(0.98);
-                text-shadow: 0 0 0 rgba(0,0,0,0);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-                text-shadow: 
-                    4px 4px 8px rgba(0,0,0,0.4),
-                    12px 12px 25px rgba(0,0,0,0.35),
-                    30px 30px 50px rgba(0,0,0,0.3),
-                    70px 70px 90px rgba(0,0,0,0.25),
-                    120px 120px 150px rgba(0,0,0,0.15);
-            }
+            0% { opacity: 0; transform: translateY(20px) scale(0.98); text-shadow: 0 0 0 rgba(0,0,0,0); }
+            100% { opacity: 1; transform: translateY(0) scale(1); text-shadow: 4px 4px 8px rgba(0,0,0,0.4), 12px 12px 25px rgba(0,0,0,0.35), 30px 30px 50px rgba(0,0,0,0.3), 70px 70px 90px rgba(0,0,0,0.25), 120px 120px 150px rgba(0,0,0,0.15); }
         }
 
         .dust {
-            position: absolute;
-            top: 0;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 100;
-            animation: drift 20s infinite linear;
+            position: absolute; top: 0; border-radius: 50%; pointer-events: none; z-index: 100; animation: drift 20s infinite linear;
         }
         @keyframes drift {
             0% { transform: translateY(110vh) translateX(0) rotate(0deg); opacity: 0; }
-            20% { opacity: 1; } 
-            80% { opacity: 1; }
+            20% { opacity: 1; } 80% { opacity: 1; }
             100% { transform: translateY(-10vh) translateX(150px) rotate(360deg); opacity: 0; }
         }
     </style>
 </head>
 <body>
 
-    <!-- ヘッダーメニュー -->
+    <!-- ヘッダーメニュー（グループ分け版） -->
     <header>
         <nav>
-            <ul>
-                <!-- リンク先を about.html に修正 -->
-                <li><a href="about.html">私たちについて</a></li>
-                <li><a href="#">開発実績</a></li>
-                <li><a href="#">お知らせ</a></li>
-                <li><a href="#">アンケート</a></li>
-                <li><a href="#">お問い合わせ</a></li>
-                <li class="lang-switch">JP / EN</li>
-            </ul>
+            <!-- 左グループ：上段・左寄せ -->
+            <div class="menu-group menu-left">
+                <a href="about.html" class="menu-link">私たちについて</a>
+                <a href="#" class="menu-link">開発実績</a>
+                <a href="#" class="menu-link">お知らせ</a>
+            </div>
+            
+            <!-- 右グループ：下段・右寄せ -->
+            <div class="menu-group menu-right">
+                <a href="#" class="menu-link">アンケート</a>
+                <a href="#" class="menu-link">お問い合わせ</a>
+                <div class="lang-switch">JP / EN</div>
+            </div>
         </nav>
     </header>
 
@@ -282,14 +250,10 @@
     <div id="dust-container"></div>
 
     <div class="logo-container">
-        <!-- 1行目：漢字ロゴとApp Lab（横並び） -->
         <div class="main-row">
-            <!-- 啓.svg がない場合は四角が表示されます -->
             <img src="啓.svg" alt="啓" class="kanji-svg">
             <div class="app-lab">App Lab</div>
         </div>
-
-        <!-- 2行目：KEI と タグライン（スマホでは縦並びになる） -->
         <div class="sub-row">
             <div class="furigana">KEI</div>
             <div class="tagline">
@@ -299,7 +263,6 @@
     </div>
 
     <script>
-        // 光の粒子
         const container = document.getElementById('dust-container');
         for (let i = 0; i < 35; i++) {
             const d = document.createElement('div');
