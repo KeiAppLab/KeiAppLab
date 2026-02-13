@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KEI Admin Cockpit</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f0f2f5; color: #333; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h2 { border-bottom: 2px solid #0056b3; padding-bottom: 10px; margin-top: 0; }
+        label { display: block; margin-top: 10px; font-weight: bold; }
+        input, textarea { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 5px; }
+        button { background: #0056b3; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 15px; }
+        button:hover { background: #003d82; }
+        .result { background: #e8f0fe; padding: 15px; margin-top: 15px; border-radius: 5px; font-family: monospace; white-space: pre-wrap; }
+        .calc-result { font-size: 1.5rem; color: #d93025; font-weight: bold; text-align: center; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛠️ 啓 App Lab 管理コックピット</h1>
+
+        <!-- 収益計算機 -->
+        <div class="card">
+            <h2>💰 無料通話秒数 シミュレーター</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div>
+                    <label>動画広告単価 (1再生あたり)</label>
+                    <input type="number" id="adPrice" value="1.5" step="0.1"> 円
+                </div>
+                <div>
+                    <label>通話原価 (1分あたり)</label>
+                    <input type="number" id="callCost" value="3.0" step="0.1"> 円
+                </div>
+                <div>
+                    <label>確保したい利益率 (%)</label>
+                    <input type="number" id="margin" value="20"> %
+                </div>
+            </div>
+            <button onclick="calcSeconds()">計算する</button>
+            <div id="calcOutput" class="calc-result">--- 秒</div>
+            <p style="text-align: center; font-size: 0.9rem;">※この秒数をアプリ設定に反映してください</p>
+        </div>
+
+        <!-- ニュース更新ジェネレーター -->
+        <div class="card">
+            <h2>📰 更新情報 HTML作成ツール</h2>
+            <label>日付</label>
+            <input type="text" id="newsDate" value="2026.03.15">
+            <label>カテゴリ</label>
+            <input type="text" id="newsCat" value="プレスリリース">
+            <label>タイトル</label>
+            <input type="text" id="newsTitle" placeholder="例：通話アプリ「FreeCallApp」をリリースしました">
+            <button onclick="generateNews()">HTMLコードを生成</button>
+            
+            <div class="result" id="newsOutput">ここに出力されたコードを index.html に貼り付けてください</div>
+        </div>
+    </div>
+
+    <script>
+        function calcSeconds() {
+            const adPrice = parseFloat(document.getElementById('adPrice').value);
+            const callCostPerMin = parseFloat(document.getElementById('callCost').value);
+            const marginPercent = parseFloat(document.getElementById('margin').value);
+
+            // 1分あたりの原価から、1秒あたりの原価を算出
+            const costPerSec = callCostPerMin / 60;
+            
+            // 広告収益から利益分を引いて、ユーザー還元に回せる金額
+            const userBudget = adPrice * (1 - (marginPercent / 100));
+
+            // 何秒話せるか
+            const seconds = userBudget / costPerSec;
+
+            document.getElementById('calcOutput').innerText = Math.floor(seconds) + " 秒";
+        }
+
+        function generateNews() {
+            const date = document.getElementById('newsDate').value;
+            const cat = document.getElementById('newsCat').value;
+            const title = document.getElementById('newsTitle').value;
+
+            const html = `
+<!-- ニュース記事 -->
+<div class="news-item">
+    <div class="news-date">${date}</div>
+    <div class="news-cat">${cat}</div>
+    <div class="news-title">${title}</div>
+</div>`;
+            document.getElementById('newsOutput').innerText = html;
+        }
+    </script>
+</body>
+</html>
