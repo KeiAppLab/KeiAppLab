@@ -16,10 +16,11 @@
             background: radial-gradient(circle at 10% 10%, #ffffff 0%, #d8d8d8 45%, #b0b0b0 100%);
             font-family: 'Noto Serif JP', serif;
             color: var(--text-color);
-            overflow-x: hidden; /* 横スクロール防止 */
+            overflow-x: hidden;
         }
 
         /* --- 言語切り替え表示制御 --- */
+        /* data-lang属性によって表示・非表示を切り替えます */
         body[data-lang="en"] .lang-ja { display: none !important; }
         body[data-lang="ja"] .lang-en { display: none !important; }
 
@@ -48,6 +49,8 @@
             border: 1px solid var(--accent-color);
             padding: 5px 15px; border-radius: 20px; font-size: 0.9rem;
             cursor: pointer; color: var(--accent-color); background: rgba(255,255,255,0.5);
+            transition: all 0.3s;
+            user-select: none;
         }
         .lang-switch:hover { background: var(--accent-color); color: white; }
 
@@ -55,7 +58,7 @@
         .content-container {
             position: relative; z-index: 10;
             max-width: 800px;
-            margin: 100px auto 50px; /* ヘッダー分空ける */
+            margin: 100px auto 50px;
             padding: 40px;
             background: rgba(255, 255, 255, 0.4);
             backdrop-filter: blur(10px);
@@ -88,7 +91,7 @@
         }
     </style>
 </head>
-<body data-lang="ja">
+<body data-lang="ja"> <!-- 初期状態は ja -->
 
     <div class="overlay-shadow"></div>
 
@@ -98,7 +101,8 @@
             <span class="lang-ja">トップへ戻る</span>
             <span class="lang-en">Back to Top</span>
         </a>
-        <div class="lang-switch" id="lang-btn">EN</div>
+        <!-- ボタンのIDを index.html と同じ langSwitch に合わせると管理しやすいですが、そのまま lang-btn でも動作するようにします -->
+        <div class="lang-switch" id="lang-btn">Language</div>
     </header>
 
     <div class="content-container">
@@ -130,20 +134,39 @@
     </div>
 
     <script>
-        // 言語切り替えロジック
-        const langBtn = document.getElementById('lang-btn');
-        const body = document.body;
+        // --- 言語管理ロジック ---
 
-        // ページ読み込み時に言語状態をチェック（localStorageを使えばページ遷移しても保持できますが、今回はシンプルに実装）
-        langBtn.addEventListener('click', () => {
-            const currentLang = body.getAttribute('data-lang');
-            if (currentLang === 'ja') {
-                body.setAttribute('data-lang', 'en');
-                langBtn.textContent = 'JP';
+        function setLanguage(lang) {
+            // ブラウザに設定を保存
+            localStorage.setItem('preferredLang', lang);
+            // bodyの属性を書き換えて表示を切り替え
+            document.body.setAttribute('data-lang', lang === 'ja' ? 'ja' : 'en');
+        }
+
+        // 初期化処理
+        document.addEventListener('DOMContentLoaded', () => {
+            // A. まず保存された設定を確認
+            const savedLang = localStorage.getItem('preferredLang');
+            
+            if (savedLang) {
+                setLanguage(savedLang);
             } else {
-                body.setAttribute('data-lang', 'ja');
-                langBtn.textContent = 'EN';
+                // B. 設定がない場合はブラウザの言語を確認
+                const browserLang = (window.navigator.language || window.navigator.userLanguage || 'ja').slice(0, 2).toLowerCase();
+                if (browserLang !== 'ja') {
+                    setLanguage('en');
+                } else {
+                    setLanguage('ja');
+                }
             }
+        });
+
+        // ボタンクリックイベント
+        const langBtn = document.getElementById('lang-btn');
+        langBtn.addEventListener('click', () => {
+            const current = localStorage.getItem('preferredLang') || 'ja';
+            const next = current === 'ja' ? 'en' : 'ja';
+            setLanguage(next);
         });
     </script>
 </body>
