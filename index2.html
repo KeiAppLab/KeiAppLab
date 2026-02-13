@@ -61,14 +61,13 @@
         }*/
 
         /* 「啓.svg」のデザイン：元の「啓」のサイズ感に合わせて調整 */
-        .kanji-svg {
-            /* SVGのサイズを元のテキストのfont-sizeに合わせて調整 */
+       .kanji-svg {
             width: 10rem; /* 元のfont-size: 10rem に相当 */
             height: auto; /* 比率を維持 */
-            display: block; /* img要素はinline要素なので、blockにしてより制御しやすく */
-            opacity: 0;
-            /* 右下へ長く、濃い影の設定 */
-            animation: emerge-long-shadow 6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            display: block;
+            opacity: 0; /* 初期状態で透明 */
+            /* フェードインとスケールのアニメーションを適用 */
+            animation: fade-in-scale 6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
         /* 「App Lab」のデザイン：力強くシンプルなフォント */
@@ -94,6 +93,18 @@
             animation: emerge-long-shadow 6s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
         }
 
+        /* アニメーション：啓.svg用 (フェードインとスケールのみ) */
+        @keyframes fade-in-scale {
+            0% {
+                opacity: 0;
+                transform: translateY(20px) scale(0.98);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
         /* アニメーション：影を濃く、長く伸ばす設定 */
         @keyframes emerge-long-shadow {
             0% {
