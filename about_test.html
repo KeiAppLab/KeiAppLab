@@ -54,9 +54,9 @@
 
         .content-container {
             position: relative; z-index: 10;
-            max-width: 850px; /* 少し広くしました */
+            max-width: 900px;
             margin: 100px auto 50px;
-            padding: 60px 50px; /* 余白を増やして品格を向上 */
+            padding: 60px 50px;
             background: rgba(255, 255, 255, 0.45);
             backdrop-filter: blur(12px);
             border-radius: 20px;
@@ -75,20 +75,61 @@
 
         p { line-height: 2.0; margin-bottom: 25px; font-size: 1.1rem; text-align: justify; }
 
-        .philosophy-box {
-            margin-top: 40px; padding: 30px; background: rgba(0, 86, 179, 0.05); border-radius: 10px; font-style: italic;
+        /* --- 特徴的な理念セクション（横並び） --- */
+        .philosophy-section {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            margin: 40px 0;
         }
+
+        .philosophy-box {
+            flex: 1;
+            padding: 30px;
+            background: rgba(0, 86, 179, 0.05);
+            border-radius: 10px;
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        .philosophy-image {
+            flex: 1;
+            width: 100%;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border: 1px solid rgba(255,255,255,0.5);
+            object-fit: cover;
+        }
+
+        .mission-text {
+            font-size: 1.3rem;
+            font-weight: 900;
+            color: var(--accent-color);
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        rt { font-family: 'Roboto', sans-serif; font-size: 0.5em; font-weight: normal; }
 
         @keyframes fade-in-up {
             from { opacity: 0; transform: translateY(30px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
+        /* スマホ対応：横並びを解除 */
         @media (max-width: 768px) {
             .content-container { margin: 80px 15px 40px; padding: 35px 20px; }
             h1 { font-size: 2rem; }
             h2 { font-size: 1.4rem; }
             p { font-size: 1rem; }
+            
+            .philosophy-section {
+                flex-direction: column; /* 縦並びに変更 */
+            }
+            .philosophy-image {
+                order: -1; /* スマホでは画像を先に表示 */
+                max-width: 100%;
+            }
         }
     </style>
 </head>
@@ -111,9 +152,16 @@
             <h1>私たちについて</h1>
             <p>啓（KEI）App Labは、テクノロジーという光を用いて「日常の不便を解き明かし、心の高鳴りを呼び起こす」ことを使命としたクリエイティブ・ラボです。私たちは、単にプログラムを組む集団ではありません。ユーザーの隣に立ち、まだ見ぬ便利さと楽しさの扉を一つずつ「啓く」パートナーでありたいと考えています。</p>
 
-            <div class="philosophy-box">
-                「日常を啓く便利さ。心を啓く遊び心。」<br>
-                この言葉こそが、私たちの開発における不変の指針です。
+            <!-- 理念と画像の横並びセクション -->
+            <div class="philosophy-section">
+                <div class="philosophy-box">
+                    <span class="mission-text">
+                        「日常を<ruby>啓<rt>ひら</rt></ruby>く便利さ。心を<ruby>啓<rt>ひら</rt></ruby>く遊び心。」
+                    </span>
+                    この言葉こそが、私たちの開発における不変の指針です。
+                </div>
+                <!-- 用意された画像をここに配置 -->
+                <img src="lab-image.png" alt="Lab Vision" class="philosophy-image">
             </div>
 
             <h2>二つの視点、一つの情熱</h2>
@@ -123,7 +171,7 @@
             <p>主力プロダクトである「FreeCallApp」をはじめ、私たちが提供するツールはすべて「徹底的なユーザー体験の最適化」から設計されています。複雑なものをシンプルに。高価なものを身近に。デジタルという冷たい技術に、人間の温かな気配りを注ぎ込むことで、使うたびに発見がある利便性を追求しています。</p>
 
             <h2>心を啓く：遊びへの挑戦</h2>
-            <p>また、私たちは「遊び」が持つ根源的なエネルギーを信じています。<Steam等のプラットフォームを通じて展開する>ゲーム開発プロジェクトでは、日常の延長線上にある驚きや、知的好奇心を刺激する体験を追求しています。ツールが時間を「節約」するものであるならば、ゲームは時間を「豊か」にするもの。私たちはその両輪で、人々のライフスタイルを照らします。</p>
+            <p>また、私たちは「遊び」が持つ根源的なエネルギーを信じています。Steam等のプラットフォームを通じて展開するゲーム開発プロジェクトでは、日常の延長線上にある驚きや、知的好奇心を刺激する体験を追求しています。ツールが時間を「節約」するものであるならば、ゲームは時間を「豊か」にするもの。私たちはその両輪で、人々のライフスタイルを照らします。</p>
 
             <h2>未来への歩み</h2>
             <p>啓 App Labは、常に研究者（Lab）としての探究心を忘れず、一歩先の未来が今日より少しだけ明るく、楽しくなるような、そんな「光」となるアプリを届けてまいります。</p>
@@ -134,9 +182,14 @@
             <h1>About Us</h1>
             <p>KEI App Lab is a creative laboratory whose mission is to "unravel the inconveniences of daily life and awaken the excitement of the heart" using the light of technology. We are more than just a group of programmers. We aspire to be a partner that stands beside the user, "opening" the doors to unseen convenience and joy one by one.</p>
 
-            <div class="philosophy-box">
-                "Convenience to open daily life. Playfulness to open the heart."<br>
-                This philosophy is the unwavering guide for our development.
+            <div class="philosophy-section">
+                <div class="philosophy-box">
+                    <span class="mission-text">
+                        "Convenience to open daily life. Playfulness to open the heart."
+                    </span>
+                    This philosophy is the unwavering guide for our development.
+                </div>
+                <img src="lab-image.png" alt="Lab Vision" class="philosophy-image">
             </div>
 
             <h2>Two Perspectives, One Passion</h2>
