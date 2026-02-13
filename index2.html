@@ -50,6 +50,7 @@
             color: #0056b3;
             position: relative;
             transition: color 0.3s;
+            white-space: nowrap; /* 文字の折り返し禁止 */
         }
 
         nav li a:hover {
@@ -66,6 +67,7 @@
             cursor: pointer;
             color: #0056b3;
             transition: all 0.3s;
+            white-space: nowrap;
         }
 
         .lang-switch:hover {
@@ -100,12 +102,13 @@
             align-items: baseline;
         }
 
+        /* SVG画像のスタイル */
         .kanji-svg {
             width: 10rem;
             height: auto;
             display: block;
-            color: #111;
             opacity: 0;
+            /* 影はフィルターで適用 */
             animation: fade-in-scale 6s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
         }
 
@@ -119,7 +122,7 @@
             animation: emerge-long-shadow 6s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
         }
 
-        /* --- 2行目（KEI と タグライン）のコンテナ --- */
+        /* --- 2行目（KEI と タグライン） --- */
         .sub-row {
             display: flex;
             align-items: baseline;
@@ -137,7 +140,6 @@
             animation: emerge-long-shadow 6s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
         }
 
-        /* --- タグラインのスタイル --- */
         .tagline {
             font-family: 'Noto Serif JP', serif;
             font-size: 1.2rem;
@@ -149,10 +151,63 @@
             animation: emerge-long-shadow 6s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards;
         }
         
-        /* ルビ（ふりがな）の微調整 */
         rt {
-            font-size: 0.6em; /* ふりがなのサイズ調整 */
-            font-weight: normal; /* ふりがなは少し細くして読みやすく */
+            font-size: 0.6em;
+            font-weight: normal;
+        }
+
+        /* --- スマホ対応 (レスポンシブ設定) --- */
+        @media screen and (max-width: 768px) {
+            /* ヘッダー：2列で表示、文字サイズ縮小 */
+            header {
+                padding-top: 10px;
+                width: 95%; /* 画面端ギリギリにならないように */
+            }
+            nav ul {
+                flex-wrap: wrap; /* 折り返しを許可 */
+                justify-content: center; /* 中央揃えで見やすく */
+                gap: 10px 15px; /* 上下左右の間隔 */
+            }
+            nav li a {
+                font-size: 0.8rem; /* 文字を小さく */
+            }
+            .lang-switch {
+                font-size: 0.75rem;
+                margin-left: 10px;
+                padding: 3px 8px;
+            }
+
+            /* ロゴ：全体を約70%に縮小 */
+            .logo-container {
+                align-items: center; /* 中央寄せ気味に */
+            }
+            
+            .kanji-svg {
+                width: 7rem; /* 10rem -> 7rem */
+            }
+
+            .app-lab {
+                font-size: 3.2rem; /* 5rem -> 3.2rem */
+                margin-left: 10px;
+            }
+
+            /* サブ行：縦並びに変更 */
+            .sub-row {
+                flex-direction: column; /* 縦並び */
+                align-items: flex-start; /* 左揃え */
+                margin-left: 10px; /* 位置調整 */
+                margin-top: 10px;
+            }
+
+            .furigana {
+                font-size: 2.8rem; /* 4rem -> 2.8rem */
+            }
+
+            .tagline {
+                margin-left: 0; /* 左マージンを削除 */
+                margin-top: 5px; /* 上に少し隙間 */
+                font-size: 1rem; /* 少し小さく */
+            }
         }
 
         /* --- アニメーション定義 --- */
@@ -190,7 +245,6 @@
             }
         }
 
-        /* --- 光の粒子（チリ） --- */
         .dust {
             position: absolute;
             top: 0;
@@ -213,7 +267,8 @@
     <header>
         <nav>
             <ul>
-                <li><a href="#">私たちについて</a></li>
+                <!-- リンク先を about.html に修正 -->
+                <li><a href="about.html">私たちについて</a></li>
                 <li><a href="#">開発実績</a></li>
                 <li><a href="#">お知らせ</a></li>
                 <li><a href="#">アンケート</a></li>
@@ -227,14 +282,16 @@
     <div id="dust-container"></div>
 
     <div class="logo-container">
+        <!-- 1行目：漢字ロゴとApp Lab（横並び） -->
         <div class="main-row">
+            <!-- 啓.svg がない場合は四角が表示されます -->
             <img src="啓.svg" alt="啓" class="kanji-svg">
             <div class="app-lab">App Lab</div>
         </div>
-        <!-- 2行目：KEI と タグライン -->
+
+        <!-- 2行目：KEI と タグライン（スマホでは縦並びになる） -->
         <div class="sub-row">
             <div class="furigana">KEI</div>
-            <!-- ここを変更しました -->
             <div class="tagline">
                 日常を<ruby>啓<rt>ひら</rt></ruby>く便利さ。心を<ruby>啓<rt>ひら</rt></ruby>く遊び心。
             </div>
@@ -242,26 +299,20 @@
     </div>
 
     <script>
+        // 光の粒子
         const container = document.getElementById('dust-container');
         for (let i = 0; i < 35; i++) {
             const d = document.createElement('div');
             d.classList.add('dust');
-            
             const xPos = Math.random() * 100;
             d.style.left = xPos + 'vw';
-
             const alpha = 1.0 - (xPos / 140); 
             d.style.background = `rgba(255, 255, 255, ${alpha})`;
-
             const size = Math.random() * 5 + 1 + 'px';
             d.style.width = size;
             d.style.height = size;
-
-            const duration = Math.random() * 15 + 10;
-            d.style.animationDuration = duration + 's';
-
+            d.style.animationDuration = Math.random() * 15 + 10 + 's';
             d.style.animationDelay = '-' + (Math.random() * 30) + 's';
-            
             container.appendChild(d);
         }
     </script>
