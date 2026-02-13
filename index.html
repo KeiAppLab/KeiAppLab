@@ -7,6 +7,11 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700;900&family=Roboto:wght@400;500;900&display=swap');
 
+        /* --- 修正点1: 全要素のサイズ計算を統一（はみ出し防止） --- */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
         body, html {
             margin: 0;
             padding: 0;
@@ -14,13 +19,12 @@
             min-height: 100vh;
             background: 
                 radial-gradient(circle at 10% 10%, #ffffff 0%, #d8d8d8 45%, #b0b0b0 100%);
-            background-attachment: fixed; /* 背景を固定 */
+            background-attachment: fixed;
             font-family: 'Roboto', 'Noto Serif JP', sans-serif;
             color: #111;
-            overflow-x: hidden; /* 横スクロール防止 */
+            overflow-x: hidden;
         }
 
-        /* --- ヘッダー（メニュー） --- */
         header {
             position: absolute;
             top: 0;
@@ -72,9 +76,8 @@
 
         .lang-switch:hover { background: #0056b3; color: white; }
 
-        /* --- ヒーローセクション（ロゴエリア） --- */
         .hero-section {
-            height: 100vh; /* 全画面表示 */
+            height: 100vh;
             width: 100%;
             display: flex;
             justify-content: center;
@@ -142,7 +145,6 @@
         
         rt { font-size: 0.6em; font-weight: normal; }
 
-        /* --- アプリ一覧セクション --- */
         .apps-section {
             padding: 80px 20px;
             width: 100%;
@@ -163,11 +165,12 @@
 
         .app-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            /* --- 修正点2: 最小幅を300pxから280pxに変更し、狭い画面に対応 --- */
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 40px;
+            width: 100%;
         }
 
-        /* すりガラス風カードデザイン */
         .app-card {
             background: rgba(255, 255, 255, 0.45);
             backdrop-filter: blur(12px);
@@ -178,6 +181,7 @@
             text-align: center;
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
             transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.4s;
+            width: 100%; /* カード幅を親に合わせる */
         }
 
         .app-card:hover {
@@ -207,7 +211,7 @@
             color: #444;
             margin-bottom: 25px;
             line-height: 1.8;
-            height: 3.6em; /* 2行分確保して高さを揃える */
+            min-height: 3.6em; /* 高さ確保の方法を変更 */
         }
 
         .btn {
@@ -223,6 +227,7 @@
             letter-spacing: 0.05em;
             transition: background 0.3s, transform 0.2s;
             box-shadow: 0 4px 15px rgba(0, 86, 179, 0.3);
+            max-width: 100%; /* ボタンのはみ出し防止 */
         }
 
         .btn:hover {
@@ -230,7 +235,6 @@
             transform: scale(1.05);
         }
 
-        /* Coming Soon カードの特別スタイル */
         .card-disabled {
             opacity: 0.7;
             background: rgba(255, 255, 255, 0.25);
@@ -240,7 +244,6 @@
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
         }
 
-        /* --- フッター --- */
         footer {
             text-align: center;
             padding: 40px 0;
@@ -259,9 +262,8 @@
             margin-left: 10px;
         }
 
-        /* --- 共通クラス --- */
         .overlay-shadow {
-            position: fixed; /* 固定に変更 */
+            position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(135deg, transparent 30%, rgba(0,0,0,0.2) 90%);
             pointer-events: none;
@@ -269,7 +271,7 @@
         }
 
         #dust-container {
-            position: fixed; /* 粒子も固定 */
+            position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none;
             z-index: 1;
@@ -279,11 +281,9 @@
             position: absolute; top: 0; border-radius: 50%; pointer-events: none; z-index: 100; animation: drift 20s infinite linear;
         }
 
-        /* 英語用フォント調整 */
         .lang-en { display: none; }
         .lang-en-text { font-family: 'Roboto', sans-serif; font-weight: 500; letter-spacing: 0.02em; }
 
-        /* --- アニメーション定義 --- */
         @keyframes fade-in-scale {
             0% { opacity: 0; transform: translateY(20px) scale(0.98); filter: drop-shadow(0 0 0 rgba(0,0,0,0)); }
             100% { opacity: 1; transform: translateY(0) scale(1); filter: drop-shadow(4px 4px 8px rgba(0,0,0,0.4)) drop-shadow(12px 12px 25px rgba(0,0,0,0.35)) drop-shadow(30px 30px 50px rgba(0,0,0,0.3)); }
@@ -298,7 +298,6 @@
             100% { transform: translateY(-10vh) translateX(150px) rotate(360deg); opacity: 0; }
         }
 
-        /* --- スマホ対応 --- */
         @media screen and (max-width: 768px) {
             header { padding-top: 15px; width: 90%; }
             nav { flex-direction: column; width: 100%; gap: 8px; }
@@ -309,16 +308,18 @@
             .lang-switch { font-size: 0.75rem; padding: 4px 8px; }
             
             .hero-section { height: 90vh; }
-            .logo-container { align-items: center; }
+            .logo-container { align-items: flex-start; }
             .kanji-svg { width: 7rem; }
             .app-lab { font-size: 3.2rem; margin-left: 10px; }
             .sub-row { flex-direction: column; align-items: flex-start; margin-left: 10px; margin-top: 10px; }
             .furigana { font-size: 2.8rem; }
             .tagline { margin-left: 0; margin-top: 5px; font-size: 1rem; text-align: center; width: 100%; }
             
-            .apps-section { padding: 40px 20px; }
-            .app-grid { grid-template-columns: 1fr; }
-            .app-card p { height: auto; }
+            /* --- 修正点3: スマホ時の余白とグリッド設定 --- */
+            .apps-section { padding: 40px 15px; } /* 左右のpaddingを減らす */
+            .app-grid { grid-template-columns: 1fr; } /* 強制的に1カラムにする */
+            .app-card { padding: 30px 20px; } /* カード内の余白も少し減らす */
+            .app-card p { min-height: auto; }
         }
     </style>
 </head>
@@ -342,7 +343,6 @@
     <div class="overlay-shadow"></div>
     <div id="dust-container"></div>
 
-    <!-- ヒーローセクション -->
     <section class="hero-section">
         <div class="logo-container">
             <div class="main-row">
@@ -363,7 +363,6 @@
         </div>
     </section>
 
-    <!-- アプリ一覧セクション -->
     <main class="apps-section">
         <h2 class="section-title">
             <span class="lang-jp">プロダクト</span>
@@ -371,7 +370,6 @@
         </h2>
         
         <div class="app-grid">
-            <!-- FreeCallApp -->
             <div class="app-card">
                 <div class="app-icon">📞</div>
                 <h3>FreeCallApp</h3>
@@ -385,7 +383,6 @@
                 </a>
             </div>
 
-            <!-- Coming Soon -->
             <div class="app-card card-disabled">
                 <div class="app-icon">🚀</div>
                 <h3>Coming Soon</h3>
@@ -405,7 +402,7 @@
     </footer>
 
     <script>
-        // 光の粒子アニメーション
+        // --- 1. 光の粒子アニメーション（変更なし） ---
         const container = document.getElementById('dust-container');
         for (let i = 0; i < 35; i++) {
             const d = document.createElement('div');
@@ -422,20 +419,22 @@
             container.appendChild(d);
         }
 
-        // 言語切り替えスクリプト
+        // --- 2. 言語切り替え処理 ---
         const langSwitchBtn = document.getElementById('langSwitch');
-        let currentLang = 'jp';
+        let currentLang = 'jp'; // 初期状態
 
-        langSwitchBtn.addEventListener('click', () => {
-            currentLang = currentLang === 'jp' ? 'en' : 'jp';
-            
-            // 1. メニューリンクの属性切り替え
+        // 言語を切り替える共通関数を作成
+        function setLanguage(lang) {
+            currentLang = lang;
+
+            // 1. メニューリンクの文字切り替え
             const links = document.querySelectorAll('.menu-link');
             links.forEach(link => {
-                link.textContent = link.getAttribute(`data-${currentLang}`);
+                const text = link.getAttribute(`data-${currentLang}`);
+                if (text) link.textContent = text;
             });
 
-            // 2. 本文中のクラスベース切り替え (tagline, card text, button, title)
+            // 2. 本文テキストの表示/非表示切り替え
             const jpElements = document.querySelectorAll('.lang-jp');
             const enElements = document.querySelectorAll('.lang-en');
 
@@ -445,6 +444,24 @@
             } else {
                 jpElements.forEach(el => el.style.display = 'inline-block');
                 enElements.forEach(el => el.style.display = 'none');
+            }
+        }
+
+        // ボタンクリック時のイベント
+        langSwitchBtn.addEventListener('click', () => {
+            // 現在がjpならenへ、enならjpへ切り替え
+            const nextLang = currentLang === 'jp' ? 'en' : 'jp';
+            setLanguage(nextLang);
+        });
+
+        // --- 3. ブラウザ言語の自動判定（ここに追加しました） ---
+        window.addEventListener('load', () => {
+            // ブラウザの言語を取得 (例: 'en-US' -> 'en', 'ja' -> 'ja')
+            const browserLang = (window.navigator.language || window.navigator.userLanguage || 'ja').slice(0, 2).toLowerCase();
+
+            // 日本語以外の場合は英語モードに切り替える
+            if (browserLang !== 'ja') {
+                setLanguage('en');
             }
         });
     </script>
