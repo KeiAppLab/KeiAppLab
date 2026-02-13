@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>啓 App Lab</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@900&family=Roboto:wght@900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@900&family=Roboto:wght@500;900&display=swap');
 
         body, html {
             margin: 0;
@@ -21,6 +21,60 @@
             perspective: 1500px;
         }
 
+        /* --- ヘッダー（メニュー）のスタイル --- */
+        header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding-top: 20px;
+            display: flex;
+            justify-content: center;
+            z-index: 200; /* 粒子(100)より手前に配置してクリック可能にする */
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            gap: 40px; /* メニュー間の余白 */
+            align-items: center;
+        }
+
+        nav li a {
+            text-decoration: none;
+            font-family: 'Noto Serif JP', serif; /* メニューも少し上品に */
+            font-weight: 900;
+            font-size: 1rem;
+            color: #0056b3; /* ご指定の青色 (少し深みのある青) */
+            position: relative;
+            transition: color 0.3s;
+        }
+
+        nav li a:hover {
+            color: #003d82; /* ホバー時に少し暗く */
+        }
+
+        /* 言語切り替えボタン */
+        .lang-switch {
+            font-family: 'Roboto', sans-serif;
+            border: 1px solid #0056b3;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-left: 20px; /* 他のメニューより少し離す */
+            cursor: pointer;
+            color: #0056b3;
+            transition: all 0.3s;
+        }
+
+        .lang-switch:hover {
+            background: #0056b3;
+            color: white;
+        }
+
+        /* --- 画面全体の影 --- */
         .overlay-shadow {
             position: absolute;
             top: 0;
@@ -32,6 +86,7 @@
             z-index: 2;
         }
 
+        /* --- ロゴ周りのコンテナ --- */
         .logo-container {
             position: relative;
             z-index: 10;
@@ -65,17 +120,38 @@
             animation: emerge-long-shadow 6s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
         }
 
+        /* --- 2行目（KEI と タグライン）のコンテナ --- */
+        .sub-row {
+            display: flex;
+            align-items: baseline; /* ベースラインを揃える */
+            margin-top: 5px;
+            margin-left: 18px;
+        }
+
         .furigana {
             font-family: 'Roboto', sans-serif;
             font-size: 4rem;
             letter-spacing: 0.2em;
             color: #111;
-            margin-top: 5px;
-            margin-left: 18px;
             opacity: 0;
+            line-height: 1;
             animation: emerge-long-shadow 6s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
         }
 
+        /* --- タグラインのスタイル --- */
+        .tagline {
+            font-family: 'Noto Serif JP', serif;
+            font-size: 1.2rem; /* KEI(4rem)より小さく設定 */
+            color: #333;
+            margin-left: 30px; /* KEIとの間隔 */
+            font-weight: 900;
+            letter-spacing: 0.1em;
+            opacity: 0;
+            /* KEIと同じタイミングで出現 */
+            animation: emerge-long-shadow 6s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards;
+        }
+
+        /* --- アニメーション定義 --- */
         @keyframes fade-in-scale {
             0% {
                 opacity: 0;
@@ -110,14 +186,13 @@
             }
         }
 
-        /* 光の粒子（チリ）の演出 */
+        /* --- 光の粒子（チリ） --- */
         .dust {
             position: absolute;
-            /* 【追加】初期位置を画面上端に固定（アニメーションで動くので見えませんが、待機中の位置ズレを防ぎます） */
-            top: 0; 
+            top: 0;
             border-radius: 50%;
             pointer-events: none;
-            z-index: 100;
+            z-index: 100; /* ロゴ(10)より手前、メニュー(200)より奥 */
             animation: drift 20s infinite linear;
         }
         @keyframes drift {
@@ -130,6 +205,21 @@
 </head>
 <body>
 
+    <!-- ヘッダーメニュー -->
+    <header>
+        <nav>
+            <ul>
+                <li><a href="#">私たちについて</a></li>
+                <li><a href="#">開発実績</a></li>
+                <li><a href="#">お知らせ</a></li>
+                <li><a href="#">アンケート</a></li>
+                <li><a href="#">お問い合わせ</a></li>
+                <!-- 言語切り替え -->
+                <li class="lang-switch">JP / EN</li>
+            </ul>
+        </nav>
+    </header>
+
     <div class="overlay-shadow"></div>
     <div id="dust-container"></div>
 
@@ -138,7 +228,11 @@
             <img src="啓.svg" alt="啓" class="kanji-svg">
             <div class="app-lab">App Lab</div>
         </div>
-        <div class="furigana">KEI</div>
+        <!-- 2行目：KEI と タグライン -->
+        <div class="sub-row">
+            <div class="furigana">KEI</div>
+            <div class="tagline">日常を啓く便利さ。心を啓く遊び心。</div>
+        </div>
     </div>
 
     <script>
@@ -150,7 +244,6 @@
             const xPos = Math.random() * 100;
             d.style.left = xPos + 'vw';
 
-            // 左側(0)に近いほど不透明度(alpha)を高くする
             const alpha = 1.0 - (xPos / 140); 
             d.style.background = `rgba(255, 255, 255, ${alpha})`;
 
@@ -158,13 +251,9 @@
             d.style.width = size;
             d.style.height = size;
 
-            // アニメーション時間のランダム設定 (10〜25秒)
             const duration = Math.random() * 15 + 10;
             d.style.animationDuration = duration + 's';
 
-            // 【変更箇所】アニメーション遅延をマイナス値に設定
-            // 0秒〜30秒前に「すでに始まっていた」ことにすることで、
-            // ページを開いた瞬間に画面全体に散らばるようにする
             d.style.animationDelay = '-' + (Math.random() * 30) + 's';
             
             container.appendChild(d);
