@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us | 啓 App Lab</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@500;900&family=Roboto:wght@400;700&display=swap');
+
+        :root { --text-color: #111; --accent-color: #0056b3; }
+
+        body, html {
+            margin: 0; padding: 0;
+            min-height: 100vh;
+            width: 100vw;
+            background: radial-gradient(circle at 10% 10%, #ffffff 0%, #d8d8d8 45%, #b0b0b0 100%);
+            font-family: 'Noto Serif JP', serif;
+            color: var(--text-color);
+            overflow-x: hidden;
+        }
+
+        /* --- 言語切り替え表示制御 --- */
+        body[data-lang="en"] .lang-ja { display: none !important; }
+        body[data-lang="ja"] .lang-en { display: none !important; }
+
+        .overlay-shadow {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, transparent 30%, rgba(0,0,0,0.2) 90%);
+            pointer-events: none; z-index: 0;
+        }
+
+        header {
+            position: fixed; top: 0; left: 0; width: 100%;
+            padding: 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 200; box-sizing: border-box;
+        }
+
+        .back-link {
+            text-decoration: none; color: var(--accent-color); font-weight: 900;
+            display: flex; align-items: center; gap: 5px;
+        }
+        .back-link:hover { text-decoration: underline; }
+
+        .lang-switch {
+            font-family: 'Roboto', sans-serif;
+            border: 1px solid var(--accent-color);
+            padding: 5px 15px; border-radius: 20px; font-size: 0.9rem;
+            cursor: pointer; color: var(--accent-color); background: rgba(255,255,255,0.5);
+            transition: all 0.3s;
+            user-select: none;
+        }
+        .lang-switch:hover { background: var(--accent-color); color: white; }
+
+        .content-container {
+            position: relative; z-index: 10;
+            max-width: 850px; /* 少し広くしました */
+            margin: 100px auto 50px;
+            padding: 60px 50px; /* 余白を増やして品格を向上 */
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            box-shadow: 0 15px 45px rgba(0,0,0,0.08);
+            border: 1px solid rgba(255,255,255,0.6);
+            animation: fade-in-up 1.2s ease-out forwards;
+        }
+
+        h1 {
+            font-size: 2.8rem; margin-bottom: 40px; border-bottom: 3px solid var(--accent-color);
+            display: inline-block; padding-bottom: 10px;
+        }
+        
+        h2 { font-size: 1.7rem; margin-top: 50px; margin-bottom: 20px; color: #222; position: relative; }
+        h2::before { content: ""; position: absolute; left: -20px; top: 50%; width: 5px; height: 1.2em; background: var(--accent-color); transform: translateY(-50%); }
+
+        p { line-height: 2.0; margin-bottom: 25px; font-size: 1.1rem; text-align: justify; }
+
+        .philosophy-box {
+            margin-top: 40px; padding: 30px; background: rgba(0, 86, 179, 0.05); border-radius: 10px; font-style: italic;
+        }
+
+        @keyframes fade-in-up {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .content-container { margin: 80px 15px 40px; padding: 35px 20px; }
+            h1 { font-size: 2rem; }
+            h2 { font-size: 1.4rem; }
+            p { font-size: 1rem; }
+        }
+    </style>
+</head>
+<body data-lang="ja">
+
+    <div class="overlay-shadow"></div>
+
+    <header>
+        <a href="index.html" class="back-link">
+            <span>←</span>
+            <span class="lang-ja">トップへ戻る</span>
+            <span class="lang-en">Back to Top</span>
+        </a>
+        <div class="lang-switch" id="lang-btn">Language</div>
+    </header>
+
+    <div class="content-container">
+        <!-- 日本語コンテンツ -->
+        <div class="lang-ja">
+            <h1>私たちについて</h1>
+            <p>啓（KEI）App Labは、テクノロジーという光を用いて「日常の不便を解き明かし、心の高鳴りを呼び起こす」ことを使命としたクリエイティブ・ラボです。私たちは、単にプログラムを組む集団ではありません。ユーザーの隣に立ち、まだ見ぬ便利さと楽しさの扉を一つずつ「啓く」パートナーでありたいと考えています。</p>
+
+            <div class="philosophy-box">
+                「日常を啓く便利さ。心を啓く遊び心。」<br>
+                この言葉こそが、私たちの開発における不変の指針です。
+            </div>
+
+            <h2>二つの視点、一つの情熱</h2>
+            <p>私たちの最大の強みは、世代を超えた「多角的な視点」にあります。日々の生活の中で見落とされがちな微細なニーズを捉える鋭い観察眼と、それを実現するための最先端のコンピュータ理工学。この二つが融合することで、既存の枠組みに捉われない革新的なプロダクトが生まれます。</p>
+
+            <h2>日常を啓く：実用への拘り</h2>
+            <p>主力プロダクトである「FreeCallApp」をはじめ、私たちが提供するツールはすべて「徹底的なユーザー体験の最適化」から設計されています。複雑なものをシンプルに。高価なものを身近に。デジタルという冷たい技術に、人間の温かな気配りを注ぎ込むことで、使うたびに発見がある利便性を追求しています。</p>
+
+            <h2>心を啓く：遊びへの挑戦</h2>
+            <p>また、私たちは「遊び」が持つ根源的なエネルギーを信じています。<Steam等のプラットフォームを通じて展開する>ゲーム開発プロジェクトでは、日常の延長線上にある驚きや、知的好奇心を刺激する体験を追求しています。ツールが時間を「節約」するものであるならば、ゲームは時間を「豊か」にするもの。私たちはその両輪で、人々のライフスタイルを照らします。</p>
+
+            <h2>未来への歩み</h2>
+            <p>啓 App Labは、常に研究者（Lab）としての探究心を忘れず、一歩先の未来が今日より少しだけ明るく、楽しくなるような、そんな「光」となるアプリを届けてまいります。</p>
+        </div>
+
+        <!-- 英語コンテンツ -->
+        <div class="lang-en">
+            <h1>About Us</h1>
+            <p>KEI App Lab is a creative laboratory whose mission is to "unravel the inconveniences of daily life and awaken the excitement of the heart" using the light of technology. We are more than just a group of programmers. We aspire to be a partner that stands beside the user, "opening" the doors to unseen convenience and joy one by one.</p>
+
+            <div class="philosophy-box">
+                "Convenience to open daily life. Playfulness to open the heart."<br>
+                This philosophy is the unwavering guide for our development.
+            </div>
+
+            <h2>Two Perspectives, One Passion</h2>
+            <p>Our greatest strength lies in our "multi-generational perspective." A keen eye for observation that captures subtle needs often overlooked in daily life, combined with cutting-edge computer science to realize them. This fusion gives birth to innovative products that transcend existing frameworks.</p>
+
+            <h2>Opening Daily Life: Commitment to Utility</h2>
+            <p>Starting with our flagship "FreeCallApp," every tool we provide is designed through "thorough optimization of the user experience." Turning complexity into simplicity. Bringing expensive services within reach. By infusing the cold technology of the digital realm with human warmth and attentiveness, we pursue convenience that offers new discoveries with every use.</p>
+
+            <h2>Opening the Heart: A Challenge to Play</h2>
+            <p>We believe in the fundamental energy of "play." Through our game development projects on platforms like Steam, we seek to provoke intellectual curiosity and create surprises that extend beyond daily life. If a tool is meant to "save" time, a game is meant to "enrich" it. We illuminate lifestyles through these two pillars.</p>
+
+            <h2>Steps Toward the Future</h2>
+            <p>As KEI App Lab, we will never forget our inquisitive spirit as researchers. We are dedicated to delivering applications that act as a "light," making the future one step ahead just a little brighter and more enjoyable than today.</p>
+        </div>
+    </div>
+
+    <script>
+        function setLanguage(lang) {
+            localStorage.setItem('preferredLang', lang);
+            document.body.setAttribute('data-lang', lang === 'ja' ? 'ja' : 'en');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedLang = localStorage.getItem('preferredLang');
+            if (savedLang) {
+                setLanguage(savedLang);
+            } else {
+                const browserLang = (window.navigator.language || window.navigator.userLanguage || 'ja').slice(0, 2).toLowerCase();
+                setLanguage(browserLang !== 'ja' ? 'en' : 'ja');
+            }
+        });
+
+        const langBtn = document.getElementById('lang-btn');
+        langBtn.addEventListener('click', () => {
+            const current = localStorage.getItem('preferredLang') || 'ja';
+            setLanguage(current === 'ja' ? 'en' : 'ja');
+        });
+    </script>
+</body>
+</html>
