@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us | 啓 App Lab</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@500;900&family=Roboto:wght@400;700&display=swap');
+
+        :root { --text-color: #111; --accent-color: #0056b3; }
+
+        body, html {
+            margin: 0; padding: 0;
+            min-height: 100vh;
+            width: 100vw;
+            background: radial-gradient(circle at 10% 10%, #ffffff 0%, #d8d8d8 45%, #b0b0b0 100%);
+            font-family: 'Noto Serif JP', serif;
+            color: var(--text-color);
+            overflow-x: hidden; /* 横スクロール防止 */
+        }
+
+        /* --- 言語切り替え表示制御 --- */
+        body[data-lang="en"] .lang-ja { display: none !important; }
+        body[data-lang="ja"] .lang-en { display: none !important; }
+
+        .overlay-shadow {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, transparent 30%, rgba(0,0,0,0.2) 90%);
+            pointer-events: none; z-index: 0;
+        }
+
+        /* --- ヘッダー（戻るボタンと言語切り替え） --- */
+        header {
+            position: fixed; top: 0; left: 0; width: 100%;
+            padding: 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 200; box-sizing: border-box;
+        }
+
+        .back-link {
+            text-decoration: none; color: var(--accent-color); font-weight: 900;
+            display: flex; align-items: center; gap: 5px;
+        }
+        .back-link:hover { text-decoration: underline; }
+
+        .lang-switch {
+            font-family: 'Roboto', sans-serif;
+            border: 1px solid var(--accent-color);
+            padding: 5px 15px; border-radius: 20px; font-size: 0.9rem;
+            cursor: pointer; color: var(--accent-color); background: rgba(255,255,255,0.5);
+        }
+        .lang-switch:hover { background: var(--accent-color); color: white; }
+
+        /* --- コンテンツエリア --- */
+        .content-container {
+            position: relative; z-index: 10;
+            max-width: 800px;
+            margin: 100px auto 50px; /* ヘッダー分空ける */
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.5);
+            animation: fade-in-up 1s ease-out forwards;
+        }
+
+        h1 {
+            font-size: 2.5rem; margin-bottom: 30px; border-bottom: 2px solid var(--accent-color);
+            display: inline-block; padding-bottom: 10px;
+        }
+        
+        h2 { font-size: 1.5rem; margin-top: 40px; margin-bottom: 15px; color: #333; }
+
+        p { line-height: 1.8; margin-bottom: 20px; font-size: 1.05rem; }
+
+        @keyframes fade-in-up {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* スマホ対応 */
+        @media (max-width: 768px) {
+            .content-container { margin: 80px 20px 40px; padding: 25px; }
+            h1 { font-size: 1.8rem; }
+            h2 { font-size: 1.3rem; }
+            p { font-size: 0.95rem; }
+        }
+    </style>
+</head>
+<body data-lang="ja">
+
+    <div class="overlay-shadow"></div>
+
+    <header>
+        <a href="index.html" class="back-link">
+            <span>←</span>
+            <span class="lang-ja">トップへ戻る</span>
+            <span class="lang-en">Back to Top</span>
+        </a>
+        <div class="lang-switch" id="lang-btn">EN</div>
+    </header>
+
+    <div class="content-container">
+        <!-- 日本語コンテンツ -->
+        <div class="lang-ja">
+            <h1>私たちについて</h1>
+            <p>啓（KEI）App Labは、「日常を啓く」をテーマに掲げるデジタルクリエイティブチームです。最新のテクノロジーと日本的な美意識を融合させ、ユーザーの生活に寄り添うアプリケーションを開発しています。</p>
+
+            <h2>ミッション</h2>
+            <p>私たちの名前にある「啓」には、「未知のものを明らかにする」「教え導く」「扉を開く」という意味が込められています。</p>
+            <p>複雑化するデジタル社会において、誰にとっても直感的で、使うたびに心が豊かになるような体験を提供すること。それが私たちのミッションです。</p>
+
+            <h2>アプローチ</h2>
+            <p>機能性だけではなく、触れた瞬間の心地よさや、遊び心を大切にしています。無機質なコードの集合体に、温度と物語を吹き込むことで、長く愛されるプロダクトを目指しています。</p>
+        </div>
+
+        <!-- 英語コンテンツ -->
+        <div class="lang-en">
+            <h1>About Us</h1>
+            <p>KEI App Lab is a digital creative team with the theme of "Opening up daily life." We combine the latest technology with Japanese aesthetics to develop applications that enrich users' lives.</p>
+
+            <h2>Mission</h2>
+            <p>The character "Kei" (啓) in our name embodies the meanings of "enlightening the unknown," "guiding," and "opening doors."</p>
+            <p>In an increasingly complex digital society, our mission is to provide experiences that are intuitive for everyone and that enrich the heart with every use.</p>
+
+            <h2>Approach</h2>
+            <p>We value not only functionality but also the comfort of the first touch and a sense of playfulness. By breathing warmth and narrative into code, we aim to create products that are loved for a long time.</p>
+        </div>
+    </div>
+
+    <script>
+        // 言語切り替えロジック
+        const langBtn = document.getElementById('lang-btn');
+        const body = document.body;
+
+        // ページ読み込み時に言語状態をチェック（localStorageを使えばページ遷移しても保持できますが、今回はシンプルに実装）
+        langBtn.addEventListener('click', () => {
+            const currentLang = body.getAttribute('data-lang');
+            if (currentLang === 'ja') {
+                body.setAttribute('data-lang', 'en');
+                langBtn.textContent = 'JP';
+            } else {
+                body.setAttribute('data-lang', 'ja');
+                langBtn.textContent = 'EN';
+            }
+        });
+    </script>
+</body>
+</html>
