@@ -75,13 +75,13 @@
 
         p { line-height: 2.0; margin-bottom: 25px; font-size: 1.1rem; text-align: justify; }
       
-      /* 言語が英語（en）の時だけ、左寄せにする設定を追加 */
-body[data-lang="en"] p {
-    text-align: left;         /* 左寄せ（右側はガタガタでOK） */
-    hyphens: none;            /* ハイフンを強制的にオフにする */
-    word-break: normal;       /* 単語の途中では絶対に切らない */
-    overflow-wrap: break-word; /* 非常に長いURLなどがある場合だけ切る（保険） */
-}
+        /* 言語が英語（en）の時だけ、左寄せにする設定を追加 */
+        body[data-lang="en"] p {
+        text-align: left;         /* 左寄せ（右側はガタガタでOK） */
+        hyphens: none;            /* ハイフンを強制的にオフにする */
+        word-break: normal;       /* 単語の途中では絶対に切らない */
+        overflow-wrap: break-word; /* 非常に長いURLなどがある場合だけ切る（保険） */
+        }
 
         /* --- 特徴的な理念セクション（横並び） --- */
         .philosophy-section {
