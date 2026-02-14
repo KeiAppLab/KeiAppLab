@@ -20,7 +20,6 @@
         }
 
         /* --- 言語切り替え表示制御 --- */
-        /* data-lang属性によって表示・非表示を切り替えます */
         body[data-lang="en"] .lang-ja { display: none !important; }
         body[data-lang="ja"] .lang-en { display: none !important; }
 
@@ -30,7 +29,6 @@
             pointer-events: none; z-index: 0;
         }
 
-        /* --- ヘッダー（戻るボタンと言語切り替え） --- */
         header {
             position: fixed; top: 0; left: 0; width: 100%;
             padding: 20px;
@@ -54,44 +52,96 @@
         }
         .lang-switch:hover { background: var(--accent-color); color: white; }
 
-        /* --- コンテンツエリア --- */
         .content-container {
             position: relative; z-index: 10;
-            max-width: 800px;
+            max-width: 900px;
             margin: 100px auto 50px;
-            padding: 40px;
-            background: rgba(255, 255, 255, 0.4);
-            backdrop-filter: blur(10px);
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            border: 1px solid rgba(255,255,255,0.5);
-            animation: fade-in-up 1s ease-out forwards;
+            padding: 60px 50px;
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            box-shadow: 0 15px 45px rgba(0,0,0,0.08);
+            border: 1px solid rgba(255,255,255,0.6);
+            animation: fade-in-up 1.2s ease-out forwards;
         }
 
         h1 {
-            font-size: 2.5rem; margin-bottom: 30px; border-bottom: 2px solid var(--accent-color);
+            font-size: 2.8rem; margin-bottom: 40px; border-bottom: 3px solid var(--accent-color);
             display: inline-block; padding-bottom: 10px;
         }
         
-        h2 { font-size: 1.5rem; margin-top: 40px; margin-bottom: 15px; color: #333; }
+        h2 { font-size: 1.7rem; margin-top: 50px; margin-bottom: 20px; color: #222; position: relative; }
+        h2::before { content: ""; position: absolute; left: -20px; top: 50%; width: 5px; height: 1.2em; background: var(--accent-color); transform: translateY(-50%); }
 
-        p { line-height: 1.8; margin-bottom: 20px; font-size: 1.05rem; }
+        p { line-height: 2.0; margin-bottom: 25px; font-size: 1.1rem; text-align: justify; }
+      
+        /* 言語が英語（en）の時だけ、左寄せにする設定を追加 */
+        body[data-lang="en"] p {
+        text-align: left;         /* 左寄せ（右側はガタガタでOK） */
+        hyphens: none;            /* ハイフンを強制的にオフにする */
+        word-break: normal;       /* 単語の途中では絶対に切らない */
+        overflow-wrap: break-word; /* 非常に長いURLなどがある場合だけ切る（保険） */
+        }
+
+        /* --- 特徴的な理念セクション（横並び） --- */
+        .philosophy-section {
+            display: flex;
+            align-items: flex-start;
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .philosophy-box {
+            flex: 1;
+            padding: 30px;
+            background: rgba(0, 86, 179, 0.05);
+            border-radius: 10px;
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        .philosophy-image {
+            flex: 1;
+            width: 100%;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border: 1px solid rgba(255,255,255,0.5);
+            object-fit: cover;
+        }
+
+        .mission-text {
+            font-size: 1.3rem;
+            font-weight: 900;
+            color: var(--accent-color);
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        rt { font-family: 'Roboto', sans-serif; font-size: 0.5em; font-weight: normal; }
 
         @keyframes fade-in-up {
-            from { opacity: 0; transform: translateY(20px); }
+            from { opacity: 0; transform: translateY(30px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* スマホ対応 */
+        /* スマホ対応：横並びを解除 */
         @media (max-width: 768px) {
-            .content-container { margin: 80px 20px 40px; padding: 25px; }
-            h1 { font-size: 1.8rem; }
-            h2 { font-size: 1.3rem; }
-            p { font-size: 0.95rem; }
+            .content-container { margin: 80px 15px 40px; padding: 35px 20px; }
+            h1 { font-size: 2rem; }
+            h2 { font-size: 1.4rem; }
+            p { font-size: 1rem; }
+            
+            .philosophy-section {
+                flex-direction: column; /* 縦並びに変更 */
+            }
+            .philosophy-image {
+                order: -1; /* スマホでは画像を先に表示 */
+                max-width: 100%;
+            }
         }
     </style>
 </head>
-<body data-lang="ja"> <!-- 初期状態は ja -->
+<body data-lang="ja">
 
     <div class="overlay-shadow"></div>
 
@@ -101,7 +151,6 @@
             <span class="lang-ja">トップへ戻る</span>
             <span class="lang-en">Back to Top</span>
         </a>
-        <!-- ボタンのIDを index.html と同じ langSwitch に合わせると管理しやすいですが、そのまま lang-btn でも動作するようにします -->
         <div class="lang-switch" id="lang-btn">Language</div>
     </header>
 
@@ -109,64 +158,82 @@
         <!-- 日本語コンテンツ -->
         <div class="lang-ja">
             <h1>私たちについて</h1>
-            <p>啓（KEI）App Labは、「日常を啓く」をテーマに掲げるデジタルクリエイティブチームです。最新のテクノロジーと日本的な美意識を融合させ、ユーザーの生活に寄り添うアプリケーションを開発しています。</p>
+            <p>啓（KEI）App Labは、テクノロジーという光を用いて「日常の不便を解き明かし、心の高鳴りを呼び起こす」ことを使命としたクリエイティブ・ラボです。私たちは、単にプログラムを組む集団ではありません。ユーザーの隣に立ち、まだ見ぬ便利さと楽しさの扉を一つずつ「啓く」パートナーでありたいと考えています。</p>
 
-            <h2>ミッション</h2>
-            <p>私たちの名前にある「啓」には、「未知のものを明らかにする」「教え導く」「扉を開く」という意味が込められています。</p>
-            <p>複雑化するデジタル社会において、誰にとっても直感的で、使うたびに心が豊かになるような体験を提供すること。それが私たちのミッションです。</p>
+            <!-- 理念と画像の横並びセクション -->
+            <div class="philosophy-section">
+                <div class="philosophy-box">
+                    <span class="mission-text">
+                        「日常を<ruby>啓<rt>ひら</rt></ruby>く便利さ。心を<ruby>啓<rt>ひら</rt></ruby>く遊び心。」
+                    </span>
+                    この言葉こそが、私たちの開発における不変の指針です。
+                </div>
+                <!-- 用意された画像をここに配置 -->
+                <img src="about_img.png" alt="Lab Vision" class="philosophy-image">
+            </div>
 
-            <h2>アプローチ</h2>
-            <p>機能性だけではなく、触れた瞬間の心地よさや、遊び心を大切にしています。無機質なコードの集合体に、温度と物語を吹き込むことで、長く愛されるプロダクトを目指しています。</p>
+            <h2>二つの視点、一つの情熱</h2>
+            <p>私たちの最大の強みは、世代を超えた「多角的な視点」にあります。日々の生活の中で見落とされがちな微細なニーズを捉える鋭い観察眼と、それを実現するための最先端のコンピュータ理工学。この二つが融合することで、既存の枠組みに捉われない革新的なプロダクトが生まれます。</p>
+
+            <h2>日常を啓く：実用への拘り</h2>
+            <p>主力プロダクトである「FreeCallApp」をはじめ、私たちが提供するツールはすべて「徹底的なユーザー体験の最適化」から設計されています。複雑なものをシンプルに。高価なものを身近に。デジタルという冷たい技術に、人間の温かな気配りを注ぎ込むことで、使うたびに発見がある利便性を追求しています。</p>
+
+            <h2>心を啓く：遊びへの挑戦</h2>
+            <p>また、私たちは「遊び」が持つ根源的なエネルギーを信じています。<!-- Steam等のプラットフォームを通じて展開する -->ゲーム開発プロジェクトでは、日常の延長線上にある驚きや、知的好奇心を刺激する体験を追求しています。ツールが時間を「節約」するものであるならば、ゲームは時間を「豊か」にするもの。私たちはその両輪で、人々のライフスタイルを照らします。</p>
+
+            <h2>未来への歩み</h2>
+            <p>啓 App Labは、常に研究者（Lab）としての探究心を忘れず、一歩先の未来が今日より少しだけ明るく、楽しくなるような、そんな「光」となるアプリを届けてまいります。</p>
         </div>
 
         <!-- 英語コンテンツ -->
         <div class="lang-en">
             <h1>About Us</h1>
-            <p>KEI App Lab is a digital creative team with the theme of "Opening up daily life." We combine the latest technology with Japanese aesthetics to develop applications that enrich users' lives.</p>
+            <p>KEI App Lab is a creative laboratory whose mission is to "unravel the inconveniences of daily life and awaken the excitement of the heart" using the light of technology. We are more than just a group of programmers. We aspire to be a partner that stands beside the user, "opening" the doors to unseen convenience and joy one by one.</p>
 
-            <h2>Mission</h2>
-            <p>The character "Kei" (啓) in our name embodies the meanings of "enlightening the unknown," "guiding," and "opening doors."</p>
-            <p>In an increasingly complex digital society, our mission is to provide experiences that are intuitive for everyone and that enrich the heart with every use.</p>
+            <div class="philosophy-section">
+                <div class="philosophy-box">
+                    <span class="mission-text">
+                        "Convenience to open daily life. Playfulness to open the heart."
+                    </span>
+                    This philosophy is the unwavering guide for our development.
+                </div>
+                <img src="lab-image.png" alt="Lab Vision" class="philosophy-image">
+            </div>
 
-            <h2>Approach</h2>
-            <p>We value not only functionality but also the comfort of the first touch and a sense of playfulness. By breathing warmth and narrative into code, we aim to create products that are loved for a long time.</p>
+            <h2>Two Perspectives, One Passion</h2>
+            <p>Our greatest strength lies in our "multi-generational perspective." A keen eye for observation that captures subtle needs often overlooked in daily life, combined with cutting-edge computer science to realize them. This fusion gives birth to innovative products that transcend existing frameworks.</p>
+
+            <h2>Opening Daily Life: Commitment to Utility</h2>
+            <p>Starting with our flagship "FreeCallApp," every tool we provide is designed through "thorough optimization of the user experience." Turning complexity into simplicity. Bringing expensive services within reach. By infusing the cold technology of the digital realm with human warmth and attentiveness, we pursue convenience that offers new discoveries with every use.</p>
+
+            <h2>Opening the Heart: A Challenge to Play</h2>
+            <p>We believe in the fundamental energy of "play." Through our game development projects<!-- on platforms like Steam -->, we seek to provoke intellectual curiosity and create surprises that extend beyond daily life. If a tool is meant to "save" time, a game is meant to "enrich" it. We illuminate lifestyles through these two pillars.</p>
+
+            <h2>Steps Toward the Future</h2>
+            <p>As KEI App Lab, we will never forget our inquisitive spirit as researchers. We are dedicated to delivering applications that act as a "light," making the future one step ahead just a little brighter and more enjoyable than today.</p>
         </div>
     </div>
 
     <script>
-        // --- 言語管理ロジック ---
-
         function setLanguage(lang) {
-            // ブラウザに設定を保存
             localStorage.setItem('preferredLang', lang);
-            // bodyの属性を書き換えて表示を切り替え
             document.body.setAttribute('data-lang', lang === 'ja' ? 'ja' : 'en');
         }
 
-        // 初期化処理
         document.addEventListener('DOMContentLoaded', () => {
-            // A. まず保存された設定を確認
             const savedLang = localStorage.getItem('preferredLang');
-            
             if (savedLang) {
                 setLanguage(savedLang);
             } else {
-                // B. 設定がない場合はブラウザの言語を確認
                 const browserLang = (window.navigator.language || window.navigator.userLanguage || 'ja').slice(0, 2).toLowerCase();
-                if (browserLang !== 'ja') {
-                    setLanguage('en');
-                } else {
-                    setLanguage('ja');
-                }
+                setLanguage(browserLang !== 'ja' ? 'en' : 'ja');
             }
         });
 
-        // ボタンクリックイベント
         const langBtn = document.getElementById('lang-btn');
         langBtn.addEventListener('click', () => {
             const current = localStorage.getItem('preferredLang') || 'ja';
-            const next = current === 'ja' ? 'en' : 'ja';
-            setLanguage(next);
+            setLanguage(current === 'ja' ? 'en' : 'ja');
         });
     </script>
 </body>
