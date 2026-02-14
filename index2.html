@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>啓 App Lab - 公式サイト</title>
-    
-    <!-- SNS共有用の設定 (OGP) -->
+  
+     <!-- SNS共有用の設定 (OGP) -->
     <meta property="og:title" content="啓 App Lab - 公式サイト">
     <meta property="og:description" content="日常を啓く便利さ。心を啓く遊び心。アプリやゲームを開発するデジタルクリエイティブチーム。">
     <meta property="og:type" content="website">
@@ -25,56 +25,78 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700;900&family=Roboto:wght@400;500;900&display=swap');
 
-        /* --- 基本設定 --- */
-        *, *::before, *::after { box-sizing: border-box; }
+        /* --- はみ出し防止 --- */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
 
         body, html {
-            margin: 0; padding: 0; width: 100%; min-height: 100vh;
-            /* 以前の美しいグラデーション背景 */
-            background: radial-gradient(circle at 10% 10%, #ffffff 0%, #d8d8d8 45%, #b0b0b0 100%);
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100vh;
+            background: 
+                radial-gradient(circle at 10% 10%, #ffffff 0%, #d8d8d8 45%, #b0b0b0 100%);
             background-attachment: fixed;
             font-family: 'Roboto', 'Noto Serif JP', sans-serif;
-            color: #111; overflow-x: hidden;
-            perspective: 1500px;
+            color: #111;
+            overflow-x: hidden;
         }
 
-        /* --- ヘッダー（メニュー位置修正） --- */
-        header { 
-            position: absolute; top: 0; left: 0; width: 100%; 
-            padding-top: 20px; 
-            display: flex; justify-content: center; 
-            z-index: 200; 
+        header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding-top: 20px;
+            padding-left: 2em;
+            display: flex;
+            justify-content: center;
+            z-index: 200;
         }
-        nav { 
-            display: flex; 
-            gap: 40px; 
-            align-items: center; /* 修正: これで左右の高さが揃います */
+
+        nav {
+            display: flex;
+            gap: 40px;
+            align-items: center;
         }
-        .menu-group { 
-            display: flex; 
-            gap: 40px; 
-            align-items: center; /* 修正: グループ内でも垂直中央揃え */
-            height: 40px; /* 高さを固定してズレを防ぐ */
+
+        .menu-group {
+            display: flex;
+            gap: 40px;
+            align-items: center;
         }
-        .menu-link { 
-            text-decoration: none; font-family: 'Noto Serif JP', serif; 
-            font-weight: 900; font-size: 1rem; color: #0056b3; 
-            transition: color 0.3s; white-space: nowrap; 
-            line-height: 1; /* 行送りを詰めて位置合わせ */
+
+        .menu-link {
+            text-decoration: none;
+            font-family: 'Noto Serif JP', serif;
+            font-weight: 900;
+            font-size: 1rem;
+            color: #0056b3;
+            transition: color 0.3s;
+            white-space: nowrap;
         }
+
         .menu-link:hover { color: #003d82; }
-        
-        .lang-switch { 
-            font-family: 'Roboto', sans-serif; border: 1px solid #0056b3; 
-            padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; 
-            cursor: pointer; color: #0056b3; transition: all 0.3s; user-select: none; 
-            display: flex; align-items: center; justify-content: center; /* ボタン内の文字も中央へ */
+
+        .lang-switch {
+            font-family: 'Roboto', sans-serif;
+            border: 1px solid #0056b3;
+            padding: 5px 15px; /* 文字が長くなったので少し広げました */
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            color: #0056b3;
+            transition: all 0.3s;
+            white-space: nowrap;
+            user-select: none;
         }
+
         .lang-switch:hover { background: #0056b3; color: white; }
 
         /* --- ヒーローセクション（アニメーション演出） --- */
-        .hero-section { height: 100vh; display: flex; justify-content: center; align-items: center; position: relative; z-index: 10; }
-        .logo-container { text-align: left; display: flex; flex-direction: column; align-items: flex-start; }
+        .hero-section { height: 100vh; width: 100%; display: flex; justify-content: center; align-items: center; position: relative; z-index: 10; perspective: 1500px; }
+        .logo-container { position: relative; text-align: left; display: flex; flex-direction: column; align-items: flex-start; }
         .main-row { display: flex; align-items: baseline; }
         
         /* 啓画像 */
@@ -254,8 +276,7 @@
         }
         #dust-container {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; 
-            z-index: 9999; /* 修正: 光の粒子を最前面へ変更 */
+            pointer-events: none; z-index: 9999; /* 修正: 光の粒子を最前面へ変更 */
         }
         .dust {
             position: absolute; top: 0; border-radius: 50%; pointer-events: none; z-index: 100; 
@@ -278,21 +299,27 @@
         }
 
         /* --- スマホ対応 --- */
-        @media (max-width: 768px) {
-            nav { flex-direction: column; gap: 10px; }
-            .menu-group { width: 100%; gap: 15px; justify-content: center; }
-            .hero-section { height: 90vh; }
-            .kanji-svg { width: 7rem; }
-            .app-lab { font-size: 3.2rem; }
-            .sub-row { flex-direction: column; }
-            .press-grid, .sub-grid { grid-template-columns: 1fr; }
-            .img-card { aspect-ratio: auto; height: 200px; }
-            .news-item { flex-direction: column; align-items: flex-start; }
-            .news-date { margin-bottom: 5px; }
-            .news-tag { margin-bottom: 5px; }
+        @media screen and (max-width: 768px) {
+            header { padding-top: 15px; width: 90%; }
+            nav { flex-direction: column; width: 100%; gap: 8px; }
+            .menu-group { width: 100%; gap: 15px; }
+            .menu-left { justify-content: flex-start; }
+            .menu-right { justify-content: flex-end; }
+            .menu-link { font-size: 0.9rem; }
+            .lang-switch { font-size: 0.75rem; padding: 4px 8px; }
             
-            /* フッターロゴもスマホサイズに */
-            .footer-logo-container { transform: scale(0.4); }
+            .hero-section { height: 90vh; }
+            .logo-container { align-items: flex-start; }
+            .kanji-svg { width: 7rem; }
+            .app-lab { font-size: 3.2rem; margin-left: 10px; }
+            .sub-row { flex-direction: column; align-items: flex-start; margin-left: 10px; margin-top: 10px; }
+            .furigana { font-size: 2.8rem; }
+            .tagline { margin-left: 0; margin-top: 5px; font-size: 1rem; text-align: center; width: 100%; }
+            
+            .apps-section { padding: 40px 15px; }
+            .app-grid { grid-template-columns: 1fr; }
+            .app-card { padding: 30px 20px; }
+            .app-card p { min-height: auto; } 
         }
     </style>
 </head>
