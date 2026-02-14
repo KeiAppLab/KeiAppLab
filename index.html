@@ -326,13 +326,13 @@
     <header>
         <nav>
             <div class="menu-group menu-left">
-                <a href="about.html" class="menu-link" data-jp="私たちについて" data-en="About Us">私たちについて</a>
-                <a href="#" class="menu-link" data-jp="開発実績" data-en="Portfolio">開発実績</a>
-                <a href="#" class="menu-link" data-jp="お知らせ" data-en="News">お知らせ</a>
+                <a href="about.html" class="menu-link" data-ja="私たちについて" data-en="About Us">私たちについて</a>
+                <a href="#" class="menu-link" data-ja="開発実績" data-en="Portfolio">開発実績</a>
+                <a href="#" class="menu-link" data-ja="お知らせ" data-en="News">お知らせ</a>
             </div>
             <div class="menu-group menu-right">
-                <a href="#" class="menu-link" data-jp="アンケート" data-en="Survey">アンケート</a>
-                <a href="#" class="menu-link" data-jp="お問い合わせ" data-en="Contact">お問い合わせ</a>
+                <a href="#" class="menu-link" data-ja="アンケート" data-en="Survey">アンケート</a>
+                <a href="#" class="menu-link" data-ap="お問い合わせ" data-en="Contact">お問い合わせ</a>
                 <!-- ボタン名を Language に変更 -->
                 <div class="lang-switch" id="langSwitch">Language</div>
             </div>
@@ -351,7 +351,7 @@
             <div class="sub-row">
                 <div class="furigana">KEI</div>
                 <div class="tagline">
-                    <span class="lang-jp">日常を<ruby>啓<rt>ひら</rt></ruby>く便利さ。心を<ruby>啓<rt>ひら</rt></ruby>く遊び心。</span>
+                    <span class="lang-ja">日常を<ruby>啓<rt>ひら</rt></ruby>く便利さ。心を<ruby>啓<rt>ひら</rt></ruby>く遊び心。</span>
                     <span class="lang-en lang-en-text">Opening up daily life with convenience.<br>Opening up hearts with playfulness.</span>
                 </div>
             </div>
@@ -360,7 +360,7 @@
 
     <main class="apps-section">
         <h2 class="section-title">
-            <span class="lang-jp">プロダクト</span>
+            <span class="lang-ja">プロダクト</span>
             <span class="lang-en lang-en-text">Products</span>
         </h2>
         
@@ -369,11 +369,11 @@
                 <div class="app-icon">📞</div>
                 <h3>FreeCallApp</h3>
                 <p>
-                    <span class="lang-jp">広告を見るだけで、固定電話への通話が無料になる、新しい通話体験を提供します。</span>
+                    <span class="lang-ja">広告を見るだけで、固定電話への通話が無料になる、新しい通話体験を提供します。</span>
                     <span class="lang-en lang-en-text">Get free calls to landlines just by watching ads. A new calling experience in your hands.</span>
                 </p>
                 <a href="freecall/index.html" class="btn">
-                    <span class="lang-jp">アプリを見る</span>
+                    <span class="lang-ja">アプリを見る</span>
                     <span class="lang-en lang-en-text">View App</span>
                 </a>
             </div>
@@ -382,7 +382,7 @@
                 <div class="app-icon">🚀</div>
                 <h3>Coming Soon</h3>
                 <p>
-                    <span class="lang-jp">次の革新的なアプリを構想中です。ご期待ください。</span>
+                    <span class="lang-ja">次の革新的なアプリを構想中です。ご期待ください。</span>
                     <span class="lang-en lang-en-text">We are brainstorming the next innovative app. Stay tuned.</span>
                 </p>
             </div>
@@ -421,23 +421,23 @@
             // ブラウザに設定を保存
             localStorage.setItem('preferredLang', lang);
 
-            const jpElements = document.querySelectorAll('.lang-jp');
+            const jaElements = document.querySelectorAll('.lang-ja');
             const enElements = document.querySelectorAll('.lang-en');
             const menuLinks = document.querySelectorAll('.menu-link');
 
             if (lang === 'en') {
                 // 英語表示
-                jpElements.forEach(el => el.style.display = 'none');
+                jaElements.forEach(el => el.style.display = 'none');
                 enElements.forEach(el => el.style.display = 'inline-block');
                 menuLinks.forEach(link => {
                     link.textContent = link.getAttribute('data-en');
                 });
             } else {
                 // 日本語表示
-                jpElements.forEach(el => el.style.display = 'inline-block');
+                jaElements.forEach(el => el.style.display = 'inline-block');
                 enElements.forEach(el => el.style.display = 'none');
                 menuLinks.forEach(link => {
-                    link.textContent = link.getAttribute('data-jp');
+                    link.textContent = link.getAttribute('data-ja');
                 });
             }
         }
