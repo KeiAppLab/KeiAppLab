@@ -455,7 +455,7 @@
                 if (browserLang !== 'ja') {
                     setLanguage('en');
                 } else {
-                    setLanguage('jp');
+                    setLanguage('ja');
                 }
             }
         });
@@ -464,8 +464,8 @@
         const langSwitchBtn = document.getElementById('langSwitch');
         langSwitchBtn.addEventListener('click', () => {
             // 現在の保存設定を確認して反転させる
-            const current = localStorage.getItem('preferredLang') || 'jp';
-            const next = current === 'jp' ? 'en' : 'jp';
+            const current = localStorage.getItem('preferredLang') || 'ja';
+            const next = current === 'ja' ? 'en' : 'ja';
             setLanguage(next);
         });
     </script>
