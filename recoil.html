@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Recoil Climber - Fixed Wall Edition</title>
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Matter JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap');
+
+        body {
+            margin: 0; overflow: hidden; background-color: #0b0b12;
+            font-family: 'Rajdhani', sans-serif; color: #fff;
+            touch-action: none; -webkit-user-select: none; user-select: none;
+        }
+
+        #gameCanvas { display: block; }
+
+        #ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; display: flex; flex-direction: column;
+            padding: 20px; box-sizing: border-box; z-index: 10;
+        }
+
+        .hud-top { display: flex; justify-content: space-between; align-items: flex-start; width: 100%; }
+        .main-stats { display: flex; flex-direction: column; gap: 5px; }
+
+        .timer-big {
+            font-size: 32px; font-weight: bold; color: var(--theme-color);
+            text-shadow: 0 0 10px var(--theme-glow);
+            transition: color 0.3s;
+        }
+        .shot-count { font-size: 20px; color: #aaa; }
+
+        #menu-btn {
+            pointer-events: auto; background: rgba(0, 0, 0, 0.5); border: 1px solid var(--theme-color);
+            color: var(--theme-color); padding: 8px 16px; font-family: 'Rajdhani', sans-serif; font-weight: bold;
+            cursor: pointer; text-transform: uppercase; transition: all 0.2s;
+        }
+        #menu-btn:hover { background: var(--theme-color); color: #000; }
+
+        #splits-container { margin-top: 10px; display: flex; flex-direction: column; gap: 4px; }
+        .split-row {
+            font-size: 16px; color: #888; background: rgba(0, 0, 0, 0.5);
+            padding: 2px 8px; border-left: 2px solid #555; display: flex;
+            justify-content: space-between; width: 200px; opacity: 0;
+            transform: translateX(-20px); transition: all 0.3s ease-out;
+        }
+        .split-row.active { opacity: 1; transform: translateX(0); border-left-color: var(--theme-color); color: #fff; }
+        .zone-label { color: var(--theme-color); font-weight: bold; }
+
+        .screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(11, 11, 18, 0.95); display: flex; flex-direction: column;
+            align-items: center; justify-content: center; pointer-events: auto;
+            backdrop-filter: blur(5px); transition: opacity 0.3s; z-index: 100;
+        }
+        .hidden { opacity: 0; pointer-events: none; z-index: -1; }
+
+        :root {
+            --theme-color: #00ffff;
+            --theme-glow: rgba(0, 255, 255, 0.5);
+        }
+        body.reverse-mode {
+            --theme-color: #ff00ff;
+            --theme-glow: rgba(255, 0, 255, 0.5);
+        }
+
+        h1 { font-size: 48px; color: var(--theme-color); text-shadow: 0 0 20px var(--theme-color); margin: 0 0 10px 0; text-transform: uppercase; text-align: center; }
+        h2 { font-size: 24px; color: #fff; margin-bottom: 20px; }
+        p { color: #ccc; margin-bottom: 20px; text-align: center; line-height: 1.5; font-size: 14px; max-width: 90%; }
+        
+        .input-group { margin-bottom: 20px; text-align: center; }
+        input[type="text"] {
+            background: #1a1a25; border: 1px solid var(--theme-color); color: #fff;
+            padding: 10px; font-family: 'Rajdhani', sans-serif; font-size: 18px;
+            width: 200px; text-align: center; 
+        }
+        input:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .personal-stats { display: flex; gap: 40px; margin-bottom: 30px; font-size: 16px; color: #aaa; text-align: center;}
+        .p-stat span { display: block; color: #fff; font-size: 32px; font-weight: bold; text-shadow: 0 0 10px rgba(255, 255, 255, 0.3); }
+
+        #resultText {
+            font-size: 42px; color: var(--theme-color); font-weight: bold;
+            text-shadow: 0 0 20px var(--theme-glow); margin: 20px 0; line-height: 1.2; text-align: center;
+        }
+
+        .start-group { display: flex; gap: 10px; align-items: center; justify-content: center; }
+        .btn-row { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; margin-top: 10px;}
+        button {
+            background: linear-gradient(135deg, var(--theme-color), #444);
+            border: none; padding: 12px 30px; font-size: 18px;
+            font-family: 'Rajdhani', sans-serif; font-weight: bold; color: #000;
+            cursor: pointer; border-radius: 4px; box-shadow: 0 0 15px var(--theme-glow);
+            text-transform: uppercase; min-width: 140px; transition: all 0.2s;
+        }
+        button:hover { filter: brightness(1.2); }
+        button:disabled { filter: grayscale(1); cursor: not-allowed; }
+        
+        .btn-secondary { background: transparent; border: 1px solid var(--theme-color); color: var(--theme-color); box-shadow: none; }
+        .btn-secondary:hover { background: rgba(255, 255, 255, 0.1); }
+        .btn-confirm { min-width: 60px; padding: 10px; margin-left: 5px;}
+        
+        #modeSwitchBtn {
+            min-width: 50px; padding: 12px 15px; font-size: 20px;
+            background: #222; border: 1px solid var(--theme-color); color: var(--theme-color);
+            box-shadow: none; display: flex; align-items: center; justify-content: center;
+        }
+
+        #rankingScreen { justify-content: flex-start; padding-top: 80px; }
+        #ranking-container {
+            width: 90%; max-width: 800px; max-height: 60vh; overflow-y: auto;
+            background: rgba(0,0,0,0.5); border: 1px solid #333; margin-bottom: 20px;
+        }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 10px; border-bottom: 1px solid #333; }
+        th { background: rgba(255, 255, 255, 0.1); color: var(--theme-color); position: sticky; top: 0; }
+        tr:nth-child(even) { background: rgba(255, 255, 255, 0.05); }
+        .rank-col { width: 50px; text-align: center; }
+        .num-col { text-align: right; }
+
+        #altitude-meter {
+            position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+            height: 40%; width: 4px; background: rgba(255,255,255,0.1);
+        }
+        #altitude-fill {
+            position: absolute; bottom: 0; width: 100%; height: 0%;
+            background: var(--theme-color); box-shadow: 0 0 10px var(--theme-color); transition: height 0.1s;
+        }
+
+        #loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 200;
+        }
+        .spinner {
+            width: 40px; height: 40px; border: 4px solid var(--theme-color); border-top-color: transparent; border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="ui-layer" class="hidden">
+        <div class="hud-top">
+            <div class="main-stats">
+                <div class="timer-big" id="timerDisplay">00:00.00</div>
+                <div class="shot-count" id="shotDisplay">SHOTS: 0</div>
+                <div id="splits-container"></div>
+            </div>
+            <button id="menu-btn">MENU</button>
+        </div>
+        <div id="altitude-meter"><div id="altitude-fill"></div></div>
+    </div>
+
+    <div id="startScreen" class="screen">
+        <h1 id="titleText">Recoil Climber</h1>
+        <p id="modeDesc">
+            ZONE 1 - 3を登り切れ！<br>
+            ドラッグ＆リリースで発射。[R]キーでリトライ。
+        </p>
+        <div class="input-group">
+            <div style="display: flex; gap: 5px; justify-content: center;">
+                <input type="text" id="usernameInput" placeholder="ENTER NAME" maxlength="12">
+                <button id="confirmNameBtn" class="btn-confirm">OK</button>
+            </div>
+            <p id="nameHelp" style="font-size: 11px; color: #666; margin-top: 5px;">名前を入力してOKを押してください</p>
+        </div>
+        <div class="personal-stats">
+            <div class="p-stat">BEST TIME<span id="pb-time">--:--.--</span></div>
+            <div class="p-stat">LEAST SHOTS<span id="pb-shots">---</span></div>
+        </div>
+        
+        <div class="start-group">
+            <button id="startBtn" disabled>START MISSION</button>
+            <button id="modeSwitchBtn" title="Switch Mode">⇅</button>
+        </div>
+
+        <div class="btn-row">
+            <button id="rankTimeBtn" class="btn-secondary">TIME RANKING</button>
+            <button id="rankShotBtn" class="btn-secondary">SHOT RANKING</button>
+        </div>
+    </div>
+
+    <div id="resultScreen" class="screen hidden">
+        <h1>COMPLETE</h1>
+        <p id="resultText"></p>
+        <p style="color: #ccc; font-size: 12px;">SCORE SUBMITTED</p>
+        <div class="btn-row">
+            <button id="retryBtn">RETRY</button>
+            <button id="toTitleBtn">TITLE</button>
+        </div>
+    </div>
+
+    <div id="rankingScreen" class="screen hidden">
+        <h2 id="rankingTitle">RANKING</h2>
+        <div id="ranking-container">
+            <table id="rankingTable">
+                <thead>
+                    <tr>
+                        <th class="rank-col">#</th>
+                        <th>NAME</th>
+                        <th class="num-col">Z1</th>
+                        <th class="num-col">Z2</th>
+                        <th class="num-col">CLEAR</th>
+                        <th class="num-col">SHOTS</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <button id="closeRankBtn" class="btn-secondary">CLOSE</button>
+    </div>
+
+    <div id="loading-overlay"><div class="spinner"></div></div>
+
+<script>
+    // --- SUPABASE CONFIG ---
+    const SUPABASE_URL = 'https://ltfdqeeplkfzkwfdvcek.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx0ZmRxZWVwbGtmemt3ZmR2Y2VrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3ODY0MDEsImV4cCI6MjA3NDM2MjQwMX0.lUF5Sxv2r660Y-4ZdH34VBvfGfWAzDWjViSTWweiPqg';
+    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // --- GAME CONFIG ---
+    const CONFIG = {
+        gravity: 1.3,
+        recoilForce: 0.21,
+        cooldown: 800,
+        goalHeight: 7000, 
+        colors: {
+            player: '#ffffff', wall: '#15151a', platform: '#ff00ff', structure: '#4a4a5a',
+            zoneLine: '#00ff00', goal: '#00ffff', guideline: 'rgba(0, 255, 255, 0.6)', particle: '#00ffff'
+        },
+        minTimeLimit: 3000
+    };
+
+    // --- GLOBAL VARIABLES ---
+    const Engine = Matter.Engine, Runner = Matter.Runner, Bodies = Matter.Bodies,
+          Composite = Matter.Composite, Events = Matter.Events, Vector = Matter.Vector, Body = Matter.Body;
+
+    let engine = null;  
+    let runner = null;  
+    let animId = null;  
+    let player = null;  
+    
+    // --- STATE ---
+    const state = {
+        scene: 'TITLE', 
+        username: localStorage.getItem('recoil_username') || '',
+        isPlaying: false, isFinished: false,
+        startTime: 0, shotCount: 0, lastShotTime: 0,
+        mouse: { x: 0, y: 0, isDown: false },
+        cameraY: 0, shake: 0,
+        splits: [], currentZone: 0,
+        personalBest: { time: null, shots: null },
+        canInput: false,
+        mode: 'NORMAL' // NORMAL or REVERSE
+    };
+
+    let particles = [];
+    let worldObjects = [];
+    let renderScale = 1;
+
+    // --- AUDIO ---
+    class SoundManager {
+        constructor() {
+            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            this.masterGain = this.ctx.createGain();
+            this.masterGain.gain.value = 0.3;
+            this.masterGain.connect(this.ctx.destination);
+        }
+        resume() { if (this.ctx.state === 'suspended') this.ctx.resume(); }
+        playShoot() {
+            const t = this.ctx.currentTime;
+            const buffer = this.ctx.createBuffer(1, this.ctx.sampleRate * 0.1, this.ctx.sampleRate);
+            const data = buffer.getChannelData(0); for(let i=0;i<data.length;i++) data[i]=Math.random()*2-1;
+            const src = this.ctx.createBufferSource(); src.buffer = buffer;
+            const f = this.ctx.createBiquadFilter(); f.frequency.setValueAtTime(1000, t); f.frequency.exponentialRampToValueAtTime(100, t+0.1);
+            const g = this.ctx.createGain(); g.gain.setValueAtTime(0.8, t); g.gain.exponentialRampToValueAtTime(0.01, t+0.1);
+            src.connect(f); f.connect(g); g.connect(this.masterGain); src.start(t);
+        }
+        playCollision(v) {
+            if(v<2) return;
+            const t = this.ctx.currentTime;
+            const osc = this.ctx.createOscillator(); osc.frequency.setValueAtTime(100, t); osc.frequency.exponentialRampToValueAtTime(40, t+0.1);
+            const g = this.ctx.createGain(); g.gain.setValueAtTime(Math.min(v/20, 1)*0.5, t); g.gain.exponentialRampToValueAtTime(0.01, t+0.1);
+            osc.connect(g); g.connect(this.masterGain); osc.start(t); osc.stop(t+0.15);
+        }
+        playCheckpoint() {
+            const t = this.ctx.currentTime;
+            [880, 1109, 1318, 1760].forEach((f,i)=>{
+                const o = this.ctx.createOscillator(); o.frequency.value = f;
+                const g = this.ctx.createGain(); g.gain.setValueAtTime(0, t+i*0.05); g.gain.linearRampToValueAtTime(0.2, t+i*0.05+0.02); g.gain.exponentialRampToValueAtTime(0.01, t+i*0.05+0.3);
+                o.connect(g); g.connect(this.masterGain); o.start(t+i*0.05); o.stop(t+i*0.05+0.4);
+            });
+        }
+        playGoal() {
+            const t = this.ctx.currentTime;
+            [523, 659, 783, 1046, 1318, 1567, 2093].forEach((f,i)=>{
+                const o = this.ctx.createOscillator(); o.type='square'; o.frequency.value = f;
+                const g = this.ctx.createGain(); g.gain.setValueAtTime(0, t+i*0.05); g.gain.linearRampToValueAtTime(0.1, t+i*0.05+0.02); g.gain.exponentialRampToValueAtTime(0.01, t+i*0.05+0.4);
+                o.connect(g); g.connect(this.masterGain); o.start(t+i*0.05); o.stop(t+i*0.05+0.5);
+            });
+        }
+        playClick() {
+            const t = this.ctx.currentTime;
+            const o = this.ctx.createOscillator(); o.type='triangle'; o.frequency.setValueAtTime(1200, t); o.frequency.exponentialRampToValueAtTime(2000, t+0.05);
+            const g = this.ctx.createGain(); g.gain.setValueAtTime(0.1, t); g.gain.linearRampToValueAtTime(0, t+0.05);
+            o.connect(g); g.connect(this.masterGain); o.start(t); o.stop(t+0.1);
+        }
+    }
+    const audio = new SoundManager();
+
+    // --- CANVAS ---
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    function resize() {
+        width = window.innerWidth; height = window.innerHeight;
+        canvas.width = width; canvas.height = height;
+        renderScale = Math.min(width / 850, 1.0);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // --- GAME LOGIC ---
+    function startGame() {
+        if (runner) { Runner.stop(runner); runner = null; }
+        if (animId) { cancelAnimationFrame(animId); animId = null; }
+        if (engine) { Events.off(engine); Engine.clear(engine); engine = null; }
+
+        engine = Engine.create();
+        engine.world.gravity.y = CONFIG.gravity;
+
+        state.scene = 'GAME'; state.isPlaying = true; state.isFinished = false; 
+        state.startTime = Date.now(); state.shotCount = 0; state.lastShotTime = 0; 
+        state.currentZone = 0; state.splits = []; particles = [];
+        state.canInput = false;
+
+        // 入力ガード
+        setTimeout(() => { if(state.isPlaying) state.canInput = true; }, 20);
+
+        document.getElementById('startScreen').classList.add('hidden');
+        document.getElementById('resultScreen').classList.add('hidden');
+        document.getElementById('rankingScreen').classList.add('hidden');
+        document.getElementById('ui-layer').classList.remove('hidden');
+        document.getElementById('splits-container').innerHTML = '';
+
+        generateLevel();
+        
+        // カメラ位置初期化
+        const isRev = state.mode === 'REVERSE';
+        const camOffset = height * (isRev ? 0.3 : -0.15);
+        state.cameraY = player.position.y + camOffset;
+        
+        state.shake = 0;
+        
+        runner = Runner.create({ isFixed: true, delta: 1000 / 60 });
+        Runner.run(runner, engine);
+        loop();
+    }
+
+    function loop() {
+        if(state.scene !== 'GAME') return;
+        updateCamera(); draw();
+        animId = requestAnimationFrame(loop);
+    }
+
+    function returnToTitle() {
+        audio.playClick(); state.isPlaying = false; state.scene = 'TITLE';
+        if (runner) { Runner.stop(runner); runner = null; }
+        if (animId) { cancelAnimationFrame(animId); animId = null; }
+        if (engine) { Events.off(engine); Engine.clear(engine); engine = null; }
+        initTitle();
+    }
+
+    function toggleMode() {
+        audio.playClick();
+        state.mode = state.mode === 'NORMAL' ? 'REVERSE' : 'NORMAL';
+        updateModeUI();
+        fetchPersonalBest();
+    }
+
+    function updateModeUI() {
+        const isRev = state.mode === 'REVERSE';
+        document.body.classList.toggle('reverse-mode', isRev);
+        document.getElementById('titleText').innerText = isRev ? "Recoil Descender" : "Recoil Climber";
+        document.getElementById('modeDesc').innerHTML = isRev ? 
+            "REVERSE MODE: 最上層から最下層へ下りろ！<br>ドラッグ＆リリースで発射。" : 
+            "NORMAL MODE: ZONE 1 - 3を登り切れ！<br>ドラッグ＆リリースで発射。";
+        
+        const themeColor = isRev ? '#ff00ff' : '#00ffff';
+        CONFIG.colors.platform = themeColor;
+        CONFIG.colors.goal = themeColor;
+        CONFIG.colors.zoneLine = isRev ? '#00ffff' : '#00ff00';
+    }
+
+// --- LEVEL GENERATION (修正版) ---
+    // --- LEVEL GENERATION (REVERSE FIXED) ---
+    function generateLevel() {
+        worldObjects = [];
+        const isRev = state.mode === 'REVERSE';
+
+        // 1. プレイヤー生成
+        const startY = isRev ? -CONFIG.goalHeight + 50 : 0;
+        player = Bodies.circle(0, 0, 14, {
+            restitution: 0.16, friction: 0.8, frictionAir: 0.02, density: 0.005,
+            label: 'player', render: { fillStyle: CONFIG.colors.player }
+        });
+        Body.setPosition(player, { x: 0, y: startY });
+        Composite.add(engine.world, player);
+
+        // 2. 最下層の床 (y=60)
+        // リバース時は「この床自体」をゴール(label: 'goal')にする
+        const floor = Bodies.rectangle(0, 60, 2000, 100, { 
+            isStatic: true, 
+            label: isRev ? 'goal' : 'floor', 
+            render: { fillStyle: isRev ? CONFIG.colors.goal : CONFIG.colors.structure } 
+        });
+        Composite.add(engine.world, floor);
+        worldObjects.push(floor);
+
+        // 3. 最上層 (y = -CONFIG.goalHeight)
+        if (isRev) {
+            // リバース時：スタート用足場
+            addPlatform(0, -CONFIG.goalHeight + 80, 200, 20);
+        } else {
+            // ノーマル時：空中ゴールセンサー
+            const topGoal = Bodies.rectangle(0, -CONFIG.goalHeight, 700, 100, {
+                isStatic: true, isSensor: true, label: 'goal', 
+                render: { fillStyle: CONFIG.colors.goal }
+            });
+            Composite.add(engine.world, topGoal);
+            worldObjects.push(topGoal);
+        }
+
+        // 4. 壁 (高さ拡張)
+        const tunnelW = 700;
+        const wallThick = 200;
+        const totalHeight = CONFIG.goalHeight + 10000; 
+        const wallCenterY = -CONFIG.goalHeight / 2;
+        const leftWall = Bodies.rectangle(-tunnelW/2 - wallThick/2, wallCenterY, wallThick, totalHeight, { isStatic: true, friction: 0, label: 'wall' });
+        const rightWall = Bodies.rectangle(tunnelW/2 + wallThick/2, wallCenterY, wallThick, totalHeight, { isStatic: true, friction: 0, label: 'wall' });
+        Composite.add(engine.world, [leftWall, rightWall]);
+
+        // 5. 共通オブジェクト配置
+        addStructure(-200, -100, 200, 200); addPlatform(-150, -210, 100, 20);
+        addStructure(200, -300, 200, 300); addPlatform(200, -460, 200, 20);
+        addPlatform(-50, -650, 120, 20);
+        const z1_shaftW = 250;
+        addStructure(-z1_shaftW - 50, -1000, 100, 600); addStructure(z1_shaftW + 50, -1000, 100, 600);
+        addPlatform(-150, -900, 100, 20); addPlatform(150, -1100, 100, 20); addPlatform(0, -1300, 100, 20);
+        addStructure(0, -1550, 400, 50);
+        addPlatform(-250, -1500, 80, 20); addPlatform(250, -1500, 80, 20);
+        addPlatform(-200, -1800, 320, 20); addPlatform(200, -1800, 320, 20);
+        addCheckpoint(1, -1900, tunnelW);
+        addStructure(-200, -2200, 100, 400); addPlatform(-200, -2410, 100, 20);
+        addStructure(200, -2300, 100, 400); addPlatform(200, -2510, 100, 20);
+        addPlatform(0, -2100, 80, 20);
+        addStructure(0, -2900, 100, 600);
+        addPlatform(-200, -2700, 80, 20); addPlatform(-200, -2900, 80, 20); addPlatform(-200, -3100, 80, 20);
+        addPlatform(200, -2800, 80, 20); addPlatform(200, -3000, 80, 20);
+        addPlatform(0, -3210, 100, 20);
+        addPlatform(-150, -3400, 120, 20); addPlatform(150, -3600, 120, 20);
+        addPlatform(0, -3800, 100, 20);
+        addPlatform(-250, -4100, 200, 20); addPlatform(250, -4100, 200, 20);
+        addCheckpoint(2, -4200, tunnelW);
+        addPlatform(-200, -4500, 100, 20); addPlatform(200, -4500, 100, 20);
+        addStructure(-300, -4550, 200, 400, Math.PI/12); addStructure(300, -4550, 200, 400, -Math.PI/12);
+        addPlatform(0, -4700, 80, 20); addPlatform(-80, -4900, 60, 20);
+        addPlatform(80, -5100, 60, 20); addPlatform(0, -5300, 60, 20);
+        addPlatform(0, -5500, 100, 20); addStructure(0, -5700, 200, 100);
+        addPlatform(-200, -5850, 100, 20); addPlatform(200, -5850, 100, 20);
+        addPlatform(0, -6100, 100, 20); addPlatform(-150, -6300, 100, 20);
+        addPlatform(150, -6300, 100, 20); addPlatform(0, -6600, 580, 20);
+
+        // 6. 衝突イベント登録
+        // 衝突判定の設定
+        Events.on(engine, 'collisionStart', (event) => {
+            event.pairs.forEach((pair) => {
+                const labels = [pair.bodyA.label, pair.bodyB.label];
+                
+                // プレイヤーが何かに当たった時の処理
+                if(labels.includes('player')) {
+                    const other = pair.bodyA.label === 'player' ? pair.bodyB : pair.bodyA;
+                    
+                    // 壁や床（センサー以外）に当たったら音を鳴らす
+                    if(!other.isSensor) {
+                        audio.playCollision(Vector.magnitude(player.velocity));
+                    }
+                    
+                    // 【ゴール判定】
+                    // ラベルが 'goal' のオブジェクトに触れたら終了
+                    if (other.label === 'goal') {
+                        finishGame();
+                    }
+
+                    // 【チェックポイント判定】
+                    if (other.label === 'checkpoint') {
+                        triggerCheckpoint(other.zoneId);
+                    }
+                }
+            });
+        });
+    }
+
+    async function finishGame() {
+    if (state.isFinished) return; 
+    state.isFinished = true; 
+    state.isPlaying = false;
+    
+    // ゴール音を再生
+    audio.playGoal();
+
+    const totalTime = Date.now() - state.startTime;
+    
+    // UI表示
+    document.getElementById('resultText').innerHTML = `TIME: ${formatTime(totalTime)}<br>SHOTS: ${state.shotCount}`;
+    document.getElementById('resultScreen').classList.remove('hidden');
+    document.getElementById('ui-layer').classList.add('hidden');
+    
+    state.scene = 'RESULT';
+
+    // スコア送信
+    await submitScore(totalTime, state.shotCount);
+    }
+
+    function addPlatform(x, y, w, h) {
+        const p = Bodies.rectangle(x, y, w, h, { isStatic: true, label: 'platform', friction: 1.0, chamfer: { radius: 3 }, render: { fillStyle: CONFIG.colors.platform } });
+        Composite.add(engine.world, p); worldObjects.push(p);
+    }
+    function addStructure(x, y, w, h, angle=0) {
+        const s = Bodies.rectangle(x, y, w, h, { isStatic: true, label: 'structure', friction: 0.1, angle: angle, render: { fillStyle: CONFIG.colors.structure } });
+        Composite.add(engine.world, s); worldObjects.push(s);
+    }
+    function addCheckpoint(zoneId, y, width) {
+        const sensor = Bodies.rectangle(0, y, width, 50, { isStatic: true, isSensor: true, label: 'checkpoint', render: { fillStyle: CONFIG.colors.zoneLine } });
+        sensor.zoneId = zoneId; Composite.add(engine.world, sensor); worldObjects.push(sensor); 
+        const div = document.createElement('div'); div.className = 'split-row'; div.id = `split-${zoneId}`;
+        div.innerHTML = `<span class="zone-label">ZONE ${zoneId}</span> <span class="split-time">--:--.--</span>`;
+        document.getElementById('splits-container').appendChild(div);
+    }
+
+    // --- GAMEPLAY HELPERS ---
+    function triggerCheckpoint(zoneId) {
+        if (state.splits[zoneId]) return;
+        audio.playCheckpoint();
+        state.splits[zoneId] = Date.now() - state.startTime;
+        state.currentZone = zoneId;
+        const el = document.getElementById(`split-${zoneId}`);
+        if (el) { el.querySelector('.split-time').innerText = formatTime(state.splits[zoneId]); el.className += ' active'; }
+    }
+
+    function tryShoot() {
+        if (!state.canInput) return;
+        const now = Date.now();
+        if (now - state.lastShotTime < CONFIG.cooldown) return;
+        const dx = state.mouse.x - player.position.x;
+        const dy = state.mouse.y - player.position.y;
+        const angle = Math.atan2(dy, dx);
+        const force = Vector.create(-Math.cos(angle)*CONFIG.recoilForce, -Math.sin(angle)*CONFIG.recoilForce);
+        Body.applyForce(player, player.position, force);
+        state.lastShotTime = now; state.shotCount++; state.shake = 8;
+        for(let i=0;i<8;i++) particles.push({ x: player.position.x, y: player.position.y, vx: Math.cos(angle)*10+(Math.random()-0.5)*5, vy: Math.sin(angle)*10+(Math.random()-0.5)*5, life: 1.0, color: CONFIG.colors.particle });
+        audio.playShoot();
+    }
+
+    function getPointerPos(e) {
+        const cx = e.touches ? e.touches[0].clientX : e.clientX;
+        const cy = e.touches ? e.touches[0].clientY : e.clientY;
+        return { x: (cx - width/2)/renderScale, y: (cy - height/2)/renderScale + state.cameraY };
+    }
+    function onPointerDown(e) { audio.resume(); if (!state.isPlaying || state.isFinished) return; state.mouse.isDown = true; const p = getPointerPos(e); state.mouse.x = p.x; state.mouse.y = p.y; }
+    function onPointerMove(e) { if (!state.isPlaying) return; if (state.mouse.isDown) { const p = getPointerPos(e); state.mouse.x = p.x; state.mouse.y = p.y; } }
+    function onPointerUp(e) { if (!state.isPlaying || !state.mouse.isDown) return; state.mouse.isDown = false; tryShoot(); }
+    function onKeyDown(e) { if (state.scene === 'GAME' && e.key.toLowerCase() === 'r') startGame(); }
+
+    window.addEventListener('mousedown', onPointerDown); window.addEventListener('mousemove', onPointerMove); window.addEventListener('mouseup', onPointerUp);
+    window.addEventListener('touchstart', onPointerDown, {passive: false}); window.addEventListener('touchmove', onPointerMove, {passive: false}); window.addEventListener('touchend', onPointerUp);
+    window.addEventListener('keydown', onKeyDown);
+
+    // --- UI & DATA ---
+    async function initTitle() {
+        state.scene = 'TITLE';
+        const input = document.getElementById('usernameInput');
+        const startBtn = document.getElementById('startBtn');
+        const confirmBtn = document.getElementById('confirmNameBtn');
+        
+        document.getElementById('ui-layer').classList.add('hidden');
+        document.getElementById('resultScreen').classList.add('hidden');
+        document.getElementById('rankingScreen').classList.add('hidden');
+        document.getElementById('startScreen').classList.remove('hidden');
+
+        updateModeUI();
+
+        if(state.username) {
+            input.value = state.username; input.disabled = true; confirmBtn.style.display = 'none';
+            startBtn.disabled = false; document.getElementById('nameHelp').innerText = "WELCOME BACK!";
+            fetchPersonalBest();
+        } else { startBtn.disabled = true; }
+
+        input.oninput = (e) => { e.target.value = e.target.value.replace(/[;'"\\]/g,''); confirmBtn.disabled = e.target.value.trim().length < 2; };
+        confirmBtn.onclick = () => {
+            const val = input.value.trim();
+            if(val.length>=2) { audio.playClick(); state.username = val; localStorage.setItem('recoil_username', val); input.disabled = true; confirmBtn.style.display = 'none'; startBtn.disabled = false; fetchPersonalBest(); }
+        };
+    }
+
+    async function fetchPersonalBest() {
+        if(!state.username) return;
+        const isRev = state.mode === 'REVERSE';
+        const tTable = isRev ? 'recoil_lb_time_rev' : 'recoil_lb_time';
+        const sTable = isRev ? 'recoil_lb_shots_rev' : 'recoil_lb_shots';
+
+        const { data: t } = await db.from(tTable).select('clear_time').eq('username', state.username).maybeSingle();
+        const { data: s } = await db.from(sTable).select('shot_count').eq('username', state.username).maybeSingle();
+        
+        state.personalBest.time = t ? t.clear_time : null;
+        state.personalBest.shots = s ? s.shot_count : null;
+        document.getElementById('pb-time').innerText = formatTime(state.personalBest.time);
+        document.getElementById('pb-shots').innerText = state.personalBest.shots ? state.personalBest.shots : "---";
+    }
+
+    async function submitScore(time, shots) {
+        if(time < CONFIG.minTimeLimit) return; 
+        document.getElementById('loading-overlay').style.display = 'flex';
+        const isRev = state.mode === 'REVERSE';
+        const tTable = isRev ? 'recoil_lb_time_rev' : 'recoil_lb_time';
+        const sTable = isRev ? 'recoil_lb_shots_rev' : 'recoil_lb_shots';
+        
+        const commonData = { username: state.username, clear_time: time, shot_count: shots, zone1_time: state.splits[1]||0, zone2_time: state.splits[2]||0, created_at: new Date() };
+
+        const { data: t } = await db.from(tTable).select('*').eq('username', state.username).maybeSingle();
+        if(!t || time < t.clear_time) { await db.from(tTable).upsert(commonData); document.getElementById('pb-time').innerText = formatTime(time); }
+
+        const { data: s } = await db.from(sTable).select('*').eq('username', state.username).maybeSingle();
+        if(!s || shots < s.shot_count || (shots === s.shot_count && time < s.clear_time)) { await db.from(sTable).upsert(commonData); document.getElementById('pb-shots').innerText = shots; }
+        
+        document.getElementById('loading-overlay').style.display = 'none';
+    }
+
+    async function showRanking(type) {
+        audio.playClick(); state.scene = 'RANKING';
+        document.getElementById('loading-overlay').style.display = 'flex';
+        document.getElementById('startScreen').classList.add('hidden');
+        document.getElementById('rankingScreen').classList.remove('hidden');
+
+        const isRev = state.mode === 'REVERSE';
+        let tableName, title;
+
+        // ランキングの種類に応じて、並び替えの優先順位を設定
+        let query = db.from(isRev ? (type === 'shots' ? 'recoil_lb_shots_rev' : 'recoil_lb_time_rev') : (type === 'shots' ? 'recoil_lb_shots' : 'recoil_lb_time')).select('*');
+
+        if (type === 'shots') {
+            title = 'LEAST SHOTS (' + state.mode + ')';
+            // 1位：ショット数が少ない順、 2位（同点時）：タイムが速い順
+            query = query.order('shot_count', { ascending: true }).order('clear_time', { ascending: true });
+        } else {
+            title = 'SPEED RANKING (' + state.mode + ')';
+            // 1位：タイムが速い順、 2位（同点時）：ショット数が少ない順
+            query = query.order('clear_time', { ascending: true }).order('shot_count', { ascending: true });
+        }
+
+        document.getElementById('rankingTitle').innerText = title;
+        document.getElementById('rankingTitle').style.color = isRev ? '#ff00ff' : '#00ffff';
+
+        const { data } = await query.limit(50);
+        
+        const tbody = document.getElementById('rankingTable').querySelector('tbody');
+        tbody.innerHTML = '';
+        if(data) {
+            const color = isRev ? '#ff00ff' : '#00ffff';
+            data.forEach((row, i) => {
+                const tr = document.createElement('tr');
+                const isTimeRank = type === 'time';
+                tr.innerHTML = `
+                    <td class="rank-col">${i+1}</td><td>${row.username}</td>
+                    <td class="num-col">${formatTime(row.zone1_time)}</td><td class="num-col">${formatTime(row.zone2_time)}</td>
+                    <td class="num-col" style="color:${isTimeRank ? color : '#fff'}">${formatTime(row.clear_time)}</td>
+                    <td class="num-col" style="color:${!isTimeRank ? color : '#fff'}">${row.shot_count}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        document.getElementById('loading-overlay').style.display = 'none';
+    }
+
+    function formatTime(ms) {
+        if(!ms && ms !== 0) return '--:--.--';
+        const m = Math.floor(ms/60000); const s = Math.floor((ms%60000)/1000); const c = Math.floor((ms%1000)/10);
+        return `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}.${c.toString().padStart(2,'0')}`;
+    }
+
+    function updateCamera() {
+        if(!player) return;
+        const isRev = state.mode === 'REVERSE';
+        const offset = height * (isRev ? 0.3 : -0.15); // Reverseなら下(+0.3)、Normalなら上(-0.15)にずらす
+        const targetY = player.position.y + offset;
+        state.cameraY += (targetY - state.cameraY) * 0.1;
+        if(state.shake > 0) state.shake *= 0.85; if(state.shake < 0.5) state.shake = 0;
+        
+        let progress;
+        if (isRev) {
+            progress = Math.min(100, Math.max(0, ((player.position.y + CONFIG.goalHeight) / CONFIG.goalHeight) * 100));
+        } else {
+            progress = Math.min(100, Math.max(0, (-player.position.y / CONFIG.goalHeight) * 100));
+        }
+        document.getElementById('altitude-fill').style.height = progress + '%';
+    }
+
+    function draw() {
+        ctx.fillStyle = '#0b0b12'; ctx.fillRect(0, 0, width, height);
+        ctx.save();
+        ctx.translate(width/2, height/2); ctx.scale(renderScale, renderScale);
+        const sx = (Math.random()-0.5)*state.shake; const sy = (Math.random()-0.5)*state.shake;
+        ctx.translate(sx, -state.cameraY + sy);
+
+        const viewH = height / renderScale; 
+        const gy = Math.floor((state.cameraY - viewH/2)/100)*100;
+        ctx.strokeStyle = '#1a1a25'; ctx.lineWidth = 1;
+        for(let y=gy; y<gy+viewH+400; y+=100) { ctx.beginPath(); ctx.moveTo(-350, y); ctx.lineTo(350, y); ctx.stroke(); }
+
+        ctx.strokeStyle = '#2a2a35'; ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.moveTo(-350, 100); ctx.lineTo(-350, -CONFIG.goalHeight - 1000);
+        ctx.moveTo(350, 100); ctx.lineTo(350, -CONFIG.goalHeight - 1000); ctx.stroke();
+
+        const themeColor = state.mode === 'REVERSE' ? '#ff00ff' : '#00ffff';
+
+        worldObjects.forEach(b => {
+            if(b.label === 'wall') return;
+            if (b.label === 'checkpoint' || b.label === 'goal') {
+                const color = b.label === 'goal' ? CONFIG.colors.goal : CONFIG.colors.zoneLine;
+                ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = 4; ctx.shadowColor = color; ctx.shadowBlur = 20; 
+                ctx.beginPath(); ctx.moveTo(b.bounds.min.x - 50, b.position.y); ctx.lineTo(b.bounds.max.x + 50, b.position.y); ctx.stroke();
+                ctx.fillStyle = color; ctx.font = "bold 20px Rajdhani"; ctx.textAlign = "right"; ctx.shadowBlur = 10;
+                const txt = b.label === 'goal' ? "GOAL LINE" : `ZONE ${b.zoneId} CHECKPOINT`;
+                ctx.fillText(txt, 340, b.position.y - 15); ctx.restore(); return;
+            }
+            ctx.beginPath(); const v = b.vertices;
+            ctx.moveTo(v[0].x, v[0].y); for(let j=1; j<v.length; j++) ctx.lineTo(v[j].x, v[j].y); ctx.closePath();
+            ctx.fillStyle = b.render.fillStyle; ctx.fill();
+        });
+
+        if(player) {
+            ctx.translate(player.position.x, player.position.y);
+            const now = Date.now(); const diff = now - state.lastShotTime; const pct = Math.min(1, diff/CONFIG.cooldown);
+            ctx.strokeStyle = pct<1 ? '#555' : themeColor; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(0,0,18, -Math.PI/2, -Math.PI/2 + (Math.PI*2*pct)); ctx.stroke();
+            ctx.rotate(player.angle); ctx.fillStyle = '#fff'; ctx.shadowColor = '#fff'; ctx.shadowBlur = 10;
+            ctx.beginPath(); ctx.arc(0,0,14,0,Math.PI*2); ctx.fill(); ctx.shadowBlur = 0;
+            ctx.rotate(-player.angle); ctx.translate(-player.position.x, -player.position.y);
+        
+            if(state.mouse.isDown && pct>=1 && state.canInput) {
+                const dx = state.mouse.x - player.position.x; const dy = state.mouse.y - player.position.y;
+                const dist = Math.sqrt(dx*dx+dy*dy);
+                if(dist > 10) {
+                    const s = Math.min(dist, 300)/dist; const tx = player.position.x + dx*s; const ty = player.position.y + dy*s;
+                    ctx.strokeStyle = CONFIG.colors.guideline; ctx.lineWidth = 2; ctx.setLineDash([5,5]);
+                    ctx.beginPath(); ctx.moveTo(player.position.x, player.position.y); ctx.lineTo(tx, ty); ctx.stroke(); ctx.setLineDash([]);
+                    ctx.fillStyle = CONFIG.colors.guideline; ctx.beginPath(); ctx.arc(tx,ty,4,0,Math.PI*2); ctx.fill();
+                }
+            }
+        }
+        for(let i=particles.length-1; i>=0; i--){
+            const p = particles[i]; p.x += p.vx; p.y += p.vy; p.life -= 0.05;
+            if(p.life<=0){ particles.splice(i,1); continue;}
+            ctx.globalAlpha = p.life; ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, 4, 4);
+        }
+        ctx.globalAlpha = 1; ctx.restore();
+
+        if(state.isPlaying) {
+            const el = Date.now() - state.startTime;
+            document.getElementById('timerDisplay').innerText = formatTime(el);
+            document.getElementById('shotDisplay').innerText = "SHOTS "+state.shotCount;
+        }
+    }
+
+    // --- BUTTONS ---
+    document.getElementById('startBtn').onclick = () => { audio.playClick(); audio.resume(); startGame(); };
+    document.getElementById('retryBtn').onclick = () => { audio.playClick(); startGame(); };
+    document.getElementById('toTitleBtn').onclick = returnToTitle;
+    document.getElementById('menu-btn').onclick = returnToTitle;
+    document.getElementById('modeSwitchBtn').onclick = toggleMode;
+    document.getElementById('rankTimeBtn').onclick = () => showRanking('time');
+    document.getElementById('rankShotBtn').onclick = () => showRanking('shots');
+    document.getElementById('closeRankBtn').onclick = () => {
+        audio.playClick(); document.getElementById('rankingScreen').classList.add('hidden');
+        document.getElementById('startScreen').classList.remove('hidden'); state.scene = 'TITLE';
+    };
+
+    initTitle();
+</script>
+</body>
+</html>
