@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>啓 App Lab - 公式サイト</title>
-    
-    <!-- SNS共有用の設定 (OGP) -->
+  
+     <!-- SNS共有用の設定 (OGP) -->
     <meta property="og:title" content="啓 App Lab - 公式サイト">
     <meta property="og:description" content="日常を啓く便利さ。心を啓く遊び心。アプリやゲームを開発するデジタルクリエイティブチーム。">
     <meta property="og:type" content="website">
@@ -17,7 +17,10 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="啓 App Lab - 公式サイト">
     <meta name="twitter:description" content="日常を啓く便利さ。心を啓く遊び心。">
-    <meta name="twitter:image" content="https://keiapplab.github.io/KeiAppLab/lab_img.png">
+    <meta name="twitter:image" content="https://keiapplab.github.io/KeiAppLab/lab_img.png"> 
+  
+    <!-- 外部データファイルの読み込み -->
+    <script src="news-data.js"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700;900&family=Roboto:wght@400;500;900&display=swap');
@@ -91,213 +94,196 @@
 
         .lang-switch:hover { background: #0056b3; color: white; }
 
-        .hero-section {
-            height: 100vh;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            z-index: 10;
-            perspective: 1500px;
-        }
-
-        .logo-container {
-            position: relative;
-            text-align: left;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
+        /* --- ヒーローセクション（アニメーション演出） --- */
+        .hero-section { height: 100vh; width: 100%; display: flex; justify-content: center; align-items: center; position: relative; z-index: 10; perspective: 1500px; }
+        .logo-container { position: relative; text-align: left; display: flex; flex-direction: column; align-items: flex-start; }
         .main-row { display: flex; align-items: baseline; }
-
-        .kanji-svg {
-            width: 10rem;
-            height: auto;
-            display: block;
-            opacity: 0;
-            animation: fade-in-scale 3s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
-        }
-
-        .app-lab {
-            font-family: 'Roboto', sans-serif;
-            font-size: 5rem;
-            color: #111;
-            margin-left: 15px;
-            letter-spacing: 0.03em;
-            opacity: 0;
-            animation: emerge-long-shadow 3s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
-        }
-
-        .sub-row {
-            display: flex;
-            align-items: baseline;
-            margin-top: 5px;
-            margin-left: 18px;
-        }
-
-        .furigana {
-            font-family: 'Roboto', sans-serif;
-            font-size: 4rem;
-            letter-spacing: 0.2em;
-            color: #111;
-            opacity: 0;
-            line-height: 1;
-            animation: emerge-long-shadow 3s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
-        }
-
-        .tagline {
-            font-family: 'Noto Serif JP', serif;
-            font-size: 1.2rem;
-            color: #111;
-            margin-left: 80px;
-            font-weight: 900;
-            letter-spacing: 0.1em;
-            opacity: 0;
-            animation: emerge-long-shadow 3s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards;
+        
+        /* 啓画像 */
+        .kanji-svg { 
+            width: 10rem; height: auto; display: block; opacity: 0; 
+            animation: fade-in-scale 3s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards; 
         }
         
+        /* App Lab 文字 */
+        .app-lab { 
+            font-family: 'Roboto', sans-serif; font-size: 5rem; margin-left: 15px; 
+            letter-spacing: 0.03em; opacity: 0; 
+            animation: emerge-long-shadow 3s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards; 
+        }
+        
+        .sub-row { display: flex; align-items: baseline; margin-top: 5px; margin-left: 18px; }
+        .furigana { 
+            font-family: 'Roboto', sans-serif; font-size: 4rem; letter-spacing: 0.2em; 
+            opacity: 0; line-height: 1; 
+            animation: emerge-long-shadow 3s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards; 
+        }
+        .tagline { 
+            font-family: 'Noto Serif JP', serif; font-size: 1.2rem; margin-left: 80px; 
+            font-weight: 900; letter-spacing: 0.1em; opacity: 0; 
+            animation: emerge-long-shadow 3s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards; 
+        }
+        
+        /* 修正: 英語キャッチコピーのスタイル復元 */
+        .lang-en-text { 
+            font-family: 'Roboto', sans-serif; 
+            font-weight: 500; /* 太さを戻しました */
+            letter-spacing: 0.02em; 
+        }
+
         rt { font-size: 0.6em; font-weight: normal; }
 
-        .apps-section {
-            padding: 80px 20px;
-            width: 100%;
-            max-width: 1000px;
-            margin: 0 auto;
-            position: relative;
-            z-index: 20;
+        /* --- フッター用ロゴスタイル（アニメーション無し・縮小版） --- */
+        .footer-logo-container {
+            transform: scale(0.6); /* 全体を60%に縮小 */
+            transform-origin: center; /* 中央基準で縮小 */
+            display: inline-block;
+            margin-bottom: -20px; /* 縮小による余白調整 */
+        }
+        /* アニメーションを無効化し、影と表示状態を強制適用 */
+        .footer-logo-container .kanji-svg,
+        .footer-logo-container .app-lab,
+        .footer-logo-container .furigana,
+        .footer-logo-container .tagline {
+            opacity: 1 !important;
+            animation: none !important;
+        }
+        /* 影の適用（アニメーション完了後の状態を固定） */
+        .footer-logo-container .kanji-svg {
+            filter: drop-shadow(4px 4px 8px rgba(0,0,0,0.4)) drop-shadow(12px 12px 25px rgba(0,0,0,0.35)) drop-shadow(30px 30px 50px rgba(0,0,0,0.3));
+        }
+        .footer-logo-container .app-lab,
+        .footer-logo-container .furigana,
+        .footer-logo-container .tagline {
+            text-shadow: 4px 4px 8px rgba(0,0,0,0.4), 12px 12px 25px rgba(0,0,0,0.35), 30px 30px 50px rgba(0,0,0,0.3);
         }
 
-        .section-title {
-            text-align: center;
-            font-family: 'Noto Serif JP', serif;
-            font-size: 2rem;
-            margin-bottom: 50px;
-            color: #333;
-            text-shadow: 2px 2px 4px rgba(255,255,255,0.5);
+
+        /* --- 共通セクションスタイル --- */
+        section { padding: 80px 20px; max-width: 1100px; margin: 0 auto; position: relative; z-index: 20; }
+        
+        .section-header { margin-bottom: 30px; }
+        .section-title { 
+            font-family: 'Noto Serif JP', serif; font-size: 2rem; font-weight: 900;
+            border-left: 6px solid #0056b3; padding-left: 15px; color: #333;
         }
 
-        .app-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 40px;
-            width: 100%;
-        }
-
-        .app-card {
-            background: rgba(255, 255, 255, 0.45);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            border-radius: 20px;
-            padding: 40px 30px;
-            text-align: center;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
-            transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.4s;
-            width: 100%;
-        }
-
-        .app-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 45px 0 rgba(31, 38, 135, 0.15);
-            background: rgba(255, 255, 255, 0.65);
-        }
-
-        .app-icon {
-            font-size: 60px;
+        /* デバッグエリア */
+        .debug-area {
+            background-color: rgba(255, 0, 0, 0.05);
+            border: 1px dashed red;
+            padding: 10px;
             margin-bottom: 20px;
-            display: inline-block;
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+            border-radius: 8px;
         }
 
-        .app-card h3 {
-            font-family: 'Roboto', sans-serif;
-            font-weight: 900;
-            font-size: 1.5rem;
-            margin: 0 0 15px 0;
-            color: #2c3e50;
+        /* --- お知らせセクション --- */
+        .news-tabs { display: flex; gap: 20px; margin-bottom: 20px; border-bottom: 2px solid #ddd; }
+        .tab-btn { 
+            background: none; border: none; font-size: 1.1rem; font-family: 'Noto Serif JP', serif; 
+            padding: 10px 20px; cursor: pointer; color: #666; position: relative; 
+            transition: color 0.3s;
         }
+        .tab-btn.active { color: #0056b3; font-weight: 900; }
+        .tab-btn.active::after { 
+            content: ''; position: absolute; bottom: -2px; left: 0; 
+            width: 100%; height: 4px; background: #0056b3; 
+        }
+        
+        .news-list { list-style: none; padding: 0; margin: 0; }
+        .news-item { 
+            display: flex; align-items: center; padding: 15px 10px; 
+            border-bottom: 1px solid #ddd; transition: background 0.2s; 
+        }
+        .news-item:hover { background: rgba(255,255,255,0.6); }
+        .news-date { font-family: 'Roboto', sans-serif; color: #666; width: 120px; font-weight: 500; }
+        .news-tag { 
+            font-size: 0.8rem; padding: 4px 10px; border-radius: 20px; 
+            margin-right: 20px; color: white; width: 110px; text-align: center; font-weight: bold;
+        }
+        .tag-release { background: #0056b3; }
+        .tag-update { background: #e67e22; }
+        .news-link { text-decoration: none; color: #333; font-weight: 700; flex: 1; }
+        .news-link:hover { color: #0056b3; text-decoration: underline; }
 
-        .app-card p {
-            font-family: 'Noto Serif JP', serif;
-            font-size: 0.95rem;
-            color: #444;
-            margin-bottom: 25px;
-            line-height: 1.8;
-            min-height: 3.6em;
+        /* --- 画像リンクカード --- */
+        .image-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-bottom: 60px; }
+        .img-card { 
+            position: relative; border-radius: 12px; overflow: hidden; 
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15); transition: transform 0.3s; aspect-ratio: 16/9; 
         }
+        .img-card:hover { transform: translateY(-5px); }
+        .img-card img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
+        .img-card:hover img { transform: scale(1.05); }
+        .card-overlay { 
+            position: absolute; bottom: 0; left: 0; width: 100%; 
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); 
+            padding: 20px; color: white; 
+        }
+        .card-title { font-size: 1.5rem; font-weight: bold; margin: 0; font-family: 'Noto Serif JP', serif; }
+        .card-sub { font-size: 0.9rem; opacity: 0.9; font-family: 'Roboto', sans-serif; }
 
-        .btn {
-            display: inline-block;
-            background: #0056b3;
-            color: white;
-            padding: 12px 30px;
-            border-radius: 30px;
-            text-decoration: none;
-            font-family: 'Roboto', sans-serif;
-            font-weight: 500;
-            font-size: 0.9rem;
-            letter-spacing: 0.05em;
-            transition: background 0.3s, transform 0.2s;
-            box-shadow: 0 4px 15px rgba(0, 86, 179, 0.3);
-            max-width: 100%;
+        /* --- プレスリリース横並び --- */
+        .press-grid { 
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; 
+            overflow-x: auto; padding: 10px; 
         }
+        .press-card { 
+            background: rgba(255,255,255,0.7); border-radius: 10px; overflow: hidden; 
+            text-decoration: none; color: #333; transition: background 0.3s, transform 0.3s; 
+            display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.5);
+            min-width: 200px; 
+        }
+        .press-card:hover { background: rgba(255,255,255,0.95); transform: translateY(-3px); }
+        .press-img { width: 100%; height: 120px; object-fit: cover; }
+        .press-content { padding: 15px; }
+        .press-date { font-size: 0.8rem; color: #666; margin-bottom: 5px; display: block; font-family: 'Roboto', sans-serif;}
+        .press-text { font-size: 0.95rem; font-weight: bold; line-height: 1.4; }
 
-        .btn:hover {
-            background: #003d82;
-            transform: scale(1.05);
+        /* --- サブリンク --- */
+        .sub-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .sub-card { 
+            position: relative; height: 150px; border-radius: 12px; overflow: hidden; 
+            display: flex; align-items: center; justify-content: center; 
+            text-decoration: none; color: white; font-size: 1.5rem; font-weight: bold; 
+            font-family: 'Noto Serif JP', serif; text-shadow: 0 2px 10px rgba(0,0,0,0.5); 
+            background-size: cover; background-position: center; transition: transform 0.3s; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
+        .sub-card:hover { transform: scale(1.03); }
+        .bg-play { background-color: #ff9a9e; background-image: linear-gradient(120deg, #f6d365 0%, #fda085 100%); }
+        .bg-survey { background-color: #a18cd1; background-image: linear-gradient(120deg, #a18cd1 0%, #fbc2eb 100%); }
+        .bg-contact { background-color: #84fab0; background-image: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%); }
 
-        .card-disabled {
-            opacity: 0.7;
-            background: rgba(255, 255, 255, 0.25);
-        }
-        .card-disabled:hover {
-            transform: none;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
-        }
+        /* --- フッター --- */
+        .footer-brand { text-align: center; padding: 80px 0; }
+        
+        .footer-area { background: #f0f0f0; padding: 50px 20px; text-align: center; border-top: 1px solid #ddd; }
+        .footer-menu { display: flex; justify-content: center; gap: 30px; margin-bottom: 30px; flex-wrap: wrap; }
+        .footer-link { text-decoration: none; color: #666; font-size: 0.9rem; font-weight: bold; transition: color 0.3s; }
+        .footer-link:hover { color: #0056b3; }
+        .copy { color: #888; font-size: 0.8rem; font-family: 'Roboto', sans-serif; }
+        
+        /* 修正: app-ads.txt のリンク色を青に変更 */
+        .ads-link { color: #0056b3; text-decoration: none; margin-left: 10px; font-size: 0.8rem; font-weight: normal; }
+        .ads-link:hover { text-decoration: underline; color: #0056b3; }
 
-        footer {
-            text-align: center;
-            padding: 40px 0;
-            margin-top: 40px;
-            color: #666;
-            font-size: 0.8rem;
-            position: relative;
-            z-index: 20;
-            border-top: 1px solid rgba(0,0,0,0.05);
-            background: linear-gradient(to top, rgba(255,255,255,0.5), transparent);
-        }
-
-        footer a {
-            color: #0056b3;
-            text-decoration: none;
-            margin-left: 10px;
-        }
-
+        /* --- 演出用 --- */
         .overlay-shadow {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(135deg, transparent 30%, rgba(0,0,0,0.2) 90%);
-            pointer-events: none;
-            z-index: 2;
+            pointer-events: none; z-index: 2;
         }
-
         #dust-container {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none;
-            z-index: 1;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 9999; /* 修正: 光の粒子を最前面へ変更 */
         }
-
         .dust {
-            position: absolute; top: 0; border-radius: 50%; pointer-events: none; z-index: 100; animation: drift 20s infinite linear;
+            position: absolute; top: 0; border-radius: 50%; pointer-events: none; z-index: 100; 
+            animation: drift 20s infinite linear;
         }
 
-        /* 英語用のフォント調整 */
-        .lang-en-text { font-family: 'Roboto', sans-serif; font-weight: 500; letter-spacing: 0.02em; }
-
+        /* --- アニメーション定義 --- */
         @keyframes fade-in-scale {
             0% { opacity: 0; transform: translateY(20px) scale(0.98); filter: drop-shadow(0 0 0 rgba(0,0,0,0)); }
             100% { opacity: 1; transform: translateY(0) scale(1); filter: drop-shadow(4px 4px 8px rgba(0,0,0,0.4)) drop-shadow(12px 12px 25px rgba(0,0,0,0.35)) drop-shadow(30px 30px 50px rgba(0,0,0,0.3)); }
@@ -312,6 +298,7 @@
             100% { transform: translateY(-10vh) translateX(150px) rotate(360deg); opacity: 0; }
         }
 
+        /* --- スマホ対応 --- */
         @media screen and (max-width: 768px) {
             header { padding-top: 15px; width: 90%; }
             nav { flex-direction: column; width: 100%; gap: 8px; }
@@ -332,7 +319,7 @@
             .apps-section { padding: 40px 15px; }
             .app-grid { grid-template-columns: 1fr; }
             .app-card { padding: 30px 20px; }
-            .app-card p { min-height: auto; }
+            .app-card p { min-height: auto; } 
         }
     </style>
 </head>
@@ -343,20 +330,21 @@
             <div class="menu-group menu-left">
                 <a href="about.html" class="menu-link" data-ja="私たちについて" data-en="About Us">私たちについて</a>
                 <a href="portfolio.html" class="menu-link" data-ja="開発実績" data-en="Portfolio">開発実績</a>
-                <a href="playground.html" class="menu-link" data-ja="知る・遊ぶ" data-en="Playground">知る・遊ぶ</a>
+                <a href="playground.html" class="menu-link" data-ja="知る・楽しむ" data-en="Playground">知る・楽しむ</a>
             </div>
             <div class="menu-group menu-right">
                 <a href="survey.html" class="menu-link" data-ja="アンケート" data-en="Survey">アンケート</a>
                 <a href="contact.html" class="menu-link" data-ja="お問い合わせ" data-en="Contact">お問い合わせ</a>
-                <!-- ボタン名を Language に変更 -->
                 <div class="lang-switch" id="langSwitch">Language</div>
             </div>
         </nav>
     </header>
 
-    <div class="overlay-shadow"></div>
+    <!-- 演出パーツ -->
+    <div class="overlay-shadow" style="position:fixed; top:0; left:0; width:100%; height:100%; background:linear-gradient(135deg, transparent 30%, rgba(0,0,0,0.2) 90%); pointer-events:none; z-index:2;"></div>
     <div id="dust-container"></div>
 
+    <!-- ヒーローセクション -->
     <section class="hero-section">
         <div class="logo-container">
             <div class="main-row">
@@ -367,49 +355,105 @@
                 <div class="furigana">KEI</div>
                 <div class="tagline">
                     <span class="lang-ja">日常を<ruby>啓<rt>ひら</rt></ruby>く便利さ。心を<ruby>啓<rt>ひら</rt></ruby>く遊び心。</span>
-                    <span class="lang-en lang-en-text">Opening up daily life with convenience.<br>Opening up hearts with playfulness.</span>
+                    <!-- 修正: 太さ(500)を適用した英語コピー -->
+                    <span class="lang-en lang-en-text" style="display:none;">Opening up daily life with convenience.<br>Opening up hearts with playfulness.</span>
                 </div>
             </div>
         </div>
     </section>
 
-    <main class="apps-section">
-        <h2 class="section-title">
-            <span class="lang-ja">プロダクト</span>
-            <span class="lang-en lang-en-text">Products</span>
-        </h2>
+    <!-- お知らせセクション -->
+    <section>
+        <div class="section-header">
+            <h2 class="section-title">お知らせ</h2>
+        </div>
         
-        <div class="app-grid">
-            <div class="app-card">
-                <div class="app-icon">📞</div>
-                <h3>FreeCallApp</h3>
-                <p>
-                    <span class="lang-ja">広告を見るだけで、固定電話への通話が無料になる、新しい通話体験を提供します。</span>
-                    <span class="lang-en lang-en-text">Get free calls to landlines just by watching ads. A new calling experience in your hands.</span>
-                </p>
-                <a href="freecall/index.html" class="btn">
-                    <span class="lang-ja">アプリを見る</span>
-                    <span class="lang-en lang-en-text">View App</span>
-                </a>
-            </div>
+        <div class="news-tabs">
+            <button class="tab-btn active" onclick="filterNews('all')">すべて</button>
+            <button class="tab-btn" onclick="filterNews('release')">プレスリリース</button>
+            <button class="tab-btn" onclick="filterNews('update')">更新情報</button>
+        </div>
+        
+        <!-- デバッグ用エリア -->
+        <div class="debug-area">
+            <ul class="news-list" id="newsListDisplay">
+                <!-- JSでここにニュースが入ります -->
+                <li>読み込み中...</li>
+            </ul>
+        </div>
+    </section>
 
-            <div class="app-card card-disabled">
-                <div class="app-icon">🚀</div>
-                <h3>Coming Soon</h3>
-                <p>
-                    <span class="lang-ja">次の革新的なアプリを構想中です。ご期待ください。</span>
-                    <span class="lang-en lang-en-text">We are brainstorming the next innovative app. Stay tuned.</span>
-                </p>
+    <!-- 画像リンクカード -->
+    <section>
+        <div class="image-grid">
+            <a href="about.html" class="img-card">
+                <img src="index_about.png" alt="About Us">
+                <div class="card-overlay">
+                    <h3 class="card-title">私たちについて</h3>
+                    <div class="card-sub">About Us</div>
+                </div>
+            </a>
+            <a href="portfolio.html" class="img-card">
+                <img src="index_port.png" alt="Portfolio">
+                <div class="card-overlay">
+                    <h3 class="card-title">開発実績</h3>
+                    <div class="card-sub">Portfolio</div>
+                </div>
+            </a>
+        </div>
+
+        <h3 class="section-title" style="font-size:1.2rem; margin-bottom:20px; border:none;">最新の活動 (Press & Updates)</h3>
+        
+        <div class="debug-area">
+            <div class="press-grid" id="pressGridDisplay">
+                <!-- JSでここに画像付きニュースが入ります -->
+                <p>読み込み中...</p>
             </div>
         </div>
-    </main>
+    </section>
 
-    <footer>
-        <p>
+    <!-- サブリンク -->
+    <section>
+        <div class="sub-grid">
+            <a href="playground.html" class="sub-card bg-play">知る・楽しむ</a>
+            <a href="survey.html" class="sub-card bg-survey">アンケート</a>
+            <a href="contact.html" class="sub-card bg-contact">お問い合わせ</a>
+        </div>
+    </section>
+
+    <!-- フッターブランディング（修正: ロゴ全体を表示） -->
+    <div class="footer-brand">
+        <!-- アニメーション無効・影維持・縮小版のロゴ -->
+        <div class="logo-container footer-logo-container">
+            <div class="main-row">
+                <img src="啓.svg" alt="啓" class="kanji-svg">
+                <div class="app-lab">App Lab</div>
+            </div>
+            <div class="sub-row">
+                <div class="furigana">KEI</div>
+                <div class="tagline">
+                    <span class="lang-ja">日常を<ruby>啓<rt>ひら</rt></ruby>く便利さ。心を<ruby>啓<rt>ひら</rt></ruby>く遊び心。</span>
+                    <span class="lang-en lang-en-text" style="display:none;">Opening up daily life with convenience.<br>Opening up hearts with playfulness.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- フッターメニュー -->
+    <div class="footer-area">
+        <div class="footer-menu">
+            <a href="about.html" class="footer-link">私たちについて</a>
+            <a href="portfolio.html" class="footer-link">開発実績</a>
+            <a href="playground.html" class="footer-link">知る・楽しむ</a>
+            <a href="survey.html" class="footer-link">アンケート</a>
+            <a href="contact.html" class="footer-link">お問い合わせ</a>
+        </div>
+        <div class="copy">
             &copy; 2026 啓 App Lab | 
-            <a href="app-ads.txt">app-ads.txt</a>
-        </p>
-    </footer>
+            <!-- 修正: 青色のリンク -->
+            <a href="app-ads.txt" class="ads-link">app-ads.txt</a>
+        </div>
+    </div>
 
     <script>
         // --- 1. 光の粒子アニメーション ---
@@ -429,60 +473,100 @@
             container.appendChild(d);
         }
 
-        // --- 2. 言語管理システム ---
+        // --- 2. ニュース表示ロジック ---
+        function renderNewsList(filter) {
+            const list = document.getElementById('newsListDisplay');
+            list.innerHTML = '';
+            
+            if(typeof newsData === 'undefined') {
+                list.innerHTML = '<li style="padding:15px; color:red;">エラー: news-data.js が読み込まれていません</li>';
+                return;
+            }
 
-        // 言語を切り替える関数
+            const filtered = newsData
+                .filter(item => filter === 'all' || item.category === filter)
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .slice(0, 5);
+
+            filtered.forEach(item => {
+                const tagClass = item.category === 'release' ? 'tag-release' : 'tag-update';
+                const tagName = item.category === 'release' ? 'プレスリリース' : '更新情報';
+                
+                list.innerHTML += `
+                    <li class="news-item">
+                        <span class="news-date">${item.date}</span>
+                        <span class="news-tag ${tagClass}">${tagName}</span>
+                        <a href="${item.link}" class="news-link">${item.title}</a>
+                    </li>
+                `;
+            });
+        }
+
+        function renderPressGrid() {
+            const grid = document.getElementById('pressGridDisplay');
+            grid.innerHTML = '';
+
+            if(typeof newsData === 'undefined') {
+                grid.innerHTML = 'エラー: news-data.js 未検出';
+                return;
+            }
+
+            const visualNews = newsData
+                .filter(item => item.image && item.image !== "")
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .slice(0, 4);
+
+            visualNews.forEach(item => {
+                grid.innerHTML += `
+                    <a href="${item.link}" class="press-card">
+                        <img src="${item.image}" alt="${item.title}" class="press-img">
+                        <div class="press-content">
+                            <span class="press-date">${item.date}</span>
+                            <div class="press-text">${item.title}</div>
+                        </div>
+                    </a>
+                `;
+            });
+        }
+
+        function filterNews(type) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            renderNewsList(type);
+        }
+
+        // 初期実行
+        window.addEventListener('load', () => {
+            renderNewsList('all');
+            renderPressGrid();
+        });
+
+        // --- 3. 言語切り替えロジック ---
         function setLanguage(lang) {
-            // ブラウザに設定を保存
             localStorage.setItem('preferredLang', lang);
-
-            const jaElements = document.querySelectorAll('.lang-ja');
-            const enElements = document.querySelectorAll('.lang-en');
-            const menuLinks = document.querySelectorAll('.menu-link');
+            const ja = document.querySelectorAll('.lang-ja');
+            const en = document.querySelectorAll('.lang-en');
+            const links = document.querySelectorAll('.menu-link');
 
             if (lang === 'en') {
-                // 英語表示
-                jaElements.forEach(el => el.style.display = 'none');
-                enElements.forEach(el => el.style.display = 'inline-block');
-                menuLinks.forEach(link => {
-                    link.textContent = link.getAttribute('data-en');
-                });
+                ja.forEach(el => el.style.display = 'none');
+                en.forEach(el => el.style.display = 'inline-block');
+                links.forEach(l => l.textContent = l.getAttribute('data-en'));
             } else {
-                // 日本語表示
-                jaElements.forEach(el => el.style.display = 'inline-block');
-                enElements.forEach(el => el.style.display = 'none');
-                menuLinks.forEach(link => {
-                    link.textContent = link.getAttribute('data-ja');
-                });
+                ja.forEach(el => el.style.display = 'inline-block');
+                en.forEach(el => el.style.display = 'none');
+                links.forEach(l => l.textContent = l.getAttribute('data-ja'));
             }
         }
 
-        // 初期化処理
-        document.addEventListener('DOMContentLoaded', () => {
-            // A. まず保存された設定を確認
-            const savedLang = localStorage.getItem('preferredLang');
-            
-            if (savedLang) {
-                setLanguage(savedLang);
-            } else {
-                // B. 設定がない場合はブラウザの言語を確認
-                const browserLang = (window.navigator.language || window.navigator.userLanguage || 'ja').slice(0, 2).toLowerCase();
-                if (browserLang !== 'ja') {
-                    setLanguage('en');
-                } else {
-                    setLanguage('ja');
-                }
-            }
+        const langBtn = document.getElementById('langSwitch');
+        langBtn.addEventListener('click', () => {
+            const current = localStorage.getItem('preferredLang') || 'ja';
+            setLanguage(current === 'ja' ? 'en' : 'ja');
         });
 
-        // ボタンクリックイベント
-        const langSwitchBtn = document.getElementById('langSwitch');
-        langSwitchBtn.addEventListener('click', () => {
-            // 現在の保存設定を確認して反転させる
-            const current = localStorage.getItem('preferredLang') || 'ja';
-            const next = current === 'ja' ? 'en' : 'ja';
-            setLanguage(next);
-        });
+        const savedLang = localStorage.getItem('preferredLang') || 'ja';
+        setLanguage(savedLang);
     </script>
 </body>
 </html>
