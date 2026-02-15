@@ -247,7 +247,7 @@
         .press-date { font-size: 0.8rem; color: #666; margin-bottom: 5px; display: block; font-family: 'Roboto', sans-serif;}
         .press-text { font-size: 0.95rem; font-weight: bold; line-height: 1.4; }
 
-/* --- サブリンク（3つ横並び）の親要素 --- */
+        /* --- サブリンク（3つ横並び）の親要素 --- */
         .sub-grid { 
             display: grid; 
             grid-template-columns: repeat(3, 1fr); /* ここで横に3つ並べる指定をしています */
@@ -358,6 +358,36 @@
             0% { transform: translateY(110vh) translateX(0) rotate(0deg); opacity: 0; }
             20% { opacity: 1; } 80% { opacity: 1; }
             100% { transform: translateY(-10vh) translateX(150px) rotate(360deg); opacity: 0; }
+        }
+
+        /* --- トップへ戻るボタン --- */
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background-color: #0056b3; /* 青背景 */
+            border-radius: 10px; /* 角丸 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            opacity: 0; /* 最初は隠す */
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 9999;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3); /* 浮き出る影 */
+        }
+
+        .back-to-top:hover {
+            background-color: #003d82;
+            transform: translateY(-3px);
+        }
+
+        .back-to-top.show {
+            opacity: 1;
+            visibility: visible;
         }
 
         /* --- スマホ対応 --- */
@@ -477,14 +507,21 @@
 
     <!-- お知らせセクション -->
     <section>
-        <div class="section-header">
-            <h2 class="section-title">お知らせ</h2>
-        </div>
+        <h2 class="section-title">
+            <span class="lang-ja">お知らせ</span>
+            <span class="lang-en">News</span>
+        </h2>
         
         <div class="news-tabs">
-            <button class="tab-btn active" onclick="filterNews('all')">すべて</button>
-            <button class="tab-btn" onclick="filterNews('release')">プレスリリース</button>
-            <button class="tab-btn" onclick="filterNews('update')">更新情報</button>
+            <button class="tab-btn active" onclick="filterNews('all')">
+                <span class="lang-ja">すべて</span><span class="lang-en">All</span>
+            </button>
+            <button class="tab-btn" onclick="filterNews('release')">
+                <span class="lang-ja">プレスリリース</span><span class="lang-en">Press</span>
+            </button>
+            <button class="tab-btn" onclick="filterNews('update')">
+                <span class="lang-ja">更新情報</span><span class="lang-en">Updates</span>
+            </button>
         </div>
         
         <!-- デバッグ用エリア -->
@@ -515,7 +552,10 @@
             </a>
         </div>
 
-        <h3 class="section-title" style="font-size:1.2rem; margin-bottom:20px; border:none;">最新の活動 (Press & Updates)</h3>
+        <h3 class="section-title">
+            <span class="lang-ja">最新の活動</span>
+            <span class="lang-en">Highlights</span>
+        </h3>
         
         <div class="debug-area">
             <div class="press-grid" id="pressGridDisplay">
@@ -564,11 +604,11 @@
     <!-- フッターメニュー -->
     <div class="footer-area">
         <div class="footer-menu">
-            <a href="about.html" class="footer-link">私たちについて</a>
-            <a href="portfolio.html" class="footer-link">開発実績</a>
-            <a href="playground.html" class="footer-link">知る・楽しむ</a>
-            <a href="survey.html" class="footer-link">アンケート</a>
-            <a href="contact.html" class="footer-link">お問い合わせ</a>
+            <a href="about.html" class="footer-link" data-ja="私たちについて" data-en="About Us">About Us</a>
+            <a href="portfolio.html" class="footer-link" data-ja="開発実績" data-en="Portfolio">Portfolio</a>
+            <a href="playground.html" class="footer-link" data-ja="知る・楽しむ" data-en="Playground">Playground</a>
+            <a href="survey.html" class="footer-link" data-ja="アンケート" data-en="Survey">Surver</a>
+            <a href="contact.html" class="footer-link" data-ja="お問い合わせ" data-en="Contact">Contact</a>
         </div>
         <div class="copy">
             &copy; 2026 啓 App Lab | 
@@ -577,7 +617,17 @@
         </div>
     </div>
 
-    <script>
+          <!-- トップへ戻るボタン -->
+        <div id="backToTop" class="back-to-top" onclick="scrollToTop()">
+            <!-- アイコン：白線と矢印 -->
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="19" x2="12" y2="5"></line>
+                <polyline points="5 12 12 5 19 12"></polyline>
+                <line x1="5" y1="2" x2="19" y2="2"></line> <!-- 上の横棒 -->
+            </svg>
+        </div>
+
+  <script>
         // --- 1. 光の粒子アニメーション ---
         const container = document.getElementById('dust-container');
         for (let i = 0; i < 35; i++) {
@@ -668,7 +718,8 @@
             localStorage.setItem('preferredLang', lang);
             const ja = document.querySelectorAll('.lang-ja');
             const en = document.querySelectorAll('.lang-en');
-            const links = document.querySelectorAll('.menu-link');
+            // .menu-link と .footer-link の両方を取得
+            const links = document.querySelectorAll('.menu-link, .footer-link');
 
             if (lang === 'en') {
                 ja.forEach(el => el.style.display = 'none');
@@ -689,6 +740,25 @@
 
         const savedLang = localStorage.getItem('preferredLang') || 'ja';
         setLanguage(savedLang);
+
+        // --- トップへ戻るボタン制御 ---
+        const backToTopBtn = document.getElementById('backToTop');
+
+        window.addEventListener('scroll', () => {
+            // 500px以上スクロールしたら表示クラス(.show)をつける
+            if (window.scrollY > 500) {
+                backToTopBtn.classList.add('show');
+            } else {
+                backToTopBtn.classList.remove('show');
+            }
+        });
+
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth' // スムーズにスクロール
+            });
+        }
 
     </script>
 </body>
