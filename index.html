@@ -326,7 +326,7 @@
         .footer-link:hover { color: #0056b3; }
         .copy { color: #888; font-size: 0.8rem; font-family: 'Roboto', sans-serif; }
         
-        /* 修正: app-ads.txt のリンク色を青に変更 */
+        /* app-ads.txt のリンク色を青に変更 */
         .ads-link { color: #0056b3; text-decoration: none; margin-left: 10px; font-size: 0.8rem; font-weight: normal; }
         .ads-link:hover { text-decoration: underline; color: #0056b3; }
 
@@ -383,6 +383,48 @@
             .app-card { padding: 30px 20px; }
             .app-card p { min-height: auto; } 
         }
+
+        /* スクロール促進アクション */
+        .scroll-prompt {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9000;
+            transition: opacity 0.5s, visibility 0.5s;
+        }
+
+        .arrow-cascade {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .arrow-cascade span {
+            display: block;
+            width: 13px;
+            height: 13px;
+            /* テストで調整した色：透明度0.6 */
+            border-bottom: 2px solid rgba(0, 86, 179, 0.7);
+            border-right: 2px solid rgba(0, 86, 179, 0.7);
+            transform: rotate(45deg);
+            opacity: 0;
+            /* テストで調整した強い影 */
+            filter: drop-shadow(6px 3px 3px rgba(0,0,0,0.8));
+            animation: cascade 2.4s infinite;
+        }
+
+        .arrow-cascade span:nth-child(1) { animation-delay: 0s; }
+        .arrow-cascade span:nth-child(2) { animation-delay: 0.2s; }
+        .arrow-cascade span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes cascade {
+            0% { opacity: 0; transform: rotate(45deg) translate(-5px, -5px); }
+            30% { opacity: 1; }
+            60%, 100% { opacity: 0; transform: rotate(45deg) translate(5px, 5px); }
+        }
+
     </style>
 </head>
 <body>
@@ -420,6 +462,15 @@
                     <!-- 修正: 太さ(500)を適用した英語コピー -->
                     <span class="lang-en lang-en-text" style="display:none;">Opening up daily life with convenience.<br>Opening up hearts with playfulness.</span>
                 </div>
+            </div>
+        </div>
+
+        <!-- スクロール矢印 -->
+        <div class="scroll-prompt" id="scrollPrompt">
+            <div class="arrow-cascade">
+                <span></span>
+                <span></span>
+                <span></span>
             </div>
         </div>
     </section>
@@ -638,6 +689,7 @@
 
         const savedLang = localStorage.getItem('preferredLang') || 'ja';
         setLanguage(savedLang);
+
     </script>
 </body>
 </html>
