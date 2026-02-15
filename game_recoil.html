@@ -4,14 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Recoil Climber - Fixed Wall Edition</title>
-
     <!-- 1. faviconモダンブラウザ用（高画質・軽量） -->
     <link rel="icon" href="啓.svg" type="image/svg+xml">
     <!-- 2. 予備用（SVG非対応の古い環境や一部のアプリ内ブラウザ用） -->
     <link rel="icon" href="啓.png" type="image/png">
     <!-- 3. iPhoneのホーム画面用（これが重要！） -->
     <link rel="apple-touch-icon" href="啓.png">
-
     <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Matter JS -->
@@ -635,67 +633,55 @@
     }
 
     async function submitScore(time, shots) {
+        // 1秒未満の記録はバグ/不正として弾く
         if(time < CONFIG.minTimeLimit) return; 
+
         document.getElementById('loading-overlay').style.display = 'flex';
+        
         const isRev = state.mode === 'REVERSE';
         const tTable = isRev ? 'recoil_lb_time_rev' : 'recoil_lb_time';
         const sTable = isRev ? 'recoil_lb_shots_rev' : 'recoil_lb_shots';
         
-        const commonData = { username: state.username, clear_time: time, shot_count: shots, zone1_time: state.splits[1]||0, zone2_time: state.splits[2]||0, created_at: new Date() };
+        // 送信用データ
+        const commonData = { 
+            username: state.username, 
+            clear_time: time, 
+            shot_count: shots, 
+            zone1_time: state.splits[1] || 0, 
+            zone2_time: state.splits[2] || 0, 
+            created_at: new Date() 
+        };
 
-        const { data: t } = await db.from(tTable).select('*').eq('username', state.username).maybeSingle();
-        if(!t || time < t.clear_time) { await db.from(tTable).upsert(commonData); document.getElementById('pb-time').innerText = formatTime(time); }
-
-        const { data: s } = await db.from(sTable).select('*').eq('username', state.username).maybeSingle();
-        if(!s || shots < s.shot_count || (shots === s.shot_count && time < s.clear_time)) { await db.from(sTable).upsert(commonData); document.getElementById('pb-shots').innerText = shots; }
-        
-        document.getElementById('loading-overlay').style.display = 'none';
-    }
-
-    async function showRanking(type) {
-        audio.playClick(); state.scene = 'RANKING';
-        document.getElementById('loading-overlay').style.display = 'flex';
-        document.getElementById('startScreen').classList.add('hidden');
-        document.getElementById('rankingScreen').classList.remove('hidden');
-
-        const isRev = state.mode === 'REVERSE';
-        let tableName, title;
-
-        // ランキングの種類に応じて、並び替えの優先順位を設定
-        let query = db.from(isRev ? (type === 'shots' ? 'recoil_lb_shots_rev' : 'recoil_lb_time_rev') : (type === 'shots' ? 'recoil_lb_shots' : 'recoil_lb_time')).select('*');
-
-        if (type === 'shots') {
-            title = 'LEAST SHOTS (' + state.mode + ')';
-            // 1位：ショット数が少ない順、 2位（同点時）：タイムが速い順
-            query = query.order('shot_count', { ascending: true }).order('clear_time', { ascending: true });
-        } else {
-            title = 'SPEED RANKING (' + state.mode + ')';
-            // 1位：タイムが速い順、 2位（同点時）：ショット数が少ない順
-            query = query.order('clear_time', { ascending: true }).order('shot_count', { ascending: true });
+        // --- 1. タイムランキングの更新判定 ---
+        const { data: tRecord } = await db.from(tTable).select('clear_time').eq('username', state.username).maybeSingle();
+        // 「記録がない」または「今のタイムが過去最速」なら更新
+        if(!tRecord || time < tRecord.clear_time) {
+            await db.from(tTable).upsert(commonData);
         }
 
-        document.getElementById('rankingTitle').innerText = title;
-        document.getElementById('rankingTitle').style.color = isRev ? '#ff00ff' : '#00ffff';
-
-        const { data } = await query.limit(50);
+        // --- 2. ショット数ランキングの更新判定 (ここが重要！) ---
+        const { data: sRecord } = await db.from(sTable).select('shot_count, clear_time').eq('username', state.username).maybeSingle();
         
-        const tbody = document.getElementById('rankingTable').querySelector('tbody');
-        tbody.innerHTML = '';
-        if(data) {
-            const color = isRev ? '#ff00ff' : '#00ffff';
-            data.forEach((row, i) => {
-                const tr = document.createElement('tr');
-                const isTimeRank = type === 'time';
-                tr.innerHTML = `
-                    <td class="rank-col">${i+1}</td><td>${row.username}</td>
-                    <td class="num-col">${formatTime(row.zone1_time)}</td><td class="num-col">${formatTime(row.zone2_time)}</td>
-                    <td class="num-col" style="color:${isTimeRank ? color : '#fff'}">${formatTime(row.clear_time)}</td>
-                    <td class="num-col" style="color:${!isTimeRank ? color : '#fff'}">${row.shot_count}</td>
-                `;
-                tbody.appendChild(tr);
-            });
+        let shouldUpdateShot = false;
+        if(!sRecord) {
+            // 記録がないなら登録
+            shouldUpdateShot = true;
+        } else if (shots < sRecord.shot_count) {
+            // 【最優先】今のショット数が過去の最小記録より少ないなら更新
+            shouldUpdateShot = true;
+        } else if (shots === sRecord.shot_count && time < sRecord.clear_time) {
+            // ショット数が同じなら、タイムが速くなった時だけ更新
+            shouldUpdateShot = true;
         }
+
+        if(shouldUpdateShot) {
+            await db.from(sTable).upsert(commonData);
+        }
+        
         document.getElementById('loading-overlay').style.display = 'none';
+        
+        // タイトル画面のベスト記録表示も更新
+        fetchPersonalBest();
     }
 
     function formatTime(ms) {
@@ -799,7 +785,65 @@
         audio.playClick(); document.getElementById('rankingScreen').classList.add('hidden');
         document.getElementById('startScreen').classList.remove('hidden'); state.scene = 'TITLE';
     };
+    async function showRanking(type) {
+        audio.playClick(); 
+        state.scene = 'RANKING';
+        document.getElementById('loading-overlay').style.display = 'flex';
+        document.getElementById('startScreen').classList.add('hidden');
+        document.getElementById('rankingScreen').classList.remove('hidden');
 
+        const isRev = state.mode === 'REVERSE';
+        let tableName, title;
+
+        // モードとタイプに合わせてテーブルを選択
+        if (type === 'shots') {
+            tableName = isRev ? 'recoil_lb_shots_rev' : 'recoil_lb_shots';
+            title = 'LEAST SHOTS (' + state.mode + ')';
+        } else {
+            tableName = isRev ? 'recoil_lb_time_rev' : 'recoil_lb_time';
+            title = 'SPEED RANKING (' + state.mode + ')';
+        }
+
+        document.getElementById('rankingTitle').innerText = title;
+        document.getElementById('rankingTitle').style.color = isRev ? '#ff00ff' : '#00ffff';
+
+        // クエリの作成
+        let query = db.from(tableName).select('*');
+
+        // 並び替えロジック：第2ソートキーを設定してタイブレークを解決
+        if (type === 'shots') {
+            // ショット数ランキング：1.ショット数が少ない順 -> 2.タイムが速い順
+            query = query.order('shot_count', { ascending: true }).order('clear_time', { ascending: true });
+        } else {
+            // タイムランキング：1.タイムが速い順 -> 2.ショット数が少ない順
+            query = query.order('clear_time', { ascending: true }).order('shot_count', { ascending: true });
+        }
+
+        const { data, error } = await query.limit(50);
+
+        const tbody = document.getElementById('rankingTable').querySelector('tbody');
+        tbody.innerHTML = '';
+
+        if(data) {
+            const themeColor = isRev ? '#ff00ff' : '#00ffff';
+            data.forEach((row, i) => {
+                const tr = document.createElement('tr');
+                const isTimeRank = (type === 'time');
+                // ランク、名前、各ZONEタイム、クリアタイム、ショット数を表示
+                tr.innerHTML = `
+                    <td class="rank-col">${i+1}</td>
+                    <td>${row.username}</td>
+                    <td class="num-col">${formatTime(row.zone1_time)}</td>
+                    <td class="num-col">${formatTime(row.zone2_time)}</td>
+                    <td class="num-col" style="color:${isTimeRank ? themeColor : '#fff'}">${formatTime(row.clear_time)}</td>
+                    <td class="num-col" style="color:${!isTimeRank ? themeColor : '#fff'}">${row.shot_count}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        
+        document.getElementById('loading-overlay').style.display = 'none';
+    }
     initTitle();
 </script>
 </body>
