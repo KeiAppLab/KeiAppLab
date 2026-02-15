@@ -326,7 +326,7 @@
         .footer-link:hover { color: #0056b3; }
         .copy { color: #888; font-size: 0.8rem; font-family: 'Roboto', sans-serif; }
         
-        /* 修正: app-ads.txt のリンク色を青に変更 */
+        /* app-ads.txt のリンク色を青に変更 */
         .ads-link { color: #0056b3; text-decoration: none; margin-left: 10px; font-size: 0.8rem; font-weight: normal; }
         .ads-link:hover { text-decoration: underline; color: #0056b3; }
 
@@ -412,8 +412,8 @@
             width: 13px;
             height: 13px;
             /* テストで調整した色：透明度0.6 */
-            border-bottom: 2px solid rgba(0, 86, 179, 0.6);
-            border-right: 2px solid rgba(0, 86, 179, 0.6);
+            border-bottom: 2px solid rgba(0, 86, 179, 0.7);
+            border-right: 2px solid rgba(0, 86, 179, 0.7);
             transform: rotate(45deg);
             opacity: 0;
             /* テストで調整した強い影 */
@@ -700,7 +700,7 @@
         window.addEventListener('scroll', function() {
             const prompt = document.getElementById('scrollPrompt');
             if (prompt) { // エラー防止のため存在確認
-                if (window.scrollY > 100) {
+                if (window.scrollY > 200) { // スクロール距離で発動
                     prompt.classList.add('hidden');
                 } else {
                     prompt.classList.remove('hidden');
