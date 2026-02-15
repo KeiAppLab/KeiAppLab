@@ -383,6 +383,54 @@
             .app-card { padding: 30px 20px; }
             .app-card p { min-height: auto; } 
         }
+
+        /* スクロール促進アクション */
+        .scroll-prompt {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            transition: opacity 0.5s, visibility 0.5s;
+        }
+
+        /* スクロール後に消すためのクラス */
+        .scroll-prompt.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .arrow-cascade {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .arrow-cascade span {
+            display: block;
+            width: 13px;
+            height: 13px;
+            /* テストで調整した色：透明度0.6 */
+            border-bottom: 2px solid rgba(0, 86, 179, 0.6);
+            border-right: 2px solid rgba(0, 86, 179, 0.6);
+            transform: rotate(45deg);
+            opacity: 0;
+            /* テストで調整した強い影 */
+            filter: drop-shadow(6px 3px 3px rgba(0,0,0,0.8));
+            animation: cascade 2.4s infinite;
+        }
+
+        .arrow-cascade span:nth-child(1) { animation-delay: 0s; }
+        .arrow-cascade span:nth-child(2) { animation-delay: 0.2s; }
+        .arrow-cascade span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes cascade {
+            0% { opacity: 0; transform: rotate(45deg) translate(-5px, -5px); }
+            30% { opacity: 1; }
+            60%, 100% { opacity: 0; transform: rotate(45deg) translate(5px, 5px); }
+        }
+
     </style>
 </head>
 <body>
@@ -420,6 +468,15 @@
                     <!-- 修正: 太さ(500)を適用した英語コピー -->
                     <span class="lang-en lang-en-text" style="display:none;">Opening up daily life with convenience.<br>Opening up hearts with playfulness.</span>
                 </div>
+            </div>
+        </div>
+
+        <!-- スクロール矢印 -->
+        <div class="scroll-prompt" id="scrollPrompt">
+            <div class="arrow-cascade">
+                <span></span>
+                <span></span>
+                <span></span>
             </div>
         </div>
     </section>
@@ -638,6 +695,18 @@
 
         const savedLang = localStorage.getItem('preferredLang') || 'ja';
         setLanguage(savedLang);
+
+        // スクロールで矢印を消す処理
+        window.addEventListener('scroll', function() {
+            const prompt = document.getElementById('scrollPrompt');
+            if (prompt) { // エラー防止のため存在確認
+                if (window.scrollY > 100) {
+                    prompt.classList.add('hidden');
+                } else {
+                    prompt.classList.remove('hidden');
+                }
+            }
+        });
     </script>
 </body>
 </html>
