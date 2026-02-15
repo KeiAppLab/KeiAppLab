@@ -386,18 +386,12 @@
 
         /* スクロール促進アクション */
         .scroll-prompt {
-            position: fixed;
-            bottom: 40px;
+            position: absolute;
+            bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
-            z-index: 9999;
+            z-index: 9000;
             transition: opacity 0.5s, visibility 0.5s;
-        }
-
-        /* スクロール後に消すためのクラス */
-        .scroll-prompt.hidden {
-            opacity: 0;
-            visibility: hidden;
         }
 
         .arrow-cascade {
@@ -696,17 +690,6 @@
         const savedLang = localStorage.getItem('preferredLang') || 'ja';
         setLanguage(savedLang);
 
-        // スクロールで矢印を消す処理
-        window.addEventListener('scroll', function() {
-            const prompt = document.getElementById('scrollPrompt');
-            if (prompt) { // エラー防止のため存在確認
-                if (window.scrollY > 600) { // スクロール距離で発動
-                    prompt.classList.add('hidden');
-                } else {
-                    prompt.classList.remove('hidden');
-                }
-            }
-        });
     </script>
 </body>
 </html>
