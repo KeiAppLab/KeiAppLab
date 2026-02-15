@@ -700,7 +700,7 @@
         window.addEventListener('scroll', function() {
             const prompt = document.getElementById('scrollPrompt');
             if (prompt) { // エラー防止のため存在確認
-                if (window.scrollY > 200) { // スクロール距離で発動
+                if (window.scrollY > 600) { // スクロール距離で発動
                     prompt.classList.add('hidden');
                 } else {
                     prompt.classList.remove('hidden');
