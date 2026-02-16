@@ -220,14 +220,22 @@
                                 </select>
                             </div>
 
-                            <!-- プロジェクト名（入力＋リスト選択） -->
+                            <!-- プロジェクト名（セレクトボックス + 新規入力切り替え） -->
                             <div class="form-group">
-                                <label>プロジェクト名 (入力またはリストから選択)</label>
-                                <!-- input list="ID" を使うことで、入力も選択も可能になります -->
-                                <input list="projectListOptions" id="inProject" class="input-white" placeholder="プロジェクト名を入力" oninput="autoFillProject()">
-                                <datalist id="projectListOptions">
-                                    <!-- JSでここに選択肢が自動生成されます -->
-                                </datalist>
+                                <label>プロジェクト名</label>
+                                
+                                <!-- 1. メインのセレクトボックス -->
+                                <select id="inProjectSelect" class="input-white" onchange="handleProjectSelect()">
+                                    <option value="">▼ プロジェクトを選択...</option>
+                                    <!-- JSで自動生成 -->
+                                    <option value="__NEW__" style="color:blue; font-weight:bold;">＋ 新規プロジェクトを入力...</option>
+                                </select>
+
+                                <!-- 2. 新規入力エリア（初期は非表示） -->
+                                <div id="inProjectInputArea" style="display:none; align-items: center; gap: 5px;">
+                                    <input type="text" id="inProjectInput" class="input-white" placeholder="新規プロジェクト名" oninput="updatePreview()">
+                                    <button type="button" onclick="resetToSelectMode()" style="width:auto; padding:8px; background:#666; margin:0;">戻る</button>
+                                </div>
                             </div>
 
                             <div class="form-group">
@@ -395,72 +403,119 @@
         const today = new Date();
         document.getElementById('inDate').value = today.getFullYear() + '.' + (today.getMonth()+1).toString().padStart(2, '0') + '.' + today.getDate().toString().padStart(2, '0');
 
-        // --- プロジェクトリストの自動生成（Datalist用） ---
+        // --- プロジェクトリストの自動生成（セレクトボックス用） ---
         function initProjectList() {
             if (typeof newsData === 'undefined') return;
 
             // 1. プロジェクト名を抽出
             const projectSet = new Set(newsData.map(item => item.project).filter(p => p));
             
-            // 2. datalistに追加
-            const datalist = document.getElementById('projectListOptions');
-            datalist.innerHTML = ''; // 一旦クリア
+            // 2. selectタグに追加
+            const selectBox = document.getElementById('inProjectSelect');
+            // 初期化（既存のオプションをクリアし、デフォルトと新規作成のみ残す）
+            selectBox.innerHTML = `
+                <option value="">▼ プロジェクトを選択...</option>
+                <option value="__NEW__" style="color:blue; font-weight:bold;">＋ 新規プロジェクトを入力...</option>
+            `;
 
             projectSet.forEach(projName => {
                 const option = document.createElement('option');
                 option.value = projName;
-                datalist.appendChild(option);
+                option.textContent = projName;
+                // 「新規作成」の前（最後から2番目）に挿入したいが、単純にappendでもOK
+                // 見栄えを良くするため、新規作成を一番下に保つ
+                selectBox.insertBefore(option, selectBox.lastElementChild);
             });
         }
 
-        // --- 自動入力＆クリア機能 (修正版) ---
-        function autoFillProject() {
-            const inputProject = document.getElementById('inProject').value.trim();
+        // --- セレクトボックス操作時の処理 ---
+        function handleProjectSelect() {
+            const selectBox = document.getElementById('inProjectSelect');
+            const selectedVal = selectBox.value;
             
+            const inputArea = document.getElementById('inProjectInputArea');
+            const inputBox = document.getElementById('inProjectInput');
+
+            // フィールド要素
             const elTitle = document.getElementById('inTitle');
             const elDesc = document.getElementById('inDesc');
             const elImage = document.getElementById('inImage');
             const elBody = document.getElementById('inBody');
 
-            // A. 入力が空になった場合（クリア）
-            if (inputProject === "") {
+            if (selectedVal === "__NEW__") {
+                // A. 新規作成モード
+                selectBox.style.display = 'none';
+                inputArea.style.display = 'flex';
+                inputBox.value = ""; // 空にする
+                inputBox.focus();
+                
+                // フィールドクリア
                 elTitle.value = "";
                 elDesc.value = "";
                 elImage.value = "";
                 elBody.value = "";
-                updatePreview();
-                return;
-            }
-
-            if (typeof newsData === 'undefined') {
-                updatePreview();
-                return;
-            }
-
-            // B. 過去データから検索 (最新のものを優先)
-            const targetPost = newsData.slice().reverse().find(post => post.project === inputProject);
-
-            if (targetPost) {
-                // 見つかったら自動入力
-                elTitle.value = targetPost.title || "";
-                elDesc.value = targetPost.description || "";
-                elImage.value = targetPost.image || "";
-                elBody.value = targetPost.body || "";
+            
+            } else if (selectedVal !== "") {
+                // B. 既存プロジェクト選択
+                // 過去データから検索 (最新のものを優先)
+                if (typeof newsData !== 'undefined') {
+                    const targetPost = newsData.slice().reverse().find(post => post.project === selectedVal);
+                    if (targetPost) {
+                        elTitle.value = targetPost.title || "";
+                        elDesc.value = targetPost.description || "";
+                        elImage.value = targetPost.image || "";
+                        elBody.value = targetPost.body || "";
+                    }
+                }
             } else {
-                // C. 新規の場合（クリア）
+                // C. 選択解除（クリア）
                 elTitle.value = "";
                 elDesc.value = "";
                 elImage.value = "";
                 elBody.value = "";
             }
-
+            
             updatePreview();
+        }
+
+        // --- 新規入力からセレクトに戻る処理 ---
+        function resetToSelectMode() {
+            const selectBox = document.getElementById('inProjectSelect');
+            const inputArea = document.getElementById('inProjectInputArea');
+            
+            selectBox.style.display = 'block';
+            selectBox.value = ""; // 選択リセット
+            inputArea.style.display = 'none';
+            
+            // フィールドクリア
+            document.getElementById('inTitle').value = "";
+            document.getElementById('inDesc').value = "";
+            document.getElementById('inImage').value = "";
+            document.getElementById('inBody').value = "";
+            
+            updatePreview();
+        }
+
+        // --- 現在のプロジェクト名を取得するヘルパー関数 ---
+        function getCurrentProjectName() {
+            const selectBox = document.getElementById('inProjectSelect');
+            const inputBox = document.getElementById('inProjectInput');
+            
+            // 入力エリアが表示されていれば入力値を、そうでなければセレクト値を返す
+            if (selectBox.style.display === 'none') {
+                return inputBox.value;
+            } else {
+                // "__NEW__" や空文字の場合は空を返す
+                return (selectBox.value === "__NEW__") ? "" : selectBox.value;
+            }
         }
 
         function updatePreview() {
             const date = document.getElementById('inDate').value;
             const category = document.getElementById('inCategory').value;
-            const project = document.getElementById('inProject').value;
+            // プロジェクト名の取得方法を変更
+            const project = getCurrentProjectName();
+            
             const title = document.getElementById('inTitle').value || "タイトル";
             const desc = document.getElementById('inDesc').value;
             const image = document.getElementById('inImage').value;
@@ -509,12 +564,18 @@
                 id: Date.now(),
                 date: document.getElementById('inDate').value,
                 category: document.getElementById('inCategory').value,
-                project: document.getElementById('inProject').value,
+                project: getCurrentProjectName(), // 修正
                 title: document.getElementById('inTitle').value,
                 description: document.getElementById('inDesc').value,
                 image: document.getElementById('inImage').value,
                 body: document.getElementById('inBody').value
             };
+            
+            if (!newPost.project) {
+                alert("プロジェクト名を入力または選択してください");
+                return;
+            }
+
             allPosts.unshift(newPost);
             alert(`「${newPost.title}」を追加しました。\n現在 ${allPosts.length} 件のデータがあります。`);
         }
