@@ -207,13 +207,12 @@
                                 </datalist>
                             </div>
 
-                            <!-- 修正箇所：UIの統一とオートフィル対応 -->
                             <div class="form-group">
                                 <label>プロジェクト名 (リストから選択または入力)</label>
-                                <!-- oninput で autoFillProject() を呼び出す -->
-                                <input list="projects" id="inProject" placeholder="プロジェクト名" oninput="autoFillProject()">
-                                <!-- JSで自動生成するため datalist の中身は空にしておく -->
-                                <datalist id="projects"></datalist>
+                                <!-- oninputでオートフィル機能を呼び出します -->
+                                <input list="projectList" id="inProject" placeholder="プロジェクト名を入力" oninput="autoFillProject()">
+                                <!-- 中身は空にしておき、JSで自動生成します -->
+                                <datalist id="projectList"></datalist>
                             </div>
 
                             <div class="form-group">
@@ -352,13 +351,16 @@
         }
 
         // 起動時チェック
+        // 初期化時にリストを描画
         window.addEventListener('load', () => {
+            // 既存のログインチェック処理...
             const savedToken = localStorage.getItem('gh_token');
             if (savedToken) {
                 checkIdentity(savedToken);
             }
-            // ユーザー管理リストの描画（認証前でも描画関数だけ準備）
-            if(typeof allowedUsersData !== 'undefined') renderUserList();
+            
+            renderUserList();   // ユーザー管理用
+            initProjectList();  // ★これを追加（プロジェクトリスト生成）
         });
 
 
@@ -387,6 +389,25 @@
         let allPosts = [];
         const today = new Date();
         document.getElementById('inDate').value = today.getFullYear() + '.' + (today.getMonth()+1).toString().padStart(2, '0') + '.' + today.getDate().toString().padStart(2, '0');
+
+        // --- プロジェクトリストの自動生成 ---
+        function initProjectList() {
+            // newsDataがない場合は何もしない
+            if (typeof newsData === 'undefined') return;
+
+            // 1. 過去のデータからプロジェクト名だけを取り出し、重複を削除（Setを使う）
+            const projectSet = new Set(newsData.map(item => item.project).filter(p => p));
+            
+            // 2. datalistに追加
+            const datalist = document.getElementById('projectList');
+            datalist.innerHTML = ''; // 一旦クリア
+
+            projectSet.forEach(projName => {
+                const option = document.createElement('option');
+                option.value = projName;
+                datalist.appendChild(option);
+            });
+        }
 
         function updatePreview() {
             const date = document.getElementById('inDate').value;
@@ -453,32 +474,53 @@
             });
         }
 
-        // 入力されたプロジェクト名に一致する過去データを自動入力
+        // --- 5. 自動入力機能 (オートフィル・完全版) ---
         function autoFillProject() {
             const inputProject = document.getElementById('inProject').value;
             
+            // 入力欄の要素を取得
+            const elTitle = document.getElementById('inTitle');
+            const elDesc = document.getElementById('inDesc');
+            const elImage = document.getElementById('inImage');
+            const elBody = document.getElementById('inBody');
+
+            // newsDataがない場合はプレビュー更新だけして終了
             if (typeof newsData === 'undefined') {
                 updatePreview();
                 return;
             }
 
-            // 一致する最新の記事を探す
-            // (newsDataは通常古い順か新しい順だが、ここでは配列をコピーして逆順にして探す)
+            // --- A. 入力が空になった場合（削除時） ---
+            if (inputProject === "") {
+                // 全フィールドをクリア
+                elTitle.value = "";
+                elDesc.value = "";
+                elImage.value = "";
+                elBody.value = "";
+                updatePreview();
+                return;
+            }
+
+            // --- B. 過去データから同じプロジェクトを探す（最新のものを優先） ---
+            // newsDataをコピーして逆順にし、最初に見つかったもの（＝最新）を取得
             const targetPost = newsData.slice().reverse().find(post => post.project === inputProject);
 
             if (targetPost) {
-                // 見つかったら自動入力（日付とカテゴリは維持）
-                document.getElementById('inTitle').value = targetPost.title || "";
-                document.getElementById('inDesc').value = targetPost.description || "";
-                document.getElementById('inImage').value = targetPost.image || "";
-                document.getElementById('inBody').value = targetPost.body || "";
+                // --- 過去データが見つかった場合（自動入力） ---
+                elTitle.value = targetPost.title || "";
+                elDesc.value = targetPost.description || "";
+                elImage.value = targetPost.image || "";
+                elBody.value = targetPost.body || "";
             } else {
-                // 新しい名前または空欄なら、フィールドをクリア
-                document.getElementById('inTitle').value = "";
-                document.getElementById('inDesc').value = "";
-                document.getElementById('inImage').value = "";
-                document.getElementById('inBody').value = "";
+                // --- 新規プロジェクトの場合（クリア） ---
+                // ユーザーが新しい名前を入力した瞬間、過去の情報は消す
+                elTitle.value = "";
+                elDesc.value = "";
+                elImage.value = "";
+                elBody.value = "";
             }
+
+            // 最後にプレビューを更新
             updatePreview();
         }
 
