@@ -203,12 +203,12 @@
                         <div class="editor-area">
                             <h2>📝 記事・プロジェクト作成</h2>
                             
+                            <!-- ご要望の構造に修正 -->
                             <div class="form-group">
                                 <label>日付</label>
                                 <input type="text" id="inDate">
                             </div>
 
-                            <!-- カテゴリ（白いプルダウンに変更） -->
                             <div class="form-group">
                                 <label>カテゴリ</label>
                                 <select id="inCategory" class="input-white" onchange="updatePreview()">
@@ -220,13 +220,11 @@
                                 </select>
                             </div>
 
-                            <!-- プロジェクト名（履歴選択 ＋ 自由入力） -->
                             <div class="form-group">
                                 <label>プロジェクト名</label>
                                 <!-- 1. 履歴から選ぶプルダウン -->
                                 <select id="projectSelect" class="input-white" onchange="syncProjectSelect()" style="margin-bottom: 5px; color:#0056b3;">
                                     <option value="">▼ 履歴から選択...</option>
-                                    <!-- JSでここにリストが自動生成されます -->
                                 </select>
                                 <!-- 2. 自由入力欄 -->
                                 <input type="text" id="inProject" class="input-white" placeholder="または新規プロジェクト名を入力" oninput="autoFillProject()">
@@ -282,7 +280,7 @@
 
                 <!-- ユーザー管理パネル -->
                 <div id="panel-users" class="panel">
-                    <div class="calc-container">
+                    <div class="calc-container"> <!-- デザイン流用 -->
                         <h2>👥 編集権限者の管理</h2>
                         <p>この管理画面にアクセスできるGitHubユーザーIDを管理します。</p>
                         
@@ -335,6 +333,7 @@
                 if (!res.ok) throw new Error("トークンが無効です");
                 const userData = await res.json();
 
+                // allowed_users.js から読み込んだ配列を使用
                 if (typeof allowedUsersData !== 'undefined' && allowedUsersData.includes(userData.login)) {
                     localStorage.setItem('gh_token', token);
                     showDashboard();
