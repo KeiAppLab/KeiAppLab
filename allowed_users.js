@@ -2,5 +2,6 @@
 const allowedUsersData = [
     "KeiAppLab",
     "papa-chan",
-    "Ksansansan"
+    "Ksansansan",
+    "やまだ"
 ];
