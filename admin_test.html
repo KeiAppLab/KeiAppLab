@@ -660,40 +660,61 @@
             } catch (err) { alert("エラー: " + err.message); }
         }
 
-        // --- GitHubへ直接保存（ニュース用） ---
+// --- GitHubへ直接保存（ニュース用・追記対応版） ---
         async function saveToGitHub() {
             const token = localStorage.getItem("gh_token");
             if (!token) { alert("認証が必要です"); return; }
-            if(!confirm(`GitHub上の ${GITHUB_CONFIG.path} を直接上書きします。よろしいですか？`)) return;
-
-            const jsonString = JSON.stringify(allPosts, null, 4);
-            const content = `// このファイルは admin.html で生成されました\nconst newsData = ${jsonString};`;
-            const encodedContent = btoa(unescape(encodeURIComponent(content)));
+            if(!confirm(`GitHub上の ${GITHUB_CONFIG.path} を更新します。よろしいですか？`)) return;
 
             try {
+                // 1. 現在のファイルを取得
                 const getRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`, {
                     headers: { Authorization: `token ${token}` }
                 });
                 
-                // 新規ファイル作成か更新かチェック
+                let existingData = [];
                 let sha = null;
+
                 if (getRes.ok) {
                     const fileData = await getRes.json();
                     sha = fileData.sha;
+                    // Base64デコードして中身を取り出す
+                    // "const newsData = [...];" の形式からJSON部分だけ抽出する簡易パース
+                    const content = decodeURIComponent(escape(atob(fileData.content)));
+                    const jsonPart = content.match(/\[.*\]/s); // []の中身を抽出
+                    if (jsonPart) {
+                        existingData = JSON.parse(jsonPart[0]);
+                    }
                 }
 
+                // 2. 新しいデータを先頭に追加（ID重複チェック）
+                // 今回入力した allPosts を、既存データに追加する
+                const newIds = new Set(allPosts.map(p => p.id));
+                // 既存データのうち、今回編集していないものだけ残す（重複回避）
+                const mergedData = [...allPosts, ...existingData.filter(p => !newIds.has(p.id))];
+
+                // 3. 保存用データの作成
+                const jsonString = JSON.stringify(mergedData, null, 4);
+                const newContent = `// このファイルは admin.html で生成されました\nconst newsData = ${jsonString};`;
+                const encodedContent = btoa(unescape(encodeURIComponent(newContent)));
+
+                // 4. 書き込み
                 const putRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`, {
                     method: "PUT",
                     headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        message: "Update news_data.js from Admin Cockpit",
+                        message: "Update news-data.js (Append)",
                         content: encodedContent,
                         sha: sha
                     })
                 });
 
-                if (putRes.ok) alert("GitHubへの自動保存に成功しました！");
-                else alert("保存に失敗しました。");
+                if (putRes.ok) {
+                    alert("GitHubへの保存（追記）に成功しました！");
+                    allPosts = []; // 保存したら一時リストはクリア
+                } else {
+                    alert("保存に失敗しました。");
+                }
             } catch (err) { alert("エラー: " + err.message); }
         }
     </script>
