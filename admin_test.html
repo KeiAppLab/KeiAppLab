@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KEI Lab マスター・コックピット</title>
 
-    <!-- ユーザーリストの読み込み -->
+    <!-- ニュース・ユーザーリストの読み込み -->
+    <script src="news-data.js"></script>
     <script src="allowed_users.js"></script>
 
     <style>
@@ -189,16 +190,18 @@
                         <div class="editor-area">
                             <h2>📝 記事・プロジェクト作成</h2>
                             <div class="form-group"><label>日付</label><input type="text" id="inDate"></div>
-                            <div class="form-group"><label>カテゴリ</label>
-                                <select id="inCategory" onchange="updatePreview()">
-                                    <option value="release">プレスリリース</option>
-                                    <option value="update">更新情報</option>
-                                    <option value="start">プロジェクト開始 (Coming Soon)</option>
-                                    <option value="steam">Steamリリース</option>
-                                    <option value="game">サイト内ミニゲーム</option>
-                                </select>
-                            </div>
-                            <div class="form-group"><label>プロジェクト名</label><input list="projects" id="inProject" placeholder="プロジェクト名" oninput="updatePreview()"><datalist id="projects"><option value="FreeCallApp"><option value="通話時間管理ウィジェット"><option value="Project Steam (仮)"><option value="KEI Lab 公式サイト"></datalist></div>
+                            <div class="form-group">
+                        <label>カテゴリ (リストから選択または入力)</label>
+                            <input list="categoryList" id="inCategory" placeholder="カテゴリを選択" oninput="updatePreview()">
+                            <datalist id="categoryList">
+                                <option value="release">プレスリリース</option>
+                                <option value="update">更新情報</option>
+                                <option value="start">プロジェクト開始</option>
+                                <option value="steam">Steamリリース</option>
+                                <option value="game">ミニゲーム</option>
+                            </datalist>
+                        </div>
+                            <div class="form-group"><label>プロジェクト名</label><input list="projects" id="inProject" placeholder="プロジェクト名" oninput="autoFillProject()"><datalist id="projects"><option value="FreeCallApp"><option value="通話時間管理ウィジェット"><option value="Project Steam (仮)"><option value="KEI Lab 公式サイト"></datalist></div>
                             <div class="form-group"><label>タイトル</label><input type="text" id="inTitle" placeholder="タイトル" oninput="updatePreview()"></div>
                             <div class="form-group"><label>説明文 (一覧用)</label><textarea id="inDesc" style="height:60px;" placeholder="短い説明" oninput="updatePreview()"></textarea></div>
                             <div class="form-group"><label>画像ファイル名</label><input type="text" id="inImage" placeholder="例: app-image.png" oninput="updatePreview()"></div>
@@ -431,7 +434,40 @@
             alert("「」をダウンロードしました。\nプロジェクトフォルダに上書きしてください。");
         }
 
-        // --- 5. ユーザー権限管理ロジック ---
+        // --- 5. 自動入力機能 (オートフィル) ---
+        function autoFillProject() {
+            const inputProject = document.getElementById('inProject').value;
+            
+            // newsData（外部ファイル）が読み込まれていない場合は無視
+            if (typeof newsData === 'undefined') {
+                updatePreview();
+                return;
+            }
+
+            // newsDataの中から、同じプロジェクト名の記事を探す（新しい順に検索）
+            // ※newsDataは通常古い順か新しい順かによりますが、ここでは「一致するもののうち最新」を探すロジックにします
+            const targetPost = newsData.slice().reverse().find(post => post.project === inputProject);
+
+            if (targetPost) {
+                // 過去データが見つかったら、入力欄にセットする
+                // （日付とカテゴリは今回用の新しいものにするため、上書きしません）
+                document.getElementById('inTitle').value = targetPost.title;
+                document.getElementById('inDesc').value = targetPost.description;
+                document.getElementById('inImage').value = targetPost.image;
+                document.getElementById('inBody').value = targetPost.body;
+            } else {
+                // 新しいプロジェクト名（または空白）なら、欄をクリアする
+                document.getElementById('inTitle').value = "";
+                document.getElementById('inDesc').value = "";
+                document.getElementById('inImage').value = "";
+                document.getElementById('inBody').value = "";
+            }
+
+            // 入力が終わったらプレビューを更新
+            updatePreview();
+        }
+        
+        // --- 6. ユーザー権限管理ロジック ---
         // リストの描画
         function renderUserList() {
             const list = document.getElementById('userList');
