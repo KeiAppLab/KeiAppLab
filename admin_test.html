@@ -70,8 +70,14 @@
             background-color: #e0e0e0 !important; 
             color: #333 !important; 
             border: 1px solid #ccc !important;
-            font-family: 'Roboto Mono', monospace; /* 等幅フォントで半角っぽく */
-            ime-mode: disabled; /* IE/Firefox用（参考） */
+            font-family: 'Roboto Mono', monospace; 
+            ime-mode: disabled; /* IE/Firefox用 */
+        }
+        
+        /* 画像ファイル名用 */
+        .input-half { 
+            font-family: 'Roboto Mono', monospace; 
+            ime-mode: disabled; 
         }
         
         /* 半角入力用クラス（画像ファイル名など） */
@@ -422,9 +428,18 @@
         function logout() { localStorage.removeItem('gh_token'); location.reload(); }
 
         window.addEventListener('load', () => {
+
             const savedToken = localStorage.getItem('gh_token');
             if (savedToken) checkIdentity(savedToken);
             renderUserList();
+        });
+
+        // --- 入力制限（半角のみ許可） ---
+        document.querySelectorAll('.input-gray-en, .input-half').forEach(input => {
+            input.addEventListener('input', function() {
+                // 全角文字が含まれていたら削除する正規表現
+                this.value = this.value.replace(/[^\x00-\x7F]/g, '');
+            });
         });
 
         // --- 2. パネル切り替え ---
