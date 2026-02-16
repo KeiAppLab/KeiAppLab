@@ -76,6 +76,19 @@
         textarea { height: 100px; font-family: sans-serif; }
         input:focus, select:focus, textarea:focus { border-color: #007acc; outline: none; }
         
+        /* --- 白い入力欄（カテゴリ・プロジェクト用） --- */
+        .input-white {
+            background-color: #ffffff !important;
+            color: #333 !important;
+            width: 95% !important; /* 横幅を少し小さく */
+            border: 1px solid #ccc !important;
+            font-weight: bold;
+        }
+        .input-white:focus {
+            border-color: #007acc !important;
+            box-shadow: 0 0 5px rgba(0,122,204,0.5);
+        }
+
         button { padding: 12px 20px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 10px; width: 100%; }
         .btn-calc { background: #007acc; color: white; font-size: 1.1rem; }
         .btn-save { background: #27ae60; color: white; }
@@ -110,7 +123,7 @@
 </head>
 <body>
 
-    <!-- 1. ログインオーバーレイ (初期表示) -->
+    <!-- 1. ログインオーバーレイ -->
     <div id="loginOverlay">
         <div class="login-container-split">
             <!-- 左側：ログインフォーム -->
@@ -142,7 +155,7 @@
         </div>
     </div>
 
-    <!-- 2. メイン画面 (初期非表示) -->
+    <!-- 2. メイン画面 -->
     <div id="mainWrapper">
         <div class="dashboard">
             <!-- サイドバー -->
@@ -195,24 +208,28 @@
                                 <input type="text" id="inDate">
                             </div>
 
+                            <!-- カテゴリ（白いプルダウンに変更） -->
                             <div class="form-group">
-                                <label>カテゴリ (リストから選択または入力)</label>
-                                <input list="categoryList" id="inCategory" placeholder="カテゴリを選択" oninput="updatePreview()">
-                                <datalist id="categoryList">
+                                <label>カテゴリ</label>
+                                <select id="inCategory" class="input-white" onchange="updatePreview()">
                                     <option value="release">プレスリリース</option>
                                     <option value="update">更新情報</option>
-                                    <option value="start">プロジェクト開始</option>
+                                    <option value="start">プロジェクト開始 (Coming Soon)</option>
                                     <option value="steam">Steamリリース</option>
-                                    <option value="game">ミニゲーム</option>
-                                </datalist>
+                                    <option value="game">サイト内ミニゲーム</option>
+                                </select>
                             </div>
 
+                            <!-- プロジェクト名（履歴選択 ＋ 自由入力） -->
                             <div class="form-group">
-                                <label>プロジェクト名 (リストから選択または入力)</label>
-                                <!-- oninputでオートフィル機能を呼び出します -->
-                                <input list="projectList" id="inProject" placeholder="プロジェクト名を入力" oninput="autoFillProject()">
-                                <!-- 中身は空にしておき、JSで自動生成します -->
-                                <datalist id="projectList"></datalist>
+                                <label>プロジェクト名</label>
+                                <!-- 1. 履歴から選ぶプルダウン -->
+                                <select id="projectSelect" class="input-white" onchange="syncProjectSelect()" style="margin-bottom: 5px; color:#0056b3;">
+                                    <option value="">▼ 履歴から選択...</option>
+                                    <!-- JSでここにリストが自動生成されます -->
+                                </select>
+                                <!-- 2. 自由入力欄 -->
+                                <input type="text" id="inProject" class="input-white" placeholder="または新規プロジェクト名を入力" oninput="autoFillProject()">
                             </div>
 
                             <div class="form-group">
@@ -265,7 +282,7 @@
 
                 <!-- ユーザー管理パネル -->
                 <div id="panel-users" class="panel">
-                    <div class="calc-container"> <!-- デザイン流用 -->
+                    <div class="calc-container">
                         <h2>👥 編集権限者の管理</h2>
                         <p>この管理画面にアクセスできるGitHubユーザーIDを管理します。</p>
                         
@@ -318,7 +335,6 @@
                 if (!res.ok) throw new Error("トークンが無効です");
                 const userData = await res.json();
 
-                // allowed_users.js から読み込んだ配列を使用
                 if (typeof allowedUsersData !== 'undefined' && allowedUsersData.includes(userData.login)) {
                     localStorage.setItem('gh_token', token);
                     showDashboard();
@@ -337,30 +353,21 @@
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('mainWrapper').style.display = 'block';
             
-            // データ更新
             updatePreview();
-            
-            // プロジェクトリストの自動生成 (過去データから)
-            initProjectList();
+            initProjectList(); // プロジェクトリスト生成
         }
 
-        // ログアウト
         function logout() {
             localStorage.removeItem('gh_token');
             location.reload();
         }
 
-        // 起動時チェック
-        // 初期化時にリストを描画
         window.addEventListener('load', () => {
-            // 既存のログインチェック処理...
             const savedToken = localStorage.getItem('gh_token');
             if (savedToken) {
                 checkIdentity(savedToken);
             }
-            
-            renderUserList();   // ユーザー管理用
-            initProjectList();  // ★これを追加（プロジェクトリスト生成）
+            renderUserList();
         });
 
 
@@ -390,23 +397,78 @@
         const today = new Date();
         document.getElementById('inDate').value = today.getFullYear() + '.' + (today.getMonth()+1).toString().padStart(2, '0') + '.' + today.getDate().toString().padStart(2, '0');
 
-        // --- プロジェクトリストの自動生成 ---
+        // --- プロジェクトリストの自動生成（プルダウン用） ---
         function initProjectList() {
-            // newsDataがない場合は何もしない
             if (typeof newsData === 'undefined') return;
 
-            // 1. 過去のデータからプロジェクト名だけを取り出し、重複を削除（Setを使う）
+            // 1. プロジェクト名を抽出
             const projectSet = new Set(newsData.map(item => item.project).filter(p => p));
             
-            // 2. datalistに追加
-            const datalist = document.getElementById('projectList');
-            datalist.innerHTML = ''; // 一旦クリア
+            // 2. selectタグに追加
+            const selectBox = document.getElementById('projectSelect');
+            selectBox.innerHTML = '<option value="">▼ 履歴から選択...</option>';
 
             projectSet.forEach(projName => {
                 const option = document.createElement('option');
                 option.value = projName;
-                datalist.appendChild(option);
+                option.textContent = projName;
+                selectBox.appendChild(option);
             });
+        }
+
+        // --- プルダウンで選んだら入力欄に反映する機能 ---
+        function syncProjectSelect() {
+            const selectBox = document.getElementById('projectSelect');
+            const inputBox = document.getElementById('inProject');
+            
+            if (selectBox.value !== "") {
+                inputBox.value = selectBox.value;
+                autoFillProject();
+            }
+        }
+
+        // --- 自動入力＆クリア機能 (修正版) ---
+        function autoFillProject() {
+            const inputProject = document.getElementById('inProject').value.trim();
+            
+            const elTitle = document.getElementById('inTitle');
+            const elDesc = document.getElementById('inDesc');
+            const elImage = document.getElementById('inImage');
+            const elBody = document.getElementById('inBody');
+
+            // A. 入力が空になった場合（クリア）
+            if (inputProject === "") {
+                elTitle.value = "";
+                elDesc.value = "";
+                elImage.value = "";
+                elBody.value = "";
+                document.getElementById('projectSelect').value = ""; // プルダウンも戻す
+                updatePreview();
+                return;
+            }
+
+            if (typeof newsData === 'undefined') {
+                updatePreview();
+                return;
+            }
+
+            // B. 過去データから検索
+            const targetPost = newsData.slice().reverse().find(post => post.project === inputProject);
+
+            if (targetPost) {
+                elTitle.value = targetPost.title || "";
+                elDesc.value = targetPost.description || "";
+                elImage.value = targetPost.image || "";
+                elBody.value = targetPost.body || "";
+            } else {
+                // C. 新規の場合（クリア）
+                elTitle.value = "";
+                elDesc.value = "";
+                elImage.value = "";
+                elBody.value = "";
+            }
+
+            updatePreview();
         }
 
         function updatePreview() {
@@ -456,74 +518,6 @@
             }
         }
 
-        // --- 5. プロジェクト入力の便利機能 (AutoFill & List Init) ---
-        
-        // 過去のnews_data.jsからプロジェクト名リストを作る
-        function initProjectList() {
-            if (typeof newsData === 'undefined') return;
-            
-            // 重複を排除してプロジェクト名だけ集める
-            const projectSet = new Set(newsData.map(post => post.project).filter(p => p));
-            const datalist = document.getElementById('projects');
-            
-            datalist.innerHTML = ""; // 一旦クリア
-            projectSet.forEach(projName => {
-                const option = document.createElement('option');
-                option.value = projName;
-                datalist.appendChild(option);
-            });
-        }
-
-        // --- 5. 自動入力機能 (オートフィル・完全版) ---
-        function autoFillProject() {
-            const inputProject = document.getElementById('inProject').value;
-            
-            // 入力欄の要素を取得
-            const elTitle = document.getElementById('inTitle');
-            const elDesc = document.getElementById('inDesc');
-            const elImage = document.getElementById('inImage');
-            const elBody = document.getElementById('inBody');
-
-            // newsDataがない場合はプレビュー更新だけして終了
-            if (typeof newsData === 'undefined') {
-                updatePreview();
-                return;
-            }
-
-            // --- A. 入力が空になった場合（削除時） ---
-            if (inputProject === "") {
-                // 全フィールドをクリア
-                elTitle.value = "";
-                elDesc.value = "";
-                elImage.value = "";
-                elBody.value = "";
-                updatePreview();
-                return;
-            }
-
-            // --- B. 過去データから同じプロジェクトを探す（最新のものを優先） ---
-            // newsDataをコピーして逆順にし、最初に見つかったもの（＝最新）を取得
-            const targetPost = newsData.slice().reverse().find(post => post.project === inputProject);
-
-            if (targetPost) {
-                // --- 過去データが見つかった場合（自動入力） ---
-                elTitle.value = targetPost.title || "";
-                elDesc.value = targetPost.description || "";
-                elImage.value = targetPost.image || "";
-                elBody.value = targetPost.body || "";
-            } else {
-                // --- 新規プロジェクトの場合（クリア） ---
-                // ユーザーが新しい名前を入力した瞬間、過去の情報は消す
-                elTitle.value = "";
-                elDesc.value = "";
-                elImage.value = "";
-                elBody.value = "";
-            }
-
-            // 最後にプレビューを更新
-            updatePreview();
-        }
-
         function addPost() {
             const newPost = {
                 id: Date.now(),
@@ -547,7 +541,6 @@
             outArea.style.display = 'block';
             outArea.value = jsCode;
 
-            // ファイルダウンロード処理
             const blob = new Blob([jsCode], { type: "text/javascript" });
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
@@ -564,12 +557,14 @@
             const list = document.getElementById('userList');
             if(!list) return;
             list.innerHTML = '';
-            allowedUsersData.forEach((user, index) => {
-                const li = document.createElement('li');
-                li.style = "display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333; color:#fff;";
-                li.innerHTML = `<span>${user}</span><button style="background:#c0392b; width:auto; padding:5px 10px; font-size:0.8rem; margin:0;" onclick="removeUser(${index})">削除</button>`;
-                list.appendChild(li);
-            });
+            if (typeof allowedUsersData !== 'undefined') {
+                allowedUsersData.forEach((user, index) => {
+                    const li = document.createElement('li');
+                    li.style = "display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333; color:#fff;";
+                    li.innerHTML = `<span>${user}</span><button style="background:#c0392b; width:auto; padding:5px 10px; font-size:0.8rem; margin:0;" onclick="removeUser(${index})">削除</button>`;
+                    list.appendChild(li);
+                });
+            }
         }
         
         function addUser() {
@@ -623,7 +618,6 @@
                 alert("エラーが発生しました: " + err.message);
             }
         }
- 
     </script>
 </body>
 </html>
