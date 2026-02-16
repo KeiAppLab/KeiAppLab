@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KEI Lab マスター・コックピット</title>
+
+    <!-- ユーザーリストの読み込み -->
+    <script src="allowed_users.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700;900&family=Roboto:wght@400;500;900&display=swap');
 
@@ -18,16 +22,24 @@
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #2c3e50; z-index: 9999;
             display: flex; justify-content: center; align-items: center;
-            flex-direction: column;
         }
-        .login-box {
-            background: white; padding: 40px; border-radius: 10px; width: 400px;
-            text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); color: #333;
+        .login-container-split {
+            display: flex; width: 800px; height: 500px;
+            background: white; border-radius: 10px; overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
-        .login-box input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        .login-box button { width: 100%; padding: 12px; background: #0056b3; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .login-box button:hover { background: #003d82; }
-        #authStatus { margin-top: 15px; font-weight: bold; min-height: 1.2em; }
+        .login-left {
+            width: 40%; padding: 40px; display: flex; flex-direction: column;
+            justify-content: center; background: #f9f9f9; border-right: 1px solid #eee;
+        }
+        .login-left input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ccc; border-radius: 5px; }
+        .login-left button { width: 100%; padding: 12px; background: #0056b3; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .login-left button:hover { background: #003d82; }
+        
+        .login-right { width: 60%; padding: 40px; overflow-y: auto; color: #333; line-height: 1.6; }
+        .login-right h3 { border-bottom: 2px solid #0056b3; padding-bottom: 10px; margin-top: 0; }
+        .login-right ol { padding-left: 20px; }
+        .login-right li { margin-bottom: 10px; font-size: 0.9rem; }
 
         /* --- メイン画面（サイドバーとコンテンツ） --- */
         .dashboard { display: grid; grid-template-columns: 250px 1fr; height: 100%; }
@@ -99,12 +111,33 @@
 
     <!-- 1. ログインオーバーレイ (初期表示) -->
     <div id="loginOverlay">
-        <div class="login-box">
-            <h2>啓 App Lab 管理者認証</h2>
-            <p style="font-size:0.9rem; color:#666;">トークンを入力してください</p>
-            <input type="password" id="tokenInput" placeholder="GitHubトークン (ghp_...)">
-            <button onclick="checkIdentity()">ログイン</button>
-            <div id="authStatus"></div>
+        <div class="login-container-split">
+            <!-- 左側：ログインフォーム -->
+            <div class="login-left">
+                <h2>🚀 KEI Lab Admin</h2>
+                <p>管理者トークンを入力してください</p>
+                <input type="password" id="tokenInput" placeholder="GitHub Token (ghp_...)">
+                <button onclick="checkIdentity()">ログイン</button>
+                <div id="authStatus"></div>
+            </div>
+
+            <!-- 右側：ガイドとリンク -->
+            <div class="login-right">
+                <h3>🔑 トークンの発行手順</h3>
+                <ol>
+                    <li>
+                        <a href="https://github.com/settings/tokens" target="_blank" style="color:#007acc; font-weight:bold;">GitHub Token設定ページへ移動 ↗</a>
+                    </li>
+                    <li>[Generate new token (classic)] を選択</li>
+                    <li>Noteに「KEI-Admin」等と入力</li>
+                    <li>Expiration（期限）を設定（90 days推奨）</li>
+                    <li><strong>[repo]</strong> にチェックを入れる（必須）</li>
+                    <li>一番下の [Generate token] を押してコピー</li>
+                </ol>
+                <p style="font-size:0.8rem; color:#666; margin-top:10px;">
+                    ※発行されたトークン（ghp_...）はこの場限りです。<br>必ずメモ帳等に保存してください。
+                </p>
+            </div>
         </div>
     </div>
 
@@ -116,6 +149,7 @@
                 <h1>🚀 KEI Lab Admin</h1>
                 <div class="menu-btn active" onclick="switchPanel('calc')">💰 収益・秒数計算</div>
                 <div class="menu-btn" onclick="switchPanel('cms')">📝 コンテンツ編集</div>
+                <div class="menu-btn" onclick="switchPanel('users')">👥 権限管理</div>
                 <!-- ログアウトボタン -->
                 <div class="menu-btn" onclick="logout()" style="margin-top:auto; background:#c0392b; color:white;">🔒 ログアウト</div>
             </div>
@@ -195,14 +229,38 @@
                     </div>
                 </div>
 
+        <!-- ユーザー管理パネル -->
+                <div id="panel-users" class="panel">
+                    <div class="calc-container"> <!-- デザイン流用 -->
+                        <h2>👥 編集権限者の管理</h2>
+                        <p>この管理画面にアクセスできるGitHubユーザーIDを管理します。</p>
+                        
+                        <div style="display:flex; gap:10px; margin-bottom:20px;">
+                            <input type="text" id="newUserId" placeholder="追加するGitHubユーザーID" style="flex:1;">
+                            <button class="btn-save" style="width:auto;" onclick="addUser()">追加</button>
+                        </div>
+        
+                        <ul id="userList" style="background:#1e1e1e; padding:20px; border-radius:8px; list-style:none;">
+                            <!-- JSでここにリストが表示されます -->
+                        </ul>
+        
+                        <button class="btn-copy" onclick="saveUsersToGitHub()">💾 権限設定をGitHubに保存</button>
+                    </div>
+                </div>
+                
             </div>
         </div>
     </div>
 
     <script>
-        // --- 認証設定 ---
-        const ALLOWED_USERS = ["KeiAppLab", "papa-chan", "Ksansansan"];
 
+        const GITHUB_CONFIG = {
+            owner: "KeiAppLab",      // GitHubのユーザー名（会社名）
+            repo: "KeiAppLab",       // リポジトリの名前
+            path: "news-data.js",    // ニュースデータのファイル名
+        };
+
+        // --- 認証設定 ---
         // --- 1. 認証機能 ---
         async function checkIdentity() {
             const tokenInput = document.getElementById('tokenInput');
@@ -227,7 +285,7 @@
                 if (!res.ok) throw new Error("トークンが無効です");
                 const userData = await res.json();
 
-                if (ALLOWED_USERS.includes(userData.login)) {
+                if (allowedUsersData.includes(userData.login)) {
                     // 認証成功
                     localStorage.setItem('gh_token', token); // トークンを保存
                     showDashboard(); // 画面切り替え
@@ -370,8 +428,96 @@
             link.click();
             document.body.removeChild(link);
 
-            alert("「news_data.js」をダウンロードしました。\nプロジェクトフォルダに上書きしてください。");
+            alert("「」をダウンロードしました。\nプロジェクトフォルダに上書きしてください。");
         }
+
+        // --- 5. ユーザー権限管理ロジック ---
+        // リストの描画
+        function renderUserList() {
+            const list = document.getElementById('userList');
+            list.innerHTML = '';
+            allowedUsersData.forEach((user, index) => {
+                const li = document.createElement('li');
+                li.style = "display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333; color:#fff;";
+                li.innerHTML = `
+                    <span>${user}</span>
+                    <button style="background:#c0392b; width:auto; padding:5px 10px; font-size:0.8rem; margin:0;" onclick="removeUser(${index})">削除</button>
+                `;
+                list.appendChild(li);
+            });
+        }
+        
+        // ユーザー追加
+        function addUser() {
+            const input = document.getElementById('newUserId');
+            const id = input.value.trim();
+            if(!id) return;
+            if(allowedUsersData.includes(id)) {
+                alert("そのユーザーは既に登録されています");
+                return;
+            }
+            allowedUsersData.push(id);
+            input.value = '';
+            renderUserList();
+        }
+    
+        // ユーザー削除
+        function removeUser(index) {
+            if(confirm("このユーザーの権限を削除しますか？")) {
+                allowedUsersData.splice(index, 1);
+                renderUserList();
+            }
+        }
+    
+        // GitHubへ保存（ユーザーリスト用）
+        async function saveUsersToGitHub() {
+            const token = localStorage.getItem("gh_token");
+            if (!token) { alert("認証が必要です"); return; }
+    
+            if(!confirm("allowed_users.js を更新します。よろしいですか？")) return;
+    
+            // 保存用データの整形
+            const jsonString = JSON.stringify(allowedUsersData, null, 4);
+            const content = `// 編集権限を持つユーザーリスト\nconst allowedUsersData = ${jsonString};`;
+            const encodedContent = btoa(unescape(encodeURIComponent(content)));
+    
+            try {
+                // SHA取得
+                const getRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/allowed_users.js`, {
+                    headers: { Authorization: `token ${token}` }
+                });
+                const fileData = await getRes.json();
+    
+                // 更新実行
+                const putRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/allowed_users.js`, {
+                    method: "PUT",
+                    headers: {
+                        Authorization: `token ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        message: "Update allowed users list",
+                        content: encodedContent,
+                        sha: fileData.sha
+                    })
+                });
+    
+                if (putRes.ok) {
+                    alert("権限設定を更新しました！");
+                } else {
+                    alert("保存に失敗しました。");
+                }
+            } catch (err) {
+                alert("エラーが発生しました: " + err.message);
+            }
+        }
+    
+        // 初期化時にリストを描画
+        window.addEventListener('load', () => {
+            // 既存のログインチェック処理...
+            renderUserList(); // 追加
+        });
+ 
     </script>
 </body>
 </html>
