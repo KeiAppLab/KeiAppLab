@@ -1,6 +1,7 @@
-// このファイルは admin.html の「編集権限者管理」で生成されます
+// 編集権限を持つユーザーリスト
 const allowedUsersData = [
     "KeiAppLab",
     "papa-chan",
-    "Ksansansan"
+    "Ksansansan",
+    "yamadatarou"
 ];
