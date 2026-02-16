@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KEI Lab マスター・コックピット</title>
 
-    <!-- ユーザーリストの読み込み -->
+    <!-- ニュース・ユーザーリストの読み込み -->
+    <script src="news-data.js"></script>
     <script src="allowed_users.js"></script>
 
     <style>
@@ -75,6 +76,25 @@
         textarea { height: 100px; font-family: sans-serif; }
         input:focus, select:focus, textarea:focus { border-color: #007acc; outline: none; }
         
+        /* --- 白い入力欄（カテゴリ・プロジェクト用） --- */
+        .input-white {
+            background-color: #ffffff !important;
+            color: #333 !important;
+            width: 100% !important; /* 横幅を日付と同じ100%に修正 */
+            border: 1px solid #ccc !important;
+            font-weight: bold;
+        }
+        .input-white:focus {
+            border-color: #007acc !important;
+            box-shadow: 0 0 5px rgba(0,122,204,0.5);
+        }
+
+        /* プロジェクト名入力エリアのレイアウト */
+        .project-input-group {
+            display: flex;
+            gap: 10px;
+        }
+
         button { padding: 12px 20px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 10px; width: 100%; }
         .btn-calc { background: #007acc; color: white; font-size: 1.1rem; }
         .btn-save { background: #27ae60; color: white; }
@@ -109,7 +129,7 @@
 </head>
 <body>
 
-    <!-- 1. ログインオーバーレイ (初期表示) -->
+    <!-- 1. ログインオーバーレイ -->
     <div id="loginOverlay">
         <div class="login-container-split">
             <!-- 左側：ログインフォーム -->
@@ -141,7 +161,7 @@
         </div>
     </div>
 
-    <!-- 2. メイン画面 (初期非表示) -->
+    <!-- 2. メイン画面 -->
     <div id="mainWrapper">
         <div class="dashboard">
             <!-- サイドバー -->
@@ -188,9 +208,16 @@
                         <!-- エディタ -->
                         <div class="editor-area">
                             <h2>📝 記事・プロジェクト作成</h2>
-                            <div class="form-group"><label>日付</label><input type="text" id="inDate"></div>
-                            <div class="form-group"><label>カテゴリ</label>
-                                <select id="inCategory" onchange="updatePreview()">
+                            
+                            <div class="form-group">
+                                <label>日付</label>
+                                <input type="text" id="inDate">
+                            </div>
+
+                            <!-- カテゴリ（白いプルダウン・横幅修正） -->
+                            <div class="form-group">
+                                <label>カテゴリ</label>
+                                <select id="inCategory" class="input-white" onchange="updatePreview()">
                                     <option value="release">プレスリリース</option>
                                     <option value="update">更新情報</option>
                                     <option value="start">プロジェクト開始 (Coming Soon)</option>
@@ -198,13 +225,46 @@
                                     <option value="game">サイト内ミニゲーム</option>
                                 </select>
                             </div>
-                            <div class="form-group"><label>プロジェクト名</label><input list="projects" id="inProject" placeholder="プロジェクト名" oninput="updatePreview()"><datalist id="projects"><option value="FreeCallApp"><option value="通話時間管理ウィジェット"><option value="Project Steam (仮)"><option value="KEI Lab 公式サイト"></datalist></div>
-                            <div class="form-group"><label>タイトル</label><input type="text" id="inTitle" placeholder="タイトル" oninput="updatePreview()"></div>
-                            <div class="form-group"><label>説明文 (一覧用)</label><textarea id="inDesc" style="height:60px;" placeholder="短い説明" oninput="updatePreview()"></textarea></div>
-                            <div class="form-group"><label>画像ファイル名</label><input type="text" id="inImage" placeholder="例: app-image.png" oninput="updatePreview()"></div>
-                            <div class="form-group"><label>詳細本文 (HTML可)</label><textarea id="inBody" style="height:150px;" placeholder="詳細内容" oninput="updatePreview()"></textarea></div>
+
+                            <!-- プロジェクト名（入力欄 ＋ 選択用プルダウン） -->
+                            <div class="form-group">
+                                <label>プロジェクト名</label>
+                                <div class="project-input-group">
+                                    <!-- 1. 入力欄（メイン） -->
+                                    <input type="text" id="inProject" class="input-white" placeholder="プロジェクト名を入力" oninput="autoFillProject()" style="flex: 1;" autocomplete="off">
+                                    
+                                    <!-- 2. 選択用プルダウン（ヘルパー） -->
+                                    <select id="projectSelectHelper" class="input-white" onchange="syncProjectSelect()" style="width: auto; min-width: 150px; color:#0056b3;">
+                                        <option value="">▼ 履歴から選択...</option>
+                                        <!-- JSでここにリストが自動生成されます -->
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>タイトル</label>
+                                <input type="text" id="inTitle" placeholder="タイトル" oninput="updatePreview()" autocomplete="off">
+                            </div>
+
+                            <div class="form-group">
+                                <label>説明文 (一覧用)</label>
+                                <textarea id="inDesc" style="height:60px;" placeholder="短い説明" oninput="updatePreview()"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label>画像ファイル名</label>
+                                <input type="text" id="inImage" placeholder="例: app-image.png" oninput="updatePreview()" autocomplete="off">
+                            </div>
+
+                            <div class="form-group">
+                                <label>詳細本文 (HTML可)</label>
+                                <textarea id="inBody" style="height:150px;" placeholder="詳細内容" oninput="updatePreview()"></textarea>
+                            </div>
+
                             <button class="btn-save" onclick="addPost()">リストに追加 (一時保存)</button>
+                            
                             <hr style="border:0; border-top:1px solid #444; margin: 20px 0;">
+                            
                             <button class="btn-copy" onclick="exportData()">💾 news_data.js を書き出し</button>
                             <textarea id="outputArea" readonly placeholder="ここにコードが生成されます"></textarea>
                         </div>
@@ -229,7 +289,7 @@
                     </div>
                 </div>
 
-        <!-- ユーザー管理パネル -->
+                <!-- ユーザー管理パネル -->
                 <div id="panel-users" class="panel">
                     <div class="calc-container"> <!-- デザイン流用 -->
                         <h2>👥 編集権限者の管理</h2>
@@ -253,18 +313,17 @@
     </div>
 
     <script>
-
+        // ▼▼▼ ここを自分の情報に書き換えてください ▼▼▼
         const GITHUB_CONFIG = {
-            owner: "KeiAppLab",      // GitHubのユーザー名（会社名）
-            repo: "KeiAppLab",       // リポジトリの名前
+            owner: "KeiAppLab",      // GitHubユーザー名
+            repo: "KeiAppLab",       // リポジトリ名
             path: "news-data.js",    // ニュースデータのファイル名
         };
+        // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
-        // --- 認証設定 ---
         // --- 1. 認証機能 ---
         async function checkIdentity() {
             const tokenInput = document.getElementById('tokenInput');
-            // 引数が渡されていない場合は入力欄から取得、渡されている場合（自動ログイン）はそれを使用
             const token = (typeof arguments[0] === 'string') ? arguments[0] : tokenInput.value.trim();
             const status = document.getElementById('authStatus');
             
@@ -285,10 +344,9 @@
                 if (!res.ok) throw new Error("トークンが無効です");
                 const userData = await res.json();
 
-                if (allowedUsersData.includes(userData.login)) {
-                    // 認証成功
-                    localStorage.setItem('gh_token', token); // トークンを保存
-                    showDashboard(); // 画面切り替え
+                if (typeof allowedUsersData !== 'undefined' && allowedUsersData.includes(userData.login)) {
+                    localStorage.setItem('gh_token', token);
+                    showDashboard();
                 } else {
                     status.innerText = "❌ 許可されていないユーザーIDです: " + userData.login;
                     status.style.color = "red";
@@ -299,27 +357,26 @@
             }
         }
 
-        // ダッシュボード表示処理
+        // ダッシュボード表示 & 初期化処理
         function showDashboard() {
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('mainWrapper').style.display = 'block';
-            // 初期化処理
+            
             updatePreview();
+            initProjectList(); // プロジェクトリスト生成
         }
 
-        // ログアウト処理
         function logout() {
             localStorage.removeItem('gh_token');
             location.reload();
         }
 
-        // 起動時の自動チェック
         window.addEventListener('load', () => {
             const savedToken = localStorage.getItem('gh_token');
             if (savedToken) {
-                // 保存されたトークンで自動ログイン試行
                 checkIdentity(savedToken);
             }
+            renderUserList();
         });
 
 
@@ -348,6 +405,82 @@
         let allPosts = [];
         const today = new Date();
         document.getElementById('inDate').value = today.getFullYear() + '.' + (today.getMonth()+1).toString().padStart(2, '0') + '.' + today.getDate().toString().padStart(2, '0');
+
+        // --- プロジェクトリストの自動生成（ヘルパー用） ---
+        function initProjectList() {
+            if (typeof newsData === 'undefined') return;
+
+            // 1. プロジェクト名を抽出
+            const projectSet = new Set(newsData.map(item => item.project).filter(p => p));
+            
+            // 2. selectタグに追加
+            const selectBox = document.getElementById('projectSelectHelper');
+            selectBox.innerHTML = '<option value="">▼ 履歴から選択...</option>';
+
+            projectSet.forEach(projName => {
+                const option = document.createElement('option');
+                option.value = projName;
+                option.textContent = projName;
+                selectBox.appendChild(option);
+            });
+        }
+
+        // --- プルダウンで選んだら入力欄に反映する機能 ---
+        function syncProjectSelect() {
+            const selectBox = document.getElementById('projectSelectHelper');
+            const inputBox = document.getElementById('inProject');
+            
+            if (selectBox.value !== "") {
+                inputBox.value = selectBox.value;
+                autoFillProject();
+                // 選択をリセット（連続で同じものを選べるように）
+                selectBox.selectedIndex = 0;
+            }
+        }
+
+        // --- 自動入力＆クリア機能 (修正版) ---
+        function autoFillProject() {
+            const inputProject = document.getElementById('inProject').value.trim();
+            
+            const elTitle = document.getElementById('inTitle');
+            const elDesc = document.getElementById('inDesc');
+            const elImage = document.getElementById('inImage');
+            const elBody = document.getElementById('inBody');
+
+            // A. 入力が空になった場合（クリア）
+            if (inputProject === "") {
+                elTitle.value = "";
+                elDesc.value = "";
+                elImage.value = "";
+                elBody.value = "";
+                updatePreview();
+                return;
+            }
+
+            if (typeof newsData === 'undefined') {
+                updatePreview();
+                return;
+            }
+
+            // B. 過去データから検索 (最新のものを優先)
+            const targetPost = newsData.slice().reverse().find(post => post.project === inputProject);
+
+            if (targetPost) {
+                // 見つかったら自動入力
+                elTitle.value = targetPost.title || "";
+                elDesc.value = targetPost.description || "";
+                elImage.value = targetPost.image || "";
+                elBody.value = targetPost.body || "";
+            } else {
+                // C. 新規の場合（クリア）
+                elTitle.value = "";
+                elDesc.value = "";
+                elImage.value = "";
+                elBody.value = "";
+            }
+
+            updatePreview();
+        }
 
         function updatePreview() {
             const date = document.getElementById('inDate').value;
@@ -419,7 +552,6 @@
             outArea.style.display = 'block';
             outArea.value = jsCode;
 
-            // ファイルダウンロード処理
             const blob = new Blob([jsCode], { type: "text/javascript" });
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
@@ -428,67 +560,56 @@
             link.click();
             document.body.removeChild(link);
 
-            alert("「」をダウンロードしました。\nプロジェクトフォルダに上書きしてください。");
-        }
-
-        // --- 5. ユーザー権限管理ロジック ---
-        // リストの描画
-        function renderUserList() {
-            const list = document.getElementById('userList');
-            list.innerHTML = '';
-            allowedUsersData.forEach((user, index) => {
-                const li = document.createElement('li');
-                li.style = "display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333; color:#fff;";
-                li.innerHTML = `
-                    <span>${user}</span>
-                    <button style="background:#c0392b; width:auto; padding:5px 10px; font-size:0.8rem; margin:0;" onclick="removeUser(${index})">削除</button>
-                `;
-                list.appendChild(li);
-            });
+            alert("「news_data.js」をダウンロードしました。\nプロジェクトフォルダに上書きしてください。");
         }
         
-        // ユーザー追加
+        // --- 6. ユーザー権限管理ロジック ---
+        function renderUserList() {
+            const list = document.getElementById('userList');
+            if(!list) return;
+            list.innerHTML = '';
+            if (typeof allowedUsersData !== 'undefined') {
+                allowedUsersData.forEach((user, index) => {
+                    const li = document.createElement('li');
+                    li.style = "display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333; color:#fff;";
+                    li.innerHTML = `<span>${user}</span><button style="background:#c0392b; width:auto; padding:5px 10px; font-size:0.8rem; margin:0;" onclick="removeUser(${index})">削除</button>`;
+                    list.appendChild(li);
+                });
+            }
+        }
+        
         function addUser() {
             const input = document.getElementById('newUserId');
             const id = input.value.trim();
             if(!id) return;
-            if(allowedUsersData.includes(id)) {
-                alert("そのユーザーは既に登録されています");
-                return;
-            }
+            if(allowedUsersData.includes(id)) { alert("既に登録されています"); return; }
             allowedUsersData.push(id);
             input.value = '';
             renderUserList();
         }
     
-        // ユーザー削除
         function removeUser(index) {
-            if(confirm("このユーザーの権限を削除しますか？")) {
+            if(confirm("削除しますか？")) {
                 allowedUsersData.splice(index, 1);
                 renderUserList();
             }
         }
     
-        // GitHubへ保存（ユーザーリスト用）
         async function saveUsersToGitHub() {
             const token = localStorage.getItem("gh_token");
             if (!token) { alert("認証が必要です"); return; }
+            if(!confirm("GitHub上の allowed_users.js を更新します。よろしいですか？")) return;
     
-            if(!confirm("allowed_users.js を更新します。よろしいですか？")) return;
-    
-            // 保存用データの整形
             const jsonString = JSON.stringify(allowedUsersData, null, 4);
             const content = `// 編集権限を持つユーザーリスト\nconst allowedUsersData = ${jsonString};`;
             const encodedContent = btoa(unescape(encodeURIComponent(content)));
     
             try {
-                // SHA取得
                 const getRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/allowed_users.js`, {
                     headers: { Authorization: `token ${token}` }
                 });
                 const fileData = await getRes.json();
     
-                // 更新実行
                 const putRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/allowed_users.js`, {
                     method: "PUT",
                     headers: {
@@ -502,22 +623,12 @@
                     })
                 });
     
-                if (putRes.ok) {
-                    alert("権限設定を更新しました！");
-                } else {
-                    alert("保存に失敗しました。");
-                }
+                if (putRes.ok) alert("権限設定を更新しました！");
+                else alert("保存に失敗しました。");
             } catch (err) {
                 alert("エラーが発生しました: " + err.message);
             }
         }
-    
-        // 初期化時にリストを描画
-        window.addEventListener('load', () => {
-            // 既存のログインチェック処理...
-            renderUserList(); // 追加
-        });
- 
     </script>
 </body>
 </html>
