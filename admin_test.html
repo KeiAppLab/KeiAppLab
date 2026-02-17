@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KEI Lab マスター・コックピット (Global)</title>
+    <title>KEI Lab マスター・コックピット</title>
 
     <!-- 外部データの読み込み -->
     <script src="news-data.js"></script>
@@ -23,6 +23,7 @@
         .login-left { width: 40%; padding: 40px; display: flex; flex-direction: column; justify-content: center; background: #f9f9f9; border-right: 1px solid #eee; }
         .login-left input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ccc; border-radius: 5px; }
         .login-left button { width: 100%; padding: 12px; background: #0056b3; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .login-left button:hover { background: #003d82; }
         .login-right { width: 60%; padding: 40px; overflow-y: auto; color: #333; line-height: 1.6; }
 
         /* --- メイン画面 --- */
@@ -51,17 +52,13 @@
         .input-group input { flex: 7; border-top-right-radius: 0 !important; border-bottom-right-radius: 0 !important; border-right: 0 !important; }
         .input-group select { flex: 3; border-top-left-radius: 0 !important; border-bottom-left-radius: 0 !important; background-color: #e6e6e6 !important; color: #0056b3 !important; cursor: pointer; }
 
-        /* --- 言語タブ (エディタ用) --- */
-        .editor-lang-tabs { display: flex; gap: 5px; margin-bottom: 15px; border-bottom: 1px solid #555; padding-bottom: 10px; }
-        .edit-tab { padding: 8px 15px; background: #333; color: #aaa; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        .edit-tab:hover { background: #444; color: #fff; }
-        .edit-tab.active { background: #007acc; color: white; }
-        
-        /* 言語ごとの入力エリア制御 */
-        .lang-input-group { display: none; animation: fadeIn 0.3s; }
-        .lang-input-group.active { display: block; }
-        
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        /* 英語入力欄 */
+        .stack-top { border-bottom: none !important; border-bottom-left-radius: 0 !important; border-bottom-right-radius: 0 !important; margin-bottom: 0 !important; }
+        .stack-bottom-group { display: flex; align-items: center; background: #e0e0e0; border: 1px solid #ccc; border-top: none; border-bottom-left-radius: 4px; border-bottom-right-radius: 4px; }
+        .en-label { color: #e67e22; font-weight: 900; padding: 0 10px; font-family: 'Roboto', sans-serif; background: #e0e0e0; user-select: none; }
+        .stack-bottom-group input, .stack-bottom-group textarea { border: none !important; background: transparent !important; padding-left: 0; }
+        .stack-bottom-group input:focus, .stack-bottom-group textarea:focus { outline: none; }
+        .input-gray-en { font-family: 'Roboto', sans-serif; }
 
         /* カスタム画像選択ボックス */
         .custom-select-wrapper { position: relative; user-select: none; width: 450px; max-width: 100%; }
@@ -77,7 +74,7 @@
         /* プレビュー */
         .preview-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-bottom: 10px; }
         .lang-toggle { display: flex; gap: 5px; background: #ddd; padding: 3px; border-radius: 20px; }
-        .lang-btn { padding: 5px 10px; border-radius: 15px; border: none; font-size: 0.75rem; font-weight: bold; cursor: pointer; background: transparent; color: #666; }
+        .lang-btn { padding: 5px 15px; border-radius: 15px; border: none; font-size: 0.8rem; font-weight: bold; cursor: pointer; background: transparent; color: #666; }
         .lang-btn.active { background: #0056b3; color: white; }
         .preview-label { font-size: 0.8rem; color: #666; font-weight: bold; border-bottom: 1px dashed #999; display: block; margin-bottom: 10px; margin-top: 30px; }
         
@@ -85,8 +82,14 @@
         .news-item { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #ccc; }
         .news-date { font-family: 'Roboto', sans-serif; color: #666; width: 100px; font-size: 0.9rem; }
         .news-tag { font-size: 0.8rem; padding: 2px 8px; border-radius: 4px; margin-right: 15px; color: white; width: 110px; text-align: center; }
-        .tag-release { background: #0056b3; }
-        .tag-update { background: #e67e22; }
+        
+        /* カテゴリ色定義 (修正: !importantを追加して確実に適用) */
+        .tag-release { background: #0056b3 !important; }
+        .tag-update { background: #e67e22 !important; }
+        .tag-start { background: #8e44ad !important; }
+        .tag-steam { background: #2c3e50 !important; }
+        .tag-game { background: #27ae60 !important; }
+        
         .news-link { text-decoration: none; color: #333; font-weight: 500; font-family: 'Noto Serif JP', serif; }
 
         /* 最新の活動カード */
@@ -159,7 +162,6 @@
                         <div class="editor-area">
                             <h2>📝 記事・プロジェクト作成</h2>
                             
-                            <!-- 共通項目 -->
                             <div class="form-group">
                                 <label>日付</label>
                                 <input type="text" id="inDate" class="input-white" style="width:100% !important;">
@@ -177,6 +179,29 @@
                             </div>
 
                             <div class="form-group">
+                                <label>プロジェクト名</label>
+                                <div class="input-group">
+                                    <input type="text" id="inProject" class="input-white" placeholder="入力または右から選択" oninput="autoFillProject()" autocomplete="off">
+                                    <select id="projectSelectHelper" class="input-white" onchange="syncProjectSelect()">
+                                        <option value="">▼ 履歴...</option>
+                                    </select>
+                                </div>
+                                <div class="stack-bottom-group">
+                                    <span class="en-label">En</span>
+                                    <input type="text" id="inProjectEn" class="input-gray-en" placeholder="Project Name (EN)" oninput="updatePreview()" autocomplete="off">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>お知らせ・キャッチコピー</label>
+                                <input type="text" id="inTitle" class="input-white stack-top" placeholder="タイトル (JP)" oninput="updatePreview()" autocomplete="off">
+                                <div class="stack-bottom-group">
+                                    <span class="en-label">En</span>
+                                    <input type="text" id="inTitleEn" class="input-gray-en" placeholder="Title (EN)" oninput="updatePreview()" autocomplete="off">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
                                 <label>画像ファイル (index_photフォルダ)</label>
                                 <input type="hidden" id="inImage" onchange="updatePreview()">
                                 <div class="custom-select-wrapper">
@@ -190,64 +215,13 @@
                                 </div>
                             </div>
 
-                            <hr style="border:0; border-top:1px dashed #555; margin: 20px 0;">
-
-                            <!-- 言語切り替えタブ -->
-                            <div class="editor-lang-tabs">
-                                <button class="edit-tab active" onclick="switchEditorLang('ja')">🇯🇵 日本語</button>
-                                <button class="edit-tab" onclick="switchEditorLang('en')">🇺🇸 English</button>
-                                <button class="edit-tab" onclick="switchEditorLang('de')">🇩🇪 Deutsch</button>
-                                <button class="edit-tab" onclick="switchEditorLang('fr')">🇫🇷 Français</button>
-                                <button class="edit-tab" onclick="switchEditorLang('es')">🇪🇸 Español</button>
-                            </div>
-
-                            <!-- 日本語入力 (デフォルト表示) -->
-                            <div id="group-ja" class="lang-input-group active">
-                                <div class="form-group">
-                                    <label>プロジェクト名 (JP)</label>
-                                    <div class="input-group">
-                                        <input type="text" id="inProject" class="input-white" placeholder="入力または右から選択" oninput="autoFillProject()" autocomplete="off">
-                                        <select id="projectSelectHelper" class="input-white" onchange="syncProjectSelect()">
-                                            <option value="">▼ 履歴...</option>
-                                        </select>
-                                    </div>
+                            <div class="form-group">
+                                <label>詳細本文 (HTML可)</label>
+                                <textarea id="inBody" class="input-white stack-top" placeholder="詳細内容 (JP)" oninput="updatePreview()"></textarea>
+                                <div class="stack-bottom-group">
+                                    <span class="en-label">En</span>
+                                    <textarea id="inBodyEn" class="input-gray-en" placeholder="Detail Body (EN)" oninput="updatePreview()"></textarea>
                                 </div>
-                                <div class="form-group">
-                                    <label>お知らせ・キャッチコピー (JP)</label>
-                                    <input type="text" id="inTitle" class="input-white" placeholder="タイトル" oninput="updatePreview()" autocomplete="off">
-                                </div>
-                                <div class="form-group">
-                                    <label>詳細本文 (JP)</label>
-                                    <textarea id="inBody" class="input-white" style="height:150px;" placeholder="詳細内容" oninput="updatePreview()"></textarea>
-                                </div>
-                            </div>
-
-                            <!-- 英語入力 -->
-                            <div id="group-en" class="lang-input-group">
-                                <div class="form-group"><label>Project Name (EN)</label><input type="text" id="inProjectEn" class="input-white" oninput="updatePreview()"></div>
-                                <div class="form-group"><label>Title (EN)</label><input type="text" id="inTitleEn" class="input-white" oninput="updatePreview()"></div>
-                                <div class="form-group"><label>Body (EN)</label><textarea id="inBodyEn" class="input-white" style="height:150px;" oninput="updatePreview()"></textarea></div>
-                            </div>
-
-                            <!-- ドイツ語入力 -->
-                            <div id="group-de" class="lang-input-group">
-                                <div class="form-group"><label>Projektname (DE)</label><input type="text" id="inProjectDe" class="input-white" oninput="updatePreview()"></div>
-                                <div class="form-group"><label>Titel (DE)</label><input type="text" id="inTitleDe" class="input-white" oninput="updatePreview()"></div>
-                                <div class="form-group"><label>Inhalt (DE)</label><textarea id="inBodyDe" class="input-white" style="height:150px;" oninput="updatePreview()"></textarea></div>
-                            </div>
-
-                            <!-- フランス語入力 -->
-                            <div id="group-fr" class="lang-input-group">
-                                <div class="form-group"><label>Nom du projet (FR)</label><input type="text" id="inProjectFr" class="input-white" oninput="updatePreview()"></div>
-                                <div class="form-group"><label>Titre (FR)</label><input type="text" id="inTitleFr" class="input-white" oninput="updatePreview()"></div>
-                                <div class="form-group"><label>Contenu (FR)</label><textarea id="inBodyFr" class="input-white" style="height:150px;" oninput="updatePreview()"></textarea></div>
-                            </div>
-
-                            <!-- スペイン語入力 -->
-                            <div id="group-es" class="lang-input-group">
-                                <div class="form-group"><label>Nombre del proyecto (ES)</label><input type="text" id="inProjectEs" class="input-white" oninput="updatePreview()"></div>
-                                <div class="form-group"><label>Título (ES)</label><input type="text" id="inTitleEs" class="input-white" oninput="updatePreview()"></div>
-                                <div class="form-group"><label>Contenido (ES)</label><textarea id="inBodyEs" class="input-white" style="height:150px;" oninput="updatePreview()"></textarea></div>
                             </div>
 
                             <button class="btn-save" onclick="addPost()">リストに追加 (一時保存)</button>
@@ -260,11 +234,8 @@
                             <div class="preview-header">
                                 <h2 style="border:none; margin:0; font-size:1.1rem; color:#333;">👁️ リアルタイムプレビュー</h2>
                                 <div class="lang-toggle">
-                                    <button class="lang-btn active" id="btnPrevJa" onclick="setPreviewLang('ja')">JP</button>
-                                    <button class="lang-btn" id="btnPrevEn" onclick="setPreviewLang('en')">EN</button>
-                                    <button class="lang-btn" id="btnPrevDe" onclick="setPreviewLang('de')">DE</button>
-                                    <button class="lang-btn" id="btnPrevFr" onclick="setPreviewLang('fr')">FR</button>
-                                    <button class="lang-btn" id="btnPrevEs" onclick="setPreviewLang('es')">ES</button>
+                                    <button class="lang-btn active" id="btnPrevJp" onclick="setPreviewLang('ja')">日本語</button>
+                                    <button class="lang-btn" id="btnPrevEn" onclick="setPreviewLang('en')">English</button>
                                 </div>
                             </div>
                             
@@ -274,7 +245,7 @@
                                 <span class="news-tag tag-update" id="prevTag">更新情報</span>
                                 <div style="flex:1;">
                                     <span style="font-weight:bold; margin-right:10px; color:#333;" id="prevProjectName">プロジェクト名</span>
-                                    <span class="news-link" id="prevTitle">タイトル</span>
+                                    <span class="news-link" id="prevTitle">お知らせ・キャッチコピー</span>
                                 </div>
                             </div>
 
@@ -283,6 +254,7 @@
                                 <div class="highlight-card">
                                     <div class="highlight-img-area">
                                         <img src="" alt="No Image" id="prevImg" class="highlight-img">
+                                        <!-- カテゴリバッジ -->
                                         <span class="highlight-category-badge tag-update" id="prevCardCatBadge">更新情報</span>
                                     </div>
                                     <div class="highlight-content">
@@ -291,7 +263,7 @@
                                             <span class="meta-proj" id="prevCardProj">プロジェクト名</span>
                                         </div>
                                         <div class="highlight-title" id="prevCardTitle">
-                                            お知らせ・キャッチコピー
+                                            お知らせ・キャッチコピーがここに入ります。
                                         </div>
                                     </div>
                                 </div>
@@ -395,6 +367,10 @@
             renderUserList();
         });
 
+        document.querySelectorAll('.input-gray-en, .input-half').forEach(input => {
+            input.addEventListener('input', function() { this.value = this.value.replace(/[^\x00-\x7F]/g, ''); });
+        });
+
         // --- 2. パネル切り替え ---
         function switchPanel(panelId) {
             document.querySelectorAll('.panel').forEach(el => el.classList.remove('active'));
@@ -419,15 +395,6 @@
         let allPosts = [];
         const today = new Date();
         document.getElementById('inDate').value = today.getFullYear() + '.' + (today.getMonth()+1).toString().padStart(2, '0') + '.' + today.getDate().toString().padStart(2, '0');
-
-        // エディタの言語切り替え
-        function switchEditorLang(lang) {
-            document.querySelectorAll('.lang-input-group').forEach(el => el.classList.remove('active'));
-            document.getElementById('group-' + lang).classList.add('active');
-            
-            document.querySelectorAll('.edit-tab').forEach(el => el.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-        }
 
         function initProjectList() {
             if (typeof newsData === 'undefined') return;
@@ -454,49 +421,27 @@
 
         function autoFillProject() {
             const inputProject = document.getElementById('inProject').value.trim();
-            const fields = {
-                ja: { proj: 'inProject', title: 'inTitle', body: 'inBody' },
-                en: { proj: 'inProjectEn', title: 'inTitleEn', body: 'inBodyEn' },
-                de: { proj: 'inProjectDe', title: 'inTitleDe', body: 'inBodyDe' },
-                fr: { proj: 'inProjectFr', title: 'inTitleFr', body: 'inBodyFr' },
-                es: { proj: 'inProjectEs', title: 'inTitleEs', body: 'inBodyEs' }
-            };
+            const elProjectEn = document.getElementById('inProjectEn');
+            const elTitle = document.getElementById('inTitle');
+            const elTitleEn = document.getElementById('inTitleEn');
+            const elBody = document.getElementById('inBody');
+            const elBodyEn = document.getElementById('inBodyEn');
 
-            // クリア処理
             if (inputProject === "") {
-                for (let lang in fields) {
-                    document.getElementById(fields[lang].proj).value = "";
-                    document.getElementById(fields[lang].title).value = "";
-                    document.getElementById(fields[lang].body).value = "";
-                }
-                setImageValue("");
+                elProjectEn.value = ""; elTitle.value = ""; elTitleEn.value = ""; 
+                elBody.value = ""; elBodyEn.value = "";
+                setImageValue(""); 
                 updatePreview(); return;
             }
 
             if (typeof newsData !== 'undefined') {
                 const targetPost = newsData.slice().reverse().find(post => post.project === inputProject);
                 if (targetPost) {
-                    // 各言語のデータを自動入力
-                    document.getElementById('inProject').value = targetPost.project || "";
-                    document.getElementById('inTitle').value = targetPost.title || "";
-                    document.getElementById('inBody').value = targetPost.body || "";
-                    
-                    document.getElementById('inProjectEn').value = targetPost.project_en || "";
-                    document.getElementById('inTitleEn').value = targetPost.title_en || "";
-                    document.getElementById('inBodyEn').value = targetPost.body_en || "";
-
-                    document.getElementById('inProjectDe').value = targetPost.project_de || "";
-                    document.getElementById('inTitleDe').value = targetPost.title_de || "";
-                    document.getElementById('inBodyDe').value = targetPost.body_de || "";
-
-                    document.getElementById('inProjectFr').value = targetPost.project_fr || "";
-                    document.getElementById('inTitleFr').value = targetPost.title_fr || "";
-                    document.getElementById('inBodyFr').value = targetPost.body_fr || "";
-
-                    document.getElementById('inProjectEs').value = targetPost.project_es || "";
-                    document.getElementById('inTitleEs').value = targetPost.title_es || "";
-                    document.getElementById('inBodyEs').value = targetPost.body_es || "";
-
+                    elProjectEn.value = targetPost.project_en || "";
+                    elTitle.value = targetPost.title || "";
+                    elTitleEn.value = targetPost.title_en || "";
+                    elBody.value = targetPost.body || "";
+                    elBodyEn.value = targetPost.body_en || "";
                     setImageValue(targetPost.image || "");
                 }
             }
@@ -535,8 +480,8 @@
 
         function setPreviewLang(lang) {
             previewLang = lang;
-            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('btnPrev' + lang.charAt(0).toUpperCase() + lang.slice(1)).classList.add('active');
+            document.getElementById('btnPrevJp').classList.toggle('active', lang === 'ja');
+            document.getElementById('btnPrevEn').classList.toggle('active', lang === 'en');
             updatePreview();
         }
 
@@ -545,16 +490,16 @@
             const category = document.getElementById('inCategory').value;
             const image = document.getElementById('inImage').value;
 
-            // 言語に応じた値を取得
             let project, title, body;
-            const suffix = previewLang === 'ja' ? '' : '_' + previewLang;
-            
-            // ID生成ルール: 日本語は inProject, 英語は inProjectEn, ドイツ語は inProjectDe ...
-            const idSuffix = previewLang === 'ja' ? '' : previewLang.charAt(0).toUpperCase() + previewLang.slice(1);
-            
-            project = document.getElementById('inProject' + idSuffix).value || "Project";
-            title = document.getElementById('inTitle' + idSuffix).value || "Title";
-            body = document.getElementById('inBody' + idSuffix).value || "Body...";
+            if (previewLang === 'ja') {
+                project = document.getElementById('inProject').value || "プロジェクト名";
+                title = document.getElementById('inTitle').value || "お知らせ・キャッチコピー";
+                body = document.getElementById('inBody').value || "本文...";
+            } else {
+                project = document.getElementById('inProjectEn').value || document.getElementById('inProject').value || "Project Name";
+                title = document.getElementById('inTitleEn').value || document.getElementById('inTitle').value || "Title";
+                body = document.getElementById('inBodyEn').value || document.getElementById('inBody').value || "Body...";
+            }
 
             document.getElementById('prevDate').textContent = date;
             document.getElementById('prevTitle').textContent = title;
@@ -562,35 +507,42 @@
             
             const tagEl = document.getElementById('prevTag');
             tagEl.className = 'news-tag tag-' + category;
-            
-            // カテゴリ名の多言語化
-            const catNames = {
-                'ja': {'release':'プレスリリース','update':'更新情報','start':'プロジェクト開始','steam':'Steamリリース','game':'ミニゲーム'},
-                'en': {'release':'Release','update':'Update','start':'Project Start','steam':'Steam','game':'Mini Game'},
-                'de': {'release':'Veröffentlichung','update':'Aktualisierung','start':'Projektstart','steam':'Steam','game':'Minispiel'},
-                'fr': {'release':'Sortie','update':'Mise à jour','start':'Début du projet','steam':'Steam','game':'Mini-jeu'},
-                'es': {'release':'Lanzamiento','update':'Actualización','start':'Inicio del proyecto','steam':'Steam','game':'Mini juego'}
-            };
-            tagEl.textContent = catNames[previewLang][category];
+            const catNamesJp = {'release':'プレスリリース','update':'更新情報','start':'プロジェクト開始','steam':'Steamリリース','game':'ミニゲーム'};
+            const catNamesEn = {'release':'Release','update':'Update','start':'Project Start','steam':'Steam','game':'Mini Game'};
+            tagEl.textContent = (previewLang === 'ja') ? catNamesJp[category] : catNamesEn[category];
 
-            // 最新の活動プレビュー
+            // 最新の活動プレビュー (Highlights)
             const highlightBox = document.getElementById('highlightPreviewBox');
             const highlightMsg = document.getElementById('highlightMsg');
+            
+            // 表示対象かどうかの判定
             const isHighlight = (category === 'release' || category === 'start' || category === 'steam') && image !== "";
 
+            // ★修正: 判定に関わらず、内容は常に更新する
+            document.getElementById('prevImg').src = image;
+            
+            // 画像エリアの表示制御
+            if (image) {
+                document.getElementById('prevImg').style.display = 'block';
+            } else {
+                document.getElementById('prevImg').style.display = 'none';
+            }
+
+            document.getElementById('prevCardTitle').textContent = title;
+            document.getElementById('prevCardProj').textContent = project;
+            document.getElementById('prevCardDate').textContent = date;
+            
+            // カード内のカテゴリバッジ更新
+            const cardCatBadge = document.getElementById('prevCardCatBadge');
+            cardCatBadge.textContent = tagEl.textContent; 
+            cardCatBadge.className = 'highlight-category-badge tag-' + category; // 色クラス適用
+
+            // ★修正: 表示対象外の場合のみ、薄くしてメッセージを出す
             if (isHighlight) {
                 highlightBox.style.opacity = "1";
                 highlightMsg.textContent = "";
-                document.getElementById('prevImg').src = image;
-                document.getElementById('prevCardTitle').textContent = title;
-                document.getElementById('prevCardProj').textContent = project;
-                document.getElementById('prevCardDate').textContent = date;
-                
-                const cardCatBadge = document.getElementById('prevCardCatBadge');
-                cardCatBadge.textContent = tagEl.textContent;
-                cardCatBadge.className = 'highlight-category-badge tag-' + category;
             } else {
-                highlightBox.style.opacity = "0.4";
+                highlightBox.style.opacity = "0.4"; // 薄くする
                 highlightMsg.textContent = "※このカテゴリまたは画像なしのため、「最新の活動」には表示されません。";
             }
 
@@ -612,27 +564,13 @@
                 id: Date.now(),
                 date: document.getElementById('inDate').value,
                 category: document.getElementById('inCategory').value,
-                image: document.getElementById('inImage').value,
-                // 全言語データを保存
                 project: document.getElementById('inProject').value,
-                title: document.getElementById('inTitle').value,
-                body: document.getElementById('inBody').value,
-                
                 project_en: document.getElementById('inProjectEn').value,
+                title: document.getElementById('inTitle').value,
                 title_en: document.getElementById('inTitleEn').value,
+                body: document.getElementById('inBody').value,
                 body_en: document.getElementById('inBodyEn').value,
-
-                project_de: document.getElementById('inProjectDe').value,
-                title_de: document.getElementById('inTitleDe').value,
-                body_de: document.getElementById('inBodyDe').value,
-
-                project_fr: document.getElementById('inProjectFr').value,
-                title_fr: document.getElementById('inTitleFr').value,
-                body_fr: document.getElementById('inBodyFr').value,
-
-                project_es: document.getElementById('inProjectEs').value,
-                title_es: document.getElementById('inTitleEs').value,
-                body_es: document.getElementById('inBodyEs').value
+                image: document.getElementById('inImage').value
             };
             if (!newPost.project) { alert("プロジェクト名(JP)を入力してください"); return; }
             allPosts.unshift(newPost);
@@ -684,7 +622,7 @@
             } catch (err) { alert("エラー: " + err.message); }
         }
 
-        // --- GitHubへ直接保存 ---
+        // --- GitHubへ直接保存（ニュース用・追記対応版） ---
         async function saveToGitHub() {
             const token = localStorage.getItem("gh_token");
             if (!token) { alert("認証が必要です"); return; }
