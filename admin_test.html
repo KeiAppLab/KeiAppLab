@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KEI Lab マスター・コックピット (Global)</title>
+    <title>KEI Lab マスター・コックピット</title>
 
     <!-- 外部データの読み込み -->
     <script src="news-data.js"></script>
@@ -86,14 +86,8 @@
         .news-item { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #ccc; }
         .news-date { font-family: 'Roboto', sans-serif; color: #666; width: 100px; font-size: 0.9rem; }
         .news-tag { font-size: 0.8rem; padding: 2px 8px; border-radius: 4px; margin-right: 15px; color: white; width: 110px; text-align: center; }
-        
-        /* カテゴリ色定義 (確実に適用) */
         .tag-release { background: #0056b3; }
         .tag-update { background: #e67e22; }
-        .tag-start { background: #8e44ad; }
-        .tag-steam { background: #2c3e50; }
-        .tag-game { background: #27ae60; }
-        
         .news-link { text-decoration: none; color: #333; font-weight: 500; font-family: 'Noto Serif JP', serif; }
 
         /* 最新の活動カード */
@@ -151,16 +145,36 @@
         <div class="dashboard">
             <div class="sidebar">
                 <h1>🚀 KEI Lab Admin</h1>
-                <div class="menu-btn active" onclick="switchPanel('cms')">📝 コンテンツ編集</div>
-                <div class="menu-btn" onclick="switchPanel('calc')">💰 収益・秒数計算</div>
+                <!-- 順序変更: 収益計算を1番目に -->
+                <div class="menu-btn active" onclick="switchPanel('calc')">💰 収益・秒数計算</div>
+                <div class="menu-btn" onclick="switchPanel('cms')">📝 コンテンツ編集</div>
                 <div class="menu-btn" onclick="switchPanel('users')">👥 権限管理</div>
                 <div class="menu-btn" onclick="logout()" style="margin-top:auto; background:#c0392b; color:white;">🔒 ログアウト</div>
             </div>
 
             <div class="main-content">
 
+                <!-- 計算機パネル (デフォルト表示) -->
+                <div id="panel-calc" class="panel active">
+                    <div class="calc-container">
+                        <h2>💰 無料通話秒数 シミュレーター</h2>
+                        <div class="calc-grid">
+                            <div><label>動画広告単価</label><input type="number" id="adPrice" value="1.5" step="0.1"> 円</div>
+                            <div><label>通話原価 (1分)</label><input type="number" id="callCost" value="3.0" step="0.1"> 円</div>
+                        </div>
+                        <label>確保したい利益率 (%) <span id="marginDisplay" style="color:#007acc; margin-left:10px;">20%</span></label>
+                        <input type="range" id="margin" min="0" max="50" value="20" oninput="document.getElementById('marginDisplay').innerText = this.value + '%'">
+                        <button class="btn-calc" onclick="calcSeconds()">計算する</button>
+                        <div class="calc-result-box">
+                            <div style="color:#aaa; font-size:0.9rem;">アプリに設定すべきチャージ秒数</div>
+                            <div id="calcOutput" class="calc-number">--- 秒</div>
+                            <div id="profitOutput" class="calc-sub">(広告1回あたりの純利益: --- 円)</div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- CMSパネル -->
-                <div id="panel-cms" class="panel active">
+                <div id="panel-cms" class="panel">
                     <div class="cms-layout">
                         <!-- エディタ -->
                         <div class="editor-area">
@@ -314,25 +328,6 @@
                                 <img src="" id="prevPageImg" style="display:none;">
                                 <div id="prevBody">本文...</div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 計算機パネル -->
-                <div id="panel-calc" class="panel">
-                    <div class="calc-container">
-                        <h2>💰 無料通話秒数 シミュレーター</h2>
-                        <div class="calc-grid">
-                            <div><label>動画広告単価</label><input type="number" id="adPrice" value="1.5" step="0.1"> 円</div>
-                            <div><label>通話原価 (1分)</label><input type="number" id="callCost" value="3.0" step="0.1"> 円</div>
-                        </div>
-                        <label>確保したい利益率 (%) <span id="marginDisplay" style="color:#007acc; margin-left:10px;">20%</span></label>
-                        <input type="range" id="margin" min="0" max="50" value="20" oninput="document.getElementById('marginDisplay').innerText = this.value + '%'">
-                        <button class="btn-calc" onclick="calcSeconds()">計算する</button>
-                        <div class="calc-result-box">
-                            <div style="color:#aaa; font-size:0.9rem;">アプリに設定すべきチャージ秒数</div>
-                            <div id="calcOutput" class="calc-number">--- 秒</div>
-                            <div id="profitOutput" class="calc-sub">(広告1回あたりの純利益: --- 円)</div>
                         </div>
                     </div>
                 </div>
@@ -585,17 +580,26 @@
             const highlightMsg = document.getElementById('highlightMsg');
             const isHighlight = (category === 'release' || category === 'start' || category === 'steam') && image !== "";
 
+            // ★修正: 常に内容を更新する
+            document.getElementById('prevImg').src = image;
+            if (image) {
+                document.getElementById('prevImg').style.display = 'block';
+            } else {
+                document.getElementById('prevImg').style.display = 'none';
+            }
+            
+            document.getElementById('prevCardTitle').textContent = title;
+            document.getElementById('prevCardProj').textContent = project;
+            document.getElementById('prevCardDate').textContent = date;
+            
+            const cardCatBadge = document.getElementById('prevCardCatBadge');
+            cardCatBadge.textContent = tagEl.textContent;
+            cardCatBadge.className = 'highlight-category-badge tag-' + category;
+
+            // 透明度とメッセージの制御だけ分岐する
             if (isHighlight) {
                 highlightBox.style.opacity = "1";
                 highlightMsg.textContent = "";
-                document.getElementById('prevImg').src = image;
-                document.getElementById('prevCardTitle').textContent = title;
-                document.getElementById('prevCardProj').textContent = project;
-                document.getElementById('prevCardDate').textContent = date;
-                
-                const cardCatBadge = document.getElementById('prevCardCatBadge');
-                cardCatBadge.textContent = tagEl.textContent;
-                cardCatBadge.className = 'highlight-category-badge tag-' + category;
             } else {
                 highlightBox.style.opacity = "0.4";
                 highlightMsg.textContent = "※このカテゴリまたは画像なしのため、「最新の活動」には表示されません。";
