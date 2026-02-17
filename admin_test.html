@@ -83,7 +83,7 @@
         .news-date { font-family: 'Roboto', sans-serif; color: #666; width: 100px; font-size: 0.9rem; }
         .news-tag { font-size: 0.8rem; padding: 2px 8px; border-radius: 4px; margin-right: 15px; color: white; width: 110px; text-align: center; }
         
-        /* カテゴリ色定義 */
+        /* カテゴリ色定義 (確実に適用) */
         .tag-release { background: #0056b3; }
         .tag-update { background: #e67e22; }
         .tag-start { background: #8e44ad; }
@@ -92,12 +92,15 @@
         
         .news-link { text-decoration: none; color: #333; font-weight: 500; font-family: 'Noto Serif JP', serif; }
 
-        /* 最新の活動カード */
+        /* --- 最新の活動カード --- */
         .highlight-card { width: 300px; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 6px 6px 15px rgba(0,0,0,0.15); border: 1px solid rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s; }
         .highlight-card:hover { transform: translateY(-3px); }
         .highlight-img-area { width: 100%; height: 200px; overflow: hidden; background: #eee; position: relative; }
         .highlight-img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
+        
+        /* カテゴリバッジ (画像左下) */
         .highlight-category-badge { position: absolute; bottom: 0; left: 0; color: white; font-size: 0.8rem; padding: 4px 12px; border-top-right-radius: 8px; font-weight: bold; z-index: 2; }
+        
         .highlight-content { padding: 10px 0 15px 0; text-align: left; }
         .highlight-meta { font-size: 0.75rem; color: #666; margin-bottom: 5px; padding: 0 10px; font-family: 'Roboto', sans-serif; }
         .meta-cat { color: #0056b3; font-weight: bold; }
@@ -178,6 +181,7 @@
                                 </select>
                             </div>
 
+                            <!-- プロジェクト名（連結UI） -->
                             <div class="form-group">
                                 <label>プロジェクト名</label>
                                 <div class="input-group">
@@ -201,6 +205,7 @@
                                 </div>
                             </div>
 
+                            <!-- 画像選択（カスタムプルダウン） -->
                             <div class="form-group">
                                 <label>画像ファイル (index_photフォルダ)</label>
                                 <input type="hidden" id="inImage" onchange="updatePreview()">
@@ -254,7 +259,7 @@
                                 <div class="highlight-card">
                                     <div class="highlight-img-area">
                                         <img src="" alt="No Image" id="prevImg" class="highlight-img">
-                                        <!-- カテゴリバッジ -->
+                                        <!-- カテゴリバッジ (画像左下) -->
                                         <span class="highlight-category-badge tag-update" id="prevCardCatBadge">更新情報</span>
                                     </div>
                                     <div class="highlight-content">
@@ -265,399 +270,3 @@
                                         <div class="highlight-title" id="prevCardTitle">
                                             お知らせ・キャッチコピーがここに入ります。
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <p style="font-size:0.8rem; color:red; text-align:center;" id="highlightMsg"></p>
-
-                            <span class="preview-label">▼ 詳細ページ (Project Page)</span>
-                            <div class="page-preview">
-                                <h1 id="prevPageTitle">タイトル</h1>
-                                <div style="color:#666; font-size:0.9rem; margin-bottom:20px;">
-                                    <span id="prevPageDate">2026.03.15</span> | <span id="prevPageProject">プロジェクト名</span>
-                                </div>
-                                <img src="" id="prevPageImg" style="display:none;">
-                                <div id="prevBody">本文...</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 計算機パネル -->
-                <div id="panel-calc" class="panel">
-                    <div class="calc-container">
-                        <h2>💰 無料通話秒数 シミュレーター</h2>
-                        <div class="calc-grid">
-                            <div><label>動画広告単価</label><input type="number" id="adPrice" value="1.5" step="0.1"> 円</div>
-                            <div><label>通話原価 (1分)</label><input type="number" id="callCost" value="3.0" step="0.1"> 円</div>
-                        </div>
-                        <label>確保したい利益率 (%) <span id="marginDisplay" style="color:#007acc; margin-left:10px;">20%</span></label>
-                        <input type="range" id="margin" min="0" max="50" value="20" oninput="document.getElementById('marginDisplay').innerText = this.value + '%'">
-                        <button class="btn-calc" onclick="calcSeconds()">計算する</button>
-                        <div class="calc-result-box">
-                            <div style="color:#aaa; font-size:0.9rem;">アプリに設定すべきチャージ秒数</div>
-                            <div id="calcOutput" class="calc-number">--- 秒</div>
-                            <div id="profitOutput" class="calc-sub">(広告1回あたりの純利益: --- 円)</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ユーザー管理パネル -->
-                <div id="panel-users" class="panel">
-                    <div class="calc-container">
-                        <h2>👥 編集権限者の管理</h2>
-                        <div style="display:flex; gap:10px; margin-bottom:20px;">
-                            <input type="text" id="newUserId" placeholder="GitHubユーザーID" style="flex:1;">
-                            <button class="btn-save" style="width:auto;" onclick="addUser()">追加</button>
-                        </div>
-                        <ul id="userList" style="background:#1e1e1e; padding:20px; border-radius:8px; list-style:none;"></ul>
-                        <button class="btn-copy" onclick="saveUsersToGitHub()">💾 権限設定をGitHubに保存</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // ▼▼▼ 設定 ▼▼▼
-        const GITHUB_CONFIG = {
-            owner: "KeiAppLab",
-            repo: "KeiAppLab",
-            path: "news-data.js",
-        };
-
-        let previewLang = 'ja';
-
-        // --- 1. 認証機能 ---
-        async function checkIdentity() {
-            const tokenInput = document.getElementById('tokenInput');
-            const token = (typeof arguments[0] === 'string') ? arguments[0] : tokenInput.value.trim();
-            const status = document.getElementById('authStatus');
-            
-            if (!token) { status.innerText = "⚠️ トークンを入力してください"; status.style.color = "orange"; return; }
-            status.innerText = "確認中..."; status.style.color = "black";
-
-            try {
-                const res = await fetch("https://api.github.com/user", { headers: { Authorization: `token ${token}` } });
-                if (!res.ok) throw new Error("トークンが無効です");
-                const userData = await res.json();
-
-                if (typeof allowedUsersData !== 'undefined' && allowedUsersData.includes(userData.login)) {
-                    localStorage.setItem('gh_token', token);
-                    showDashboard();
-                } else {
-                    status.innerText = "❌ 許可されていないユーザーIDです: " + userData.login; status.style.color = "red";
-                }
-            } catch (err) { status.innerText = "⚠️ エラー: " + err.message; status.style.color = "red"; }
-        }
-
-        function showDashboard() {
-            document.getElementById('loginOverlay').style.display = 'none';
-            document.getElementById('mainWrapper').style.display = 'block';
-            updatePreview();
-            initProjectList();
-            initImageSelector();
-        }
-
-        function logout() { localStorage.removeItem('gh_token'); location.reload(); }
-
-        window.addEventListener('load', () => {
-            const savedToken = localStorage.getItem('gh_token');
-            if (savedToken) checkIdentity(savedToken);
-            renderUserList();
-        });
-
-        // --- 2. パネル切り替え ---
-        function switchPanel(panelId) {
-            document.querySelectorAll('.panel').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.menu-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById('panel-' + panelId).classList.add('active');
-            event.currentTarget.classList.add('active');
-        }
-
-        // --- 3. 計算ロジック ---
-        function calcSeconds() {
-            const adPrice = parseFloat(document.getElementById('adPrice').value);
-            const callCost = parseFloat(document.getElementById('callCost').value);
-            const margin = parseFloat(document.getElementById('margin').value);
-            const costPerSec = callCost / 60;
-            const profit = adPrice * (margin / 100);
-            const seconds = Math.floor((adPrice - profit) / costPerSec);
-            document.getElementById('calcOutput').innerText = seconds + " 秒";
-            document.getElementById('profitOutput').innerText = "(純利益: " + profit.toFixed(2) + " 円)";
-        }
-
-        // --- 4. CMSロジック ---
-        let allPosts = [];
-        const today = new Date();
-        document.getElementById('inDate').value = today.getFullYear() + '.' + (today.getMonth()+1).toString().padStart(2, '0') + '.' + today.getDate().toString().padStart(2, '0');
-
-        function initProjectList() {
-            if (typeof newsData === 'undefined') return;
-            const projectSet = new Set(newsData.map(item => item.project).filter(p => p));
-            const selectBox = document.getElementById('projectSelectHelper');
-            selectBox.innerHTML = '<option value="">▼ 履歴...</option>';
-            projectSet.forEach(projName => {
-                const option = document.createElement('option');
-                option.value = projName;
-                option.textContent = projName;
-                selectBox.appendChild(option);
-            });
-        }
-
-        function syncProjectSelect() {
-            const selectBox = document.getElementById('projectSelectHelper');
-            const inputBox = document.getElementById('inProject');
-            if (selectBox.value !== "") {
-                inputBox.value = selectBox.value;
-                autoFillProject();
-                selectBox.selectedIndex = 0;
-            }
-        }
-
-        function autoFillProject() {
-            const inputProject = document.getElementById('inProject').value.trim();
-            const elProjectEn = document.getElementById('inProjectEn');
-            const elTitle = document.getElementById('inTitle');
-            const elTitleEn = document.getElementById('inTitleEn');
-            const elBody = document.getElementById('inBody');
-            const elBodyEn = document.getElementById('inBodyEn');
-
-            if (inputProject === "") {
-                elProjectEn.value = ""; elTitle.value = ""; elTitleEn.value = ""; 
-                elBody.value = ""; elBodyEn.value = "";
-                setImageValue(""); 
-                updatePreview(); return;
-            }
-
-            if (typeof newsData !== 'undefined') {
-                const targetPost = newsData.slice().reverse().find(post => post.project === inputProject);
-                if (targetPost) {
-                    elProjectEn.value = targetPost.project_en || "";
-                    elTitle.value = targetPost.title || "";
-                    elTitleEn.value = targetPost.title_en || "";
-                    elBody.value = targetPost.body || "";
-                    elBodyEn.value = targetPost.body_en || "";
-                    setImageValue(targetPost.image || "");
-                }
-            }
-            updatePreview();
-        }
-
-        function initImageSelector() {
-            const container = document.getElementById('imageOptions');
-            container.innerHTML = '';
-            const list = (typeof photoList !== 'undefined') ? photoList : ["no_image.png"];
-            list.forEach(imgName => {
-                const div = document.createElement('div');
-                div.className = 'custom-option';
-                div.onclick = function() { selectImage(imgName); };
-                div.innerHTML = `<img src="index_phot/${imgName}" class="option-img" onerror="this.src='https://via.placeholder.com/50'"><span class="option-text">${imgName}</span>`;
-                container.appendChild(div);
-            });
-        }
-
-        function toggleImageSelect() { document.querySelector('.custom-select').classList.toggle('open'); }
-        function selectImage(imgName) {
-            document.getElementById('inImage').value = "index_phot/" + imgName;
-            document.getElementById('selectedImageText').textContent = imgName;
-            document.querySelector('.custom-select').classList.remove('open');
-            updatePreview();
-        }
-        function setImageValue(fullPath) {
-            document.getElementById('inImage').value = fullPath;
-            const fileName = fullPath.split('/').pop() || "画像を選択してください...";
-            document.getElementById('selectedImageText').textContent = fileName;
-        }
-        window.addEventListener('click', function(e) {
-            const select = document.querySelector('.custom-select');
-            if (!select.contains(e.target)) select.classList.remove('open');
-        });
-
-        function setPreviewLang(lang) {
-            previewLang = lang;
-            document.getElementById('btnPrevJp').classList.toggle('active', lang === 'ja');
-            document.getElementById('btnPrevEn').classList.toggle('active', lang === 'en');
-            updatePreview();
-        }
-
-        function updatePreview() {
-            const date = document.getElementById('inDate').value;
-            const category = document.getElementById('inCategory').value;
-            const image = document.getElementById('inImage').value;
-
-            let project, title, body;
-            if (previewLang === 'ja') {
-                project = document.getElementById('inProject').value || "プロジェクト名";
-                title = document.getElementById('inTitle').value || "お知らせ・キャッチコピー";
-                body = document.getElementById('inBody').value || "本文...";
-            } else {
-                project = document.getElementById('inProjectEn').value || document.getElementById('inProject').value || "Project Name";
-                title = document.getElementById('inTitleEn').value || document.getElementById('inTitle').value || "Title";
-                body = document.getElementById('inBodyEn').value || document.getElementById('inBody').value || "Body...";
-            }
-
-            // お知らせプレビュー
-            document.getElementById('prevDate').textContent = date;
-            document.getElementById('prevTitle').textContent = title;
-            document.getElementById('prevProjectName').textContent = project;
-            
-            const tagEl = document.getElementById('prevTag');
-            // クラスをリセットして再適用
-            tagEl.className = 'news-tag tag-' + category;
-            
-            const catNamesJp = {'release':'プレスリリース','update':'更新情報','start':'プロジェクト開始','steam':'Steamリリース','game':'ミニゲーム'};
-            const catNamesEn = {'release':'Release','update':'Update','start':'Project Start','steam':'Steam','game':'Mini Game'};
-            const catName = (previewLang === 'ja') ? catNamesJp[category] : catNamesEn[category];
-            tagEl.textContent = catName;
-
-            // 最新の活動プレビュー
-            const highlightBox = document.getElementById('highlightPreviewBox');
-            const highlightMsg = document.getElementById('highlightMsg');
-            const cardCatBadge = document.getElementById('prevCardCatBadge');
-
-            // 1. 内容の更新（常に実行）
-            document.getElementById('prevImg').src = image;
-            if (!image) document.getElementById('prevImg').style.display = 'none';
-            else document.getElementById('prevImg').style.display = 'block';
-
-            document.getElementById('prevCardTitle').textContent = title;
-            document.getElementById('prevCardProj').textContent = project;
-            document.getElementById('prevCardDate').textContent = date;
-            
-            // バッジ更新
-            cardCatBadge.textContent = catName;
-            cardCatBadge.className = 'highlight-category-badge tag-' + category;
-
-            // 2. 表示条件の判定
-            const isHighlight = (category === 'release' || category === 'start' || category === 'steam') && image !== "";
-
-            if (isHighlight) {
-                highlightBox.style.opacity = "1";
-                highlightMsg.textContent = "";
-            } else {
-                highlightBox.style.opacity = "0.4"; // 薄くする
-                let msg = "";
-                if (image === "") msg = "※画像がないため表示されません。";
-                else msg = "※このカテゴリは「最新の活動」には表示されません。";
-                highlightMsg.textContent = msg;
-            }
-
-            // 詳細ページプレビュー
-            document.getElementById('prevPageTitle').textContent = title;
-            document.getElementById('prevPageDate').textContent = date;
-            document.getElementById('prevPageProject').textContent = project;
-            document.getElementById('prevBody').innerHTML = body;
-            if(image) {
-                document.getElementById('prevPageImg').src = image;
-                document.getElementById('prevPageImg').style.display = 'block';
-            } else {
-                document.getElementById('prevPageImg').style.display = 'none';
-            }
-        }
-
-        function addPost() {
-            const newPost = {
-                id: Date.now(),
-                date: document.getElementById('inDate').value,
-                category: document.getElementById('inCategory').value,
-                project: document.getElementById('inProject').value,
-                project_en: document.getElementById('inProjectEn').value,
-                title: document.getElementById('inTitle').value,
-                title_en: document.getElementById('inTitleEn').value,
-                body: document.getElementById('inBody').value,
-                body_en: document.getElementById('inBodyEn').value,
-                image: document.getElementById('inImage').value
-            };
-            if (!newPost.project) { alert("プロジェクト名(JP)を入力してください"); return; }
-            allPosts.unshift(newPost);
-            alert(`「${newPost.title}」を追加しました。\n現在 ${allPosts.length} 件のデータがあります。`);
-        }
-
-        // --- 6. ユーザー権限管理 ---
-        function renderUserList() {
-            const list = document.getElementById('userList');
-            if(!list) return;
-            list.innerHTML = '';
-            if (typeof allowedUsersData !== 'undefined') {
-                allowedUsersData.forEach((user, index) => {
-                    const li = document.createElement('li');
-                    li.style = "display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333; color:#fff;";
-                    li.innerHTML = `<span>${user}</span><button style="background:#c0392b; width:auto; padding:5px 10px; font-size:0.8rem; margin:0;" onclick="removeUser(${index})">削除</button>`;
-                    list.appendChild(li);
-                });
-            }
-        }
-        function addUser() {
-            const input = document.getElementById('newUserId');
-            const id = input.value.trim();
-            if(!id) return;
-            if(allowedUsersData.includes(id)) { alert("既に登録されています"); return; }
-            allowedUsersData.push(id);
-            input.value = '';
-            renderUserList();
-        }
-        function removeUser(index) {
-            if(confirm("削除しますか？")) { allowedUsersData.splice(index, 1); renderUserList(); }
-        }
-        async function saveUsersToGitHub() {
-            const token = localStorage.getItem("gh_token");
-            if (!token) { alert("認証が必要です"); return; }
-            if(!confirm("GitHub上の allowed_users.js を更新します。よろしいですか？")) return;
-            const jsonString = JSON.stringify(allowedUsersData, null, 4);
-            const content = `// 編集権限を持つユーザーリスト\nconst allowedUsersData = ${jsonString};`;
-            const encodedContent = btoa(unescape(encodeURIComponent(content)));
-            try {
-                const getRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/allowed_users.js`, { headers: { Authorization: `token ${token}` } });
-                const fileData = await getRes.json();
-                const putRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/allowed_users.js`, {
-                    method: "PUT",
-                    headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
-                    body: JSON.stringify({ message: "Update allowed users list", content: encodedContent, sha: fileData.sha })
-                });
-                if (putRes.ok) alert("権限設定を更新しました！"); else alert("保存に失敗しました。");
-            } catch (err) { alert("エラー: " + err.message); }
-        }
-
-        // --- GitHubへ直接保存 ---
-        async function saveToGitHub() {
-            const token = localStorage.getItem("gh_token");
-            if (!token) { alert("認証が必要です"); return; }
-            if(!confirm(`GitHub上の ${GITHUB_CONFIG.path} を更新します。よろしいですか？`)) return;
-
-            try {
-                const getRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`, {
-                    headers: { Authorization: `token ${token}` }
-                });
-                
-                let existingData = [];
-                let sha = null;
-
-                if (getRes.ok) {
-                    const fileData = await getRes.json();
-                    sha = fileData.sha;
-                    const content = decodeURIComponent(escape(atob(fileData.content)));
-                    const jsonPart = content.match(/\[.*\]/s);
-                    if (jsonPart) { existingData = JSON.parse(jsonPart[0]); }
-                }
-
-                const newIds = new Set(allPosts.map(p => p.id));
-                const mergedData = [...allPosts, ...existingData.filter(p => !newIds.has(p.id))];
-
-                const jsonString = JSON.stringify(mergedData, null, 4);
-                const newContent = `// このファイルは admin.html で生成されました\nconst newsData = ${jsonString};`;
-                const encodedContent = btoa(unescape(encodeURIComponent(newContent)));
-
-                const putRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`, {
-                    method: "PUT",
-                    headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
-                    body: JSON.stringify({ message: "Update news-data.js (Append)", content: encodedContent, sha: sha })
-                });
-
-                if (putRes.ok) { alert("GitHubへの保存（追記）に成功しました！"); allPosts = []; }
-                else { alert("保存に失敗しました。"); }
-            } catch (err) { alert("エラー: " + err.message); }
-        }
-    </script>
-</body>
-</html>
