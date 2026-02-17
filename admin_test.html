@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KEI Lab マスター・コックピット (Multilingual)</title>
+    <title>KEI Lab マスター・コックピット</title>
 
     <!-- ニュース・ユーザーリストの読み込み -->
-    <!-- ファイル名を news_data.js に変更 -->
-    <script src="news_data.js"></script>
+    <script src="news-data.js"></script>
     <script src="allowed_users.js"></script>
 
     <style>
@@ -51,95 +50,39 @@
         /* --- CMSスタイル --- */
         .cms-layout { display: flex; height: 100%; gap: 20px; }
         .editor-area { width: 45%; overflow-y: auto; padding-right: 10px; height: 100%; }
-        .preview-area { width: 55%; background: #f0f0f0; color: #333; border-radius: 8px; overflow-y: auto; padding: 20px; height: 100%; display: flex; flex-direction: column; }
+        .preview-area { width: 55%; background: #e0e0e0; /* 薄いグレーに変更 */ color: #333; border-radius: 8px; overflow-y: auto; padding: 20px; height: 100%; display: flex; flex-direction: column; }
 
         h2 { border-bottom: 2px solid #555; padding-bottom: 10px; margin-top: 0; }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-top: 5px; margin-bottom: 5px; font-weight: bold; font-size: 0.9rem; color: #aaa; }
         
-        /* 入力欄の基本 */
         input, select, textarea { width: 100%; padding: 10px; border: 1px solid #555; border-radius: 4px; box-sizing: border-box; font-size: 1rem; }
         textarea { height: 100px; font-family: sans-serif; resize: vertical; }
         input:focus, select:focus, textarea:focus { border-color: #007acc; outline: none; z-index: 10; position: relative; }
 
-        /* --- 入力欄のカラーリングとスタイル --- */
         .input-white { background-color: #ffffff !important; color: #333 !important; border: 1px solid #ccc !important; }
+        .input-gray-en { background-color: #e0e0e0 !important; color: #333 !important; border: 1px solid #ccc !important; font-family: 'Roboto Mono', monospace; }
         
-        /* 英語入力欄（グレー背景・半角推奨） */
-        .input-gray-en { 
-            background-color: #e0e0e0 !important; 
-            color: #333 !important; 
-            border: 1px solid #ccc !important;
-            font-family: 'Roboto Mono', monospace; 
-            ime-mode: disabled; /* IE/Firefox用 */
-        }
-        
-        /* 画像ファイル名用 */
-        .input-half { 
-            font-family: 'Roboto Mono', monospace; 
-            ime-mode: disabled; 
-        }
-        
-        /* 半角入力用クラス（画像ファイル名など） */
-        .input-half { font-family: 'Roboto Mono', monospace; ime-mode: disabled; }
+        .stack-top { border-bottom: none !important; border-bottom-left-radius: 0 !important; border-bottom-right-radius: 0 !important; margin-bottom: 0 !important; position: relative; z-index: 2; }
+        .stack-bottom-group { display: flex; align-items: center; background: #e0e0e0; border: 1px solid #ccc; border-top: none; border-bottom-left-radius: 4px; border-bottom-right-radius: 4px; }
+        .en-label { color: #e67e22; font-weight: 900; padding: 0 10px; font-family: 'Roboto', sans-serif; background: #e0e0e0; user-select: none; }
+        .stack-bottom-group input, .stack-bottom-group textarea { border: none !important; background: transparent !important; padding-left: 0; }
+        .stack-bottom-group input:focus, .stack-bottom-group textarea:focus { box-shadow: none; outline: none; }
 
-        /* --- 連結入力フィールドのスタイル --- */
-        /* 上段：日本語（下ボーダーなし、下角丸なし） */
-        .stack-top {
-            border-bottom: none !important;
-            border-bottom-left-radius: 0 !important;
-            border-bottom-right-radius: 0 !important;
-            margin-bottom: 0 !important;
-            position: relative;
-            z-index: 2;
-        }
-        /* 下段：英語（上角丸なし） */
-        .stack-bottom-group {
-            display: flex;
-            align-items: center;
-            background: #e0e0e0;
-            border: 1px solid #ccc;
-            border-top: none; /* 上の境界線を消してつなげる */
-            border-bottom-left-radius: 4px;
-            border-bottom-right-radius: 4px;
-        }
-        
-        /* Enラベル */
-        .en-label {
-            color: #e67e22; /* オレンジ */
-            font-weight: 900;
-            padding: 0 10px;
-            font-family: 'Roboto', sans-serif;
-            background: #e0e0e0;
-            user-select: none;
-        }
-        
-        /* グループ内の入力欄（枠線を消して背景になじませる） */
-        .stack-bottom-group input, 
-        .stack-bottom-group textarea {
-            border: none !important;
-            background: transparent !important;
-            padding-left: 0; /* ラベルとの距離調整 */
-        }
-        .stack-bottom-group input:focus,
-        .stack-bottom-group textarea:focus {
-            box-shadow: none;
-            outline: none;
-        }
-
-        /* プロジェクト選択プルダウンの調整 */
         .project-select-group { display: flex; width: 100%; }
         .project-select-group input { flex: 7; border-top-right-radius: 0 !important; border-bottom-right-radius: 0 !important; border-right: none !important; }
-        .project-select-group select { 
-            flex: 3; 
-            border-top-left-radius: 0 !important; 
-            border-bottom-left-radius: 0 !important; 
-            border-bottom: none !important; /* stack-topの一部なので下線なし */
-            margin-bottom: 0 !important;
-            background-color: #f0f0f0 !important; 
-            color: #0056b3 !important; 
-            cursor: pointer; 
+        .project-select-group select { flex: 3; border-top-left-radius: 0 !important; border-bottom-left-radius: 0 !important; border-bottom: none !important; margin-bottom: 0 !important; background-color: #f0f0f0 !important; color: #0056b3 !important; cursor: pointer; }
+
+        /* --- 画像選択UI --- */
+        .image-selector {
+            display: flex; gap: 10px; overflow-x: auto; padding: 10px; background: #333; border-radius: 4px; border: 1px solid #555; width: 100%; box-sizing: border-box;
         }
+        .img-option {
+            width: 80px; height: 60px; object-fit: cover; border: 2px solid transparent; cursor: pointer; border-radius: 4px; flex-shrink: 0;
+        }
+        .img-option:hover { border-color: #aaa; }
+        .img-option.selected { border-color: #007acc; box-shadow: 0 0 5px #007acc; }
+        .img-input-group { display: flex; gap: 5px; margin-top: 5px; }
 
         button { padding: 12px 20px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 10px; width: 100%; }
         .btn-calc { background: #007acc; color: white; font-size: 1.1rem; }
@@ -147,22 +90,14 @@
         .btn-copy { background: #e67e22; color: white; margin-top: 20px; }
 
         /* --- プレビューエリア --- */
-        .preview-header {
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-bottom: 10px;
-        }
-        .lang-toggle {
-            display: flex; gap: 5px; background: #ddd; padding: 3px; border-radius: 20px;
-        }
-        .lang-btn {
-            padding: 5px 15px; border-radius: 15px; border: none; font-size: 0.8rem; font-weight: bold; cursor: pointer; background: transparent; color: #666;
-        }
+        .preview-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-bottom: 10px; }
+        .lang-toggle { display: flex; gap: 5px; background: #ddd; padding: 3px; border-radius: 20px; }
+        .lang-btn { padding: 5px 15px; border-radius: 15px; border: none; font-size: 0.8rem; font-weight: bold; cursor: pointer; background: transparent; color: #666; }
         .lang-btn.active { background: #0056b3; color: white; }
 
-        .preview-label { font-size: 0.8rem; color: #999; font-weight: bold; border-bottom: 1px dashed #ccc; display: block; margin-bottom: 10px; margin-top: 20px; }
+        .preview-label { font-size: 0.8rem; color: #666; font-weight: bold; border-bottom: 1px dashed #999; display: block; margin-bottom: 10px; margin-top: 20px; }
         
-        /* ニュースリストプレビュー */
-        .news-item { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; }
+        .news-item { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #ccc; }
         .news-date { font-family: 'Roboto', sans-serif; color: #666; width: 100px; font-size: 0.9rem; }
         .news-tag { font-size: 0.8rem; padding: 2px 8px; border-radius: 4px; margin-right: 15px; color: white; width: 110px; text-align: center; }
         .tag-release { background: #0056b3; }
@@ -171,14 +106,61 @@
         .tag-steam { background: #2c3e50; }
         .tag-game { background: #27ae60; }
         
-        /* カードプレビュー */
-        .img-card { position: relative; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.2); aspect-ratio: 16/9; display: block; max-width: 100%; background: #ddd; }
-        .img-card img { width: 100%; height: 100%; object-fit: cover; }
-        .card-overlay { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); padding: 15px; color: white; box-sizing: border-box; }
-        .card-title { font-size: 1.2rem; font-weight: bold; margin: 0; font-family: 'Noto Serif JP', serif; }
-        .card-sub { font-size: 0.8rem; opacity: 0.9; margin-top: 5px; }
+        /* --- 最新の活動（カード）独自デザイン --- */
+        .custom-card {
+            width: 300px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.2); /* 斜め右下の影 */
+            margin-bottom: 20px;
+            cursor: pointer; /* リンクっぽく */
+        }
+        .custom-card-img-box {
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+            background: #ddd;
+        }
+        .custom-card-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* 上下均等に欠ける（中央トリミング）は object-fit: cover で自動的に実現されます */
+        }
+        .custom-card-content {
+            padding: 15px;
+        }
+        .custom-meta {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 5px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .custom-tag {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: white;
+        }
+        .custom-project {
+            font-weight: bold;
+            color: #333;
+        }
+        .custom-title {
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: #111;
+            line-height: 1.4;
+            /* 3行制限（18文字x3行程度） */
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
 
-        /* ページプレビュー */
         .page-preview { font-family: 'Noto Serif JP', serif; line-height: 1.8; margin-top: 20px; background: white; padding: 20px; border-radius: 8px; }
         .page-preview h1 { border-bottom: 3px solid #0056b3; display: inline-block; padding-bottom: 5px; margin-bottom: 20px; font-size: 1.5rem; }
         .page-preview img { max-width: 100%; border-radius: 10px; margin: 20px 0; }
@@ -187,7 +169,6 @@
 </head>
 <body>
 
-    <!-- 1. ログインオーバーレイ -->
     <div id="loginOverlay">
         <div class="login-container-split">
             <div class="login-left">
@@ -212,7 +193,6 @@
         </div>
     </div>
 
-    <!-- 2. メイン画面 -->
     <div id="mainWrapper">
         <div class="dashboard">
             <div class="sidebar">
@@ -224,7 +204,6 @@
             </div>
 
             <div class="main-content">
-
                 <!-- 計算機パネル -->
                 <div id="panel-calc" class="panel active">
                     <div class="calc-container">
@@ -247,7 +226,6 @@
                 <!-- CMSパネル -->
                 <div id="panel-cms" class="panel">
                     <div class="cms-layout">
-                        <!-- エディタ -->
                         <div class="editor-area">
                             <h2>📝 記事・プロジェクト作成</h2>
                             
@@ -259,56 +237,51 @@
                             <div class="form-group">
                                 <label>カテゴリ</label>
                                 <select id="inCategory" class="input-white" style="width:100% !important;" onchange="updatePreview()">
-                                    <option value="update">更新情報</option>
                                     <option value="release">プレスリリース</option>
+                                    <option value="update">更新情報</option>
                                     <option value="start">プロジェクト開始 (Coming Soon)</option>
                                     <option value="steam">Steamリリース</option>
                                     <option value="game">サイト内ミニゲーム</option>
                                 </select>
                             </div>
 
-                            <!-- プロジェクト名（日・英） -->
                             <div class="form-group">
                                 <label>プロジェクト名</label>
-                                <!-- 上段：日本語入力＋選択プルダウン -->
                                 <div class="project-select-group">
                                     <input type="text" id="inProject" class="input-white stack-top" placeholder="プロジェクト名 (JP)" oninput="autoFillProject()" autocomplete="off">
                                     <select id="projectSelectHelper" class="stack-top" onchange="syncProjectSelect()">
                                         <option value="">▼ 履歴...</option>
-                                        <!-- JSで自動生成 -->
                                     </select>
                                 </div>
-                                <!-- 下段：英語入力 -->
                                 <div class="stack-bottom-group">
                                     <span class="en-label">En</span>
                                     <input type="text" id="inProjectEn" class="input-gray-en" placeholder="Project Name (EN)" oninput="updatePreview()" autocomplete="off">
                                 </div>
                             </div>
 
-                            <!-- タイトル（日・英） -->
                             <div class="form-group">
                                 <label>お知らせ・キャッチコピー</label>
-                                <!-- 上段：日本語 -->
                                 <input type="text" id="inTitle" class="input-white stack-top" placeholder="タイトル (JP)" oninput="updatePreview()" autocomplete="off">
-                                <!-- 下段：英語 -->
                                 <div class="stack-bottom-group">
                                     <span class="en-label">En</span>
                                     <input type="text" id="inTitleEn" class="input-gray-en" placeholder="Title (EN)" oninput="updatePreview()" autocomplete="off">
                                 </div>
                             </div>
 
-                            <!-- 画像 -->
                             <div class="form-group">
-                                <label>画像ファイル名 (半角)</label>
-                                <input type="text" id="inImage" class="input-white input-half" placeholder="例: app-image.png" oninput="updatePreview()" autocomplete="off">
+                                <label>画像ファイル (index_phot/ 内の画像を選択)</label>
+                                <!-- 画像セレクター -->
+                                <div id="imageSelector" class="image-selector">
+                                    <!-- JSで画像リストを生成 -->
+                                </div>
+                                <div class="img-input-group">
+                                    <input type="text" id="inImage" class="input-white input-half" placeholder="またはファイル名を入力" oninput="updatePreview()" autocomplete="off">
+                                </div>
                             </div>
 
-                            <!-- 詳細本文（日・英） -->
                             <div class="form-group">
                                 <label>詳細本文 (HTML可)</label>
-                                <!-- 上段：日本語 -->
                                 <textarea id="inBody" class="input-white stack-top" placeholder="詳細内容 (JP)" oninput="updatePreview()"></textarea>
-                                <!-- 下段：英語 -->
                                 <div class="stack-bottom-group">
                                     <span class="en-label">En</span>
                                     <textarea id="inBodyEn" class="input-gray-en" placeholder="Detail Body (EN)" oninput="updatePreview()"></textarea>
@@ -320,11 +293,9 @@
                             <button class="btn-copy" onclick="saveToGitHub()">🚀 GitHubへ直接保存</button>
                         </div>
 
-                        <!-- プレビュー -->
                         <div class="preview-area">
                             <div class="preview-header">
                                 <h2 style="border:none; margin:0; font-size:1.1rem; color:#333;">👁️ リアルタイムプレビュー</h2>
-                                <!-- 言語切り替えスイッチ -->
                                 <div class="lang-toggle">
                                     <button class="lang-btn active" id="btnPrevJp" onclick="setPreviewLang('ja')">日本語</button>
                                     <button class="lang-btn" id="btnPrevEn" onclick="setPreviewLang('en')">English</button>
@@ -334,21 +305,28 @@
                             <span class="preview-label">▼ お知らせ (News List)</span>
                             <div class="news-item">
                                 <span class="news-date" id="prevDate">2026.03.15</span>
-                                <span class="news-tag tag-update" id="prevTag">更新情報</span>
+                                <span class="news-tag tag-release" id="prevTag">プレスリリース</span>
                                 <div style="flex:1;">
                                     <span style="font-weight:bold; margin-right:10px; color:#333;" id="prevProjectName">プロジェクト名</span>
-                                    <span class="news-link" id="prevTitle">タイトル</span>
+                                    <!-- お知らせ一覧では説明文は非表示 -->
                                 </div>
                             </div>
 
                             <span class="preview-label">▼ 最新の活動 (Highlights Card)</span>
                             <div id="highlightPreviewBox">
-                                <div class="img-card">
-                                    <img src="" alt="No Image" id="prevImg">
-                                    <div class="card-overlay">
-                                        <h3 class="card-title" id="prevCardTitle">タイトル</h3>
-                                        <div class="card-sub">
-                                            <span id="prevCardDate">2026.03.15</span> | <span id="prevCardSub">プロジェクト名</span>
+                                <!-- 独自デザインのカード -->
+                                <div class="custom-card">
+                                    <div class="custom-card-img-box">
+                                        <img src="" alt="No Image" id="prevImg" class="custom-card-img">
+                                    </div>
+                                    <div class="custom-card-content">
+                                        <div class="custom-meta">
+                                            <span class="custom-tag tag-release" id="prevCardTag">プレスリリース</span>
+                                            <span class="custom-project" id="prevCardSub">プロジェクト名</span>
+                                            <span id="prevCardDate">2026.03.15</span>
+                                        </div>
+                                        <div class="custom-title" id="prevCardTitle">
+                                            お知らせ・キャッチコピーがここに入ります。3行程度まで表示されます。
                                         </div>
                                     </div>
                                 </div>
@@ -368,7 +346,6 @@
                     </div>
                 </div>
 
-                <!-- ユーザー管理パネル -->
                 <div id="panel-users" class="panel">
                     <div class="calc-container">
                         <h2>👥 編集権限者の管理</h2>
@@ -385,14 +362,12 @@
     </div>
 
     <script>
-        // ▼▼▼ 設定 ▼▼▼
         const GITHUB_CONFIG = {
             owner: "KeiAppLab",
             repo: "KeiAppLab",
-            path: "news_data.js", // ファイル名変更
+            path: "news-data.js",
         };
 
-        // プレビュー用言語状態
         let previewLang = 'ja';
 
         // --- 1. 認証機能 ---
@@ -423,12 +398,12 @@
             document.getElementById('mainWrapper').style.display = 'block';
             updatePreview();
             initProjectList();
+            initImageSelector(); // 画像リスト生成
         }
 
         function logout() { localStorage.removeItem('gh_token'); location.reload(); }
 
         window.addEventListener('load', () => {
-
             const savedToken = localStorage.getItem('gh_token');
             if (savedToken) checkIdentity(savedToken);
             renderUserList();
@@ -437,8 +412,7 @@
         // --- 入力制限（半角のみ許可） ---
         document.querySelectorAll('.input-gray-en, .input-half').forEach(input => {
             input.addEventListener('input', function() {
-                // 全角文字が含まれていたら削除する正規表現
-                this.value = this.value.replace(/[^\x00-\x7F]/g, '');
+                this.value = this.value.replace(/[^\x00-\x7F]/g, ''); // 全角を削除
             });
         });
 
@@ -467,10 +441,8 @@
         const today = new Date();
         document.getElementById('inDate').value = today.getFullYear() + '.' + (today.getMonth()+1).toString().padStart(2, '0') + '.' + today.getDate().toString().padStart(2, '0');
 
-        // プロジェクトリスト生成（プルダウン用）
         function initProjectList() {
             if (typeof newsData === 'undefined') return;
-            // 既存データのprojectを抽出
             const projectSet = new Set(newsData.map(item => item.project).filter(p => p));
             const selectBox = document.getElementById('projectSelectHelper');
             selectBox.innerHTML = '<option value="">▼ 履歴...</option>';
@@ -482,18 +454,45 @@
             });
         }
 
-        // プルダウン選択時の同期
+        // --- 画像セレクターの生成 ---
+        function initImageSelector() {
+            if (typeof newsData === 'undefined') return;
+            // 過去データから画像ファイル名を抽出
+            const imageSet = new Set(newsData.map(item => item.image).filter(img => img));
+            // 固定の画像リスト（必要ならここに追加）
+            const defaultImages = ["index_about.png", "index_port.png", "app-image.png", "lab-image.png"];
+            defaultImages.forEach(img => imageSet.add(img));
+
+            const container = document.getElementById('imageSelector');
+            container.innerHTML = "";
+
+            imageSet.forEach(imgName => {
+                // 画像パスは index_phot/ を想定（プレビュー用には相対パスで表示）
+                const img = document.createElement('img');
+                img.src = imgName; // admin.htmlと同じ階層にあると仮定、または index_phot/imgName
+                img.className = "img-option";
+                img.title = imgName;
+                img.onclick = function() {
+                    document.getElementById('inImage').value = imgName;
+                    updatePreview();
+                    // 選択状態のハイライト
+                    document.querySelectorAll('.img-option').forEach(el => el.classList.remove('selected'));
+                    img.classList.add('selected');
+                };
+                container.appendChild(img);
+            });
+        }
+
         function syncProjectSelect() {
             const selectBox = document.getElementById('projectSelectHelper');
             const inputBox = document.getElementById('inProject');
             if (selectBox.value !== "") {
                 inputBox.value = selectBox.value;
                 autoFillProject();
-                selectBox.selectedIndex = 0; // 選択リセット
+                selectBox.selectedIndex = 0;
             }
         }
 
-        // 自動入力＆クリア機能 (日英対応)
         function autoFillProject() {
             const inputProject = document.getElementById('inProject').value.trim();
             const elProjectEn = document.getElementById('inProjectEn');
@@ -510,12 +509,9 @@
             }
 
             if (typeof newsData !== 'undefined') {
-                // 同じプロジェクト名の最新記事を探す
                 const targetPost = newsData.slice().reverse().find(post => post.project === inputProject);
                 if (targetPost) {
-                    // 見つかれば英語名や、直近のタイトルなどを参考に埋める（タイトル等は都度変わるのでプロジェクト名以外は参考程度に）
                     elProjectEn.value = targetPost.project_en || "";
-                    // 以前の記事のタイトルや本文を入れるかは好みが分かれるが、テンプレートとして便利なので入れる
                     elTitle.value = targetPost.title || "";
                     elTitleEn.value = targetPost.title_en || "";
                     elImage.value = targetPost.image || "";
@@ -526,7 +522,6 @@
             updatePreview();
         }
 
-        // プレビュー言語切り替え
         function setPreviewLang(lang) {
             previewLang = lang;
             document.getElementById('btnPrevJp').classList.toggle('active', lang === 'ja');
@@ -539,11 +534,10 @@
             const category = document.getElementById('inCategory').value;
             const image = document.getElementById('inImage').value;
 
-            // 言語に応じた値を取得
             let project, title, body;
             if (previewLang === 'ja') {
                 project = document.getElementById('inProject').value || "プロジェクト名";
-                title = document.getElementById('inTitle').value || "タイトル";
+                title = document.getElementById('inTitle').value || "お知らせ・キャッチコピー";
                 body = document.getElementById('inBody').value || "本文...";
             } else {
                 project = document.getElementById('inProjectEn').value || document.getElementById('inProject').value || "Project Name";
@@ -551,20 +545,21 @@
                 body = document.getElementById('inBodyEn').value || document.getElementById('inBody').value || "Body...";
             }
 
-            // お知らせプレビュー
             document.getElementById('prevDate').textContent = date;
             document.getElementById('prevTitle').textContent = title;
             document.getElementById('prevProjectName').textContent = project;
             
             const tagEl = document.getElementById('prevTag');
+            const cardTagEl = document.getElementById('prevCardTag'); // カード用タグ
             tagEl.className = 'news-tag tag-' + category;
+            cardTagEl.className = 'custom-tag tag-' + category;
             
-            // カテゴリ名の多言語化
             const catNamesJp = {'release':'プレスリリース','update':'更新情報','start':'プロジェクト開始','steam':'Steamリリース','game':'ミニゲーム'};
             const catNamesEn = {'release':'Release','update':'Update','start':'Project Start','steam':'Steam','game':'Mini Game'};
-            tagEl.textContent = (previewLang === 'ja') ? catNamesJp[category] : catNamesEn[category];
+            const catText = (previewLang === 'ja') ? catNamesJp[category] : catNamesEn[category];
+            tagEl.textContent = catText;
+            cardTagEl.textContent = catText;
 
-            // 最新の活動プレビュー
             const highlightBox = document.getElementById('highlightPreviewBox');
             const highlightMsg = document.getElementById('highlightMsg');
             const isHighlight = (category === 'release' || category === 'start' || category === 'steam') && image !== "";
@@ -583,7 +578,6 @@
                 document.getElementById('prevImg').style.display = 'none';
             }
 
-            // 詳細ページプレビュー
             document.getElementById('prevPageTitle').textContent = title;
             document.getElementById('prevPageDate').textContent = date;
             document.getElementById('prevPageProject').textContent = project;
@@ -601,7 +595,6 @@
                 id: Date.now(),
                 date: document.getElementById('inDate').value,
                 category: document.getElementById('inCategory').value,
-                // 日英データを格納
                 project: document.getElementById('inProject').value,
                 project_en: document.getElementById('inProjectEn').value,
                 title: document.getElementById('inTitle').value,
@@ -644,7 +637,7 @@
         async function saveUsersToGitHub() {
             const token = localStorage.getItem("gh_token");
             if (!token) { alert("認証が必要です"); return; }
-            if(!confirm("GitHub上の allowed_users.js を更新します。よろしいですか？")) return;
+            if(!confirm("allowed_users.js を更新します。よろしいですか？")) return;
             const jsonString = JSON.stringify(allowedUsersData, null, 4);
             const content = `// 編集権限を持つユーザーリスト\nconst allowedUsersData = ${jsonString};`;
             const encodedContent = btoa(unescape(encodeURIComponent(content)));
@@ -660,14 +653,12 @@
             } catch (err) { alert("エラー: " + err.message); }
         }
 
-// --- GitHubへ直接保存（ニュース用・追記対応版） ---
         async function saveToGitHub() {
             const token = localStorage.getItem("gh_token");
             if (!token) { alert("認証が必要です"); return; }
             if(!confirm(`GitHub上の ${GITHUB_CONFIG.path} を更新します。よろしいですか？`)) return;
 
             try {
-                // 1. 現在のファイルを取得
                 const getRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`, {
                     headers: { Authorization: `token ${token}` }
                 });
@@ -678,27 +669,20 @@
                 if (getRes.ok) {
                     const fileData = await getRes.json();
                     sha = fileData.sha;
-                    // Base64デコードして中身を取り出す
-                    // "const newsData = [...];" の形式からJSON部分だけ抽出する簡易パース
                     const content = decodeURIComponent(escape(atob(fileData.content)));
-                    const jsonPart = content.match(/\[.*\]/s); // []の中身を抽出
+                    const jsonPart = content.match(/\[.*\]/s);
                     if (jsonPart) {
                         existingData = JSON.parse(jsonPart[0]);
                     }
                 }
 
-                // 2. 新しいデータを先頭に追加（ID重複チェック）
-                // 今回入力した allPosts を、既存データに追加する
                 const newIds = new Set(allPosts.map(p => p.id));
-                // 既存データのうち、今回編集していないものだけ残す（重複回避）
                 const mergedData = [...allPosts, ...existingData.filter(p => !newIds.has(p.id))];
 
-                // 3. 保存用データの作成
                 const jsonString = JSON.stringify(mergedData, null, 4);
                 const newContent = `// このファイルは admin.html で生成されました\nconst newsData = ${jsonString};`;
                 const encodedContent = btoa(unescape(encodeURIComponent(newContent)));
 
-                // 4. 書き込み
                 const putRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`, {
                     method: "PUT",
                     headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
@@ -711,7 +695,7 @@
 
                 if (putRes.ok) {
                     alert("GitHubへの保存（追記）に成功しました！");
-                    allPosts = []; // 保存したら一時リストはクリア
+                    allPosts = [];
                 } else {
                     alert("保存に失敗しました。");
                 }
