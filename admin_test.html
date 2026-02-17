@@ -83,12 +83,12 @@
         .news-date { font-family: 'Roboto', sans-serif; color: #666; width: 100px; font-size: 0.9rem; }
         .news-tag { font-size: 0.8rem; padding: 2px 8px; border-radius: 4px; margin-right: 15px; color: white; width: 110px; text-align: center; }
         
-        /* カテゴリ色定義 (修正: !importantを追加して確実に適用) */
-        .tag-release { background: #0056b3 !important; }
-        .tag-update { background: #e67e22 !important; }
-        .tag-start { background: #8e44ad !important; }
-        .tag-steam { background: #2c3e50 !important; }
-        .tag-game { background: #27ae60 !important; }
+        /* カテゴリ色定義 */
+        .tag-release { background: #0056b3; }
+        .tag-update { background: #e67e22; }
+        .tag-start { background: #8e44ad; }
+        .tag-steam { background: #2c3e50; }
+        .tag-game { background: #27ae60; }
         
         .news-link { text-decoration: none; color: #333; font-weight: 500; font-family: 'Noto Serif JP', serif; }
 
@@ -367,10 +367,6 @@
             renderUserList();
         });
 
-        document.querySelectorAll('.input-gray-en, .input-half').forEach(input => {
-            input.addEventListener('input', function() { this.value = this.value.replace(/[^\x00-\x7F]/g, ''); });
-        });
-
         // --- 2. パネル切り替え ---
         function switchPanel(panelId) {
             document.querySelectorAll('.panel').forEach(el => el.classList.remove('active'));
@@ -501,49 +497,50 @@
                 body = document.getElementById('inBodyEn').value || document.getElementById('inBody').value || "Body...";
             }
 
+            // お知らせプレビュー
             document.getElementById('prevDate').textContent = date;
             document.getElementById('prevTitle').textContent = title;
             document.getElementById('prevProjectName').textContent = project;
             
             const tagEl = document.getElementById('prevTag');
+            // クラスをリセットして再適用
             tagEl.className = 'news-tag tag-' + category;
+            
             const catNamesJp = {'release':'プレスリリース','update':'更新情報','start':'プロジェクト開始','steam':'Steamリリース','game':'ミニゲーム'};
             const catNamesEn = {'release':'Release','update':'Update','start':'Project Start','steam':'Steam','game':'Mini Game'};
-            tagEl.textContent = (previewLang === 'ja') ? catNamesJp[category] : catNamesEn[category];
+            const catName = (previewLang === 'ja') ? catNamesJp[category] : catNamesEn[category];
+            tagEl.textContent = catName;
 
-            // 最新の活動プレビュー (Highlights)
+            // 最新の活動プレビュー
             const highlightBox = document.getElementById('highlightPreviewBox');
             const highlightMsg = document.getElementById('highlightMsg');
-            
-            // 表示対象かどうかの判定
-            const isHighlight = (category === 'release' || category === 'start' || category === 'steam') && image !== "";
+            const cardCatBadge = document.getElementById('prevCardCatBadge');
 
-            // ★修正: 判定に関わらず、内容は常に更新する
+            // 1. 内容の更新（常に実行）
             document.getElementById('prevImg').src = image;
-            
-            // 画像エリアの表示制御
-            if (image) {
-                document.getElementById('prevImg').style.display = 'block';
-            } else {
-                document.getElementById('prevImg').style.display = 'none';
-            }
+            if (!image) document.getElementById('prevImg').style.display = 'none';
+            else document.getElementById('prevImg').style.display = 'block';
 
             document.getElementById('prevCardTitle').textContent = title;
             document.getElementById('prevCardProj').textContent = project;
             document.getElementById('prevCardDate').textContent = date;
             
-            // カード内のカテゴリバッジ更新
-            const cardCatBadge = document.getElementById('prevCardCatBadge');
-            cardCatBadge.textContent = tagEl.textContent; 
-            cardCatBadge.className = 'highlight-category-badge tag-' + category; // 色クラス適用
+            // バッジ更新
+            cardCatBadge.textContent = catName;
+            cardCatBadge.className = 'highlight-category-badge tag-' + category;
 
-            // ★修正: 表示対象外の場合のみ、薄くしてメッセージを出す
+            // 2. 表示条件の判定
+            const isHighlight = (category === 'release' || category === 'start' || category === 'steam') && image !== "";
+
             if (isHighlight) {
                 highlightBox.style.opacity = "1";
                 highlightMsg.textContent = "";
             } else {
                 highlightBox.style.opacity = "0.4"; // 薄くする
-                highlightMsg.textContent = "※このカテゴリまたは画像なしのため、「最新の活動」には表示されません。";
+                let msg = "";
+                if (image === "") msg = "※画像がないため表示されません。";
+                else msg = "※このカテゴリは「最新の活動」には表示されません。";
+                highlightMsg.textContent = msg;
             }
 
             // 詳細ページプレビュー
@@ -622,7 +619,7 @@
             } catch (err) { alert("エラー: " + err.message); }
         }
 
-        // --- GitHubへ直接保存（ニュース用・追記対応版） ---
+        // --- GitHubへ直接保存 ---
         async function saveToGitHub() {
             const token = localStorage.getItem("gh_token");
             if (!token) { alert("認証が必要です"); return; }
