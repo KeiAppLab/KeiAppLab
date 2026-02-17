@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KEI Lab マスター・コックピット</title>
 
-    <!-- ニュース・ユーザーリスト・画像リストの読み込み -->
+    <!-- 外部データの読み込み -->
     <script src="news-data.js"></script>
     <script src="allowed_users.js"></script>
     <script src="index_phot.js"></script>
@@ -15,8 +15,6 @@
 
         /* --- 全体レイアウト --- */
         body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Arial, sans-serif; background: #1e1e1e; color: #ddd; height: 100vh; overflow: hidden; }
-        
-        /* ログイン前の隠しスタイル */
         #mainWrapper { display: none; height: 100%; }
 
         /* --- ログイン画面 --- */
@@ -25,11 +23,7 @@
         .login-left { width: 40%; padding: 40px; display: flex; flex-direction: column; justify-content: center; background: #f9f9f9; border-right: 1px solid #eee; }
         .login-left input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ccc; border-radius: 5px; }
         .login-left button { width: 100%; padding: 12px; background: #0056b3; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .login-left button:hover { background: #003d82; }
         .login-right { width: 60%; padding: 40px; overflow-y: auto; color: #333; line-height: 1.6; }
-        .login-right h3 { border-bottom: 2px solid #0056b3; padding-bottom: 10px; margin-top: 0; }
-        .login-right ol { padding-left: 20px; }
-        .login-right li { margin-bottom: 10px; font-size: 0.9rem; }
 
         /* --- メイン画面 --- */
         .dashboard { display: grid; grid-template-columns: 250px 1fr; height: 100%; }
@@ -42,14 +36,7 @@
         .panel { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; overflow-y: auto; padding: 30px; box-sizing: border-box; }
         .panel.active { display: block; }
 
-        /* --- 計算機スタイル --- */
-        .calc-container { max-width: 800px; margin: 0 auto; background: #2d2d30; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-        .calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
-        .calc-result-box { background: #1e1e1e; padding: 20px; border-radius: 8px; text-align: center; margin-top: 20px; border: 1px solid #444; }
-        .calc-number { font-size: 3rem; color: #e67e22; font-weight: bold; }
-        .calc-sub { color: #27ae60; font-size: 1rem; margin-top: 10px; }
-
-        /* --- CMSスタイル --- */
+        /* --- CMSレイアウト --- */
         .cms-layout { display: flex; height: 100%; gap: 20px; }
         .editor-area { width: 45%; overflow-y: auto; padding-right: 10px; height: 100%; }
         .preview-area { width: 55%; background: #e0e0e0; color: #333; border-radius: 8px; overflow-y: auto; padding: 20px; height: 100%; }
@@ -70,7 +57,8 @@
         .en-label { color: #e67e22; font-weight: 900; padding: 0 10px; font-family: 'Roboto', sans-serif; background: #e0e0e0; user-select: none; }
         .stack-bottom-group input, .stack-bottom-group textarea { border: none !important; background: transparent !important; padding-left: 0; }
         .stack-bottom-group input:focus, .stack-bottom-group textarea:focus { outline: none; }
-        .input-gray-en { font-family: 'Roboto Mono', monospace; ime-mode: disabled; }
+        /* .input-gray-en のフォント指定などは残すが、ime-mode等の制限は解除 */
+        .input-gray-en { font-family: 'Roboto', sans-serif; }
 
         /* カスタム画像選択ボックス */
         .custom-select-wrapper { position: relative; user-select: none; width: 450px; max-width: 100%; }
@@ -94,20 +82,88 @@
         .news-item { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #ccc; }
         .news-date { font-family: 'Roboto', sans-serif; color: #666; width: 100px; font-size: 0.9rem; }
         .news-tag { font-size: 0.8rem; padding: 2px 8px; border-radius: 4px; margin-right: 15px; color: white; width: 110px; text-align: center; }
+        
+        /* カテゴリ色定義 (確実に適用) */
         .tag-release { background: #0056b3; }
         .tag-update { background: #e67e22; }
+        .tag-start { background: #8e44ad; }
+        .tag-steam { background: #2c3e50; }
+        .tag-game { background: #27ae60; }
+        
         .news-link { text-decoration: none; color: #333; font-weight: 500; font-family: 'Noto Serif JP', serif; }
 
-        /* 最新の活動カード (300px幅・斜め右下影) */
-        .highlight-card { width: 300px; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 6px 6px 15px rgba(0,0,0,0.1); border: 1px solid rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s; }
+        /* --- 最新の活動カード (修正版) --- */
+        .highlight-card { 
+            width: 300px; 
+            background: #fff; 
+            border-radius: 10px; 
+            overflow: hidden; 
+            /* 斜め右下の影 */
+            box-shadow: 6px 6px 15px rgba(0,0,0,0.15); 
+            border: 1px solid rgba(0,0,0,0.05); 
+            cursor: pointer; 
+            transition: transform 0.2s; 
+        }
         .highlight-card:hover { transform: translateY(-3px); }
-        .highlight-img-area { width: 100%; height: 200px; overflow: hidden; background: #eee; }
-        .highlight-img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
-        .highlight-content { padding: 15px; text-align: left; }
-        .highlight-meta { font-size: 0.75rem; color: #666; margin-bottom: 8px; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; font-family: 'Roboto', sans-serif; }
-        .meta-cat { color: #0056b3; font-weight: bold; }
-        .meta-proj { font-weight: bold; color: #333; }
-        .highlight-title { font-family: 'Noto Serif JP', serif; font-size: 1rem; font-weight: 900; color: #333; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; height: 4.5em; }
+        
+        .highlight-img-area { 
+            width: 100%; 
+            height: 200px; 
+            overflow: hidden; 
+            background: #eee; 
+            position: relative; /* カテゴリバッジ配置用 */
+        }
+        .highlight-img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+            object-position: center; 
+        }
+
+        /* 画像左下に配置するカテゴリバッジ */
+        .highlight-category-badge {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            color: white;
+            font-size: 0.8rem;
+            padding: 4px 12px;
+            border-top-right-radius: 8px;
+            font-weight: bold;
+            z-index: 2;
+        }
+
+        /* コンテンツエリア (左右余白なし) */
+        .highlight-content { 
+            padding: 10px 0 15px 0; /* 上10px, 下15px, 左右0 */
+            text-align: left; 
+        }
+        
+        .highlight-meta { 
+            font-size: 0.75rem; 
+            color: #666; 
+            margin-bottom: 5px; 
+            padding: 0 10px; /* メタ情報は少し内側に入れる */
+            font-family: 'Roboto', sans-serif; 
+        }
+        
+        /* タイトル (1列18文字・3行表示) */
+        .highlight-title { 
+            font-family: 'Noto Serif JP', serif; 
+            font-size: 16px; /* 16px * 18文字 ≈ 288px (300px内に収まる) */
+            font-weight: 900; 
+            color: #333; 
+            line-height: 1.5; 
+            padding: 0; /* 余白なし */
+            margin: 0;
+            /* 3行制限 */
+            display: -webkit-box; 
+            -webkit-line-clamp: 3; 
+            -webkit-box-orient: vertical; 
+            overflow: hidden; 
+            height: 4.5em; /* 1.5 * 3行 */
+            letter-spacing: 0.02em;
+        }
 
         /* 詳細ページ */
         .page-preview { font-family: 'Noto Serif JP', serif; line-height: 1.8; margin-top: 20px; background: white; padding: 20px; border-radius: 8px; }
@@ -116,9 +172,9 @@
         #prevBody, .news-link { white-space: pre-wrap; }
 
         button { padding: 12px 20px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 10px; width: 100%; }
-        .btn-calc { background: #007acc; color: white; font-size: 1.1rem; }
         .btn-save { background: #27ae60; color: white; }
         .btn-copy { background: #e67e22; color: white; margin-top: 20px; }
+        
         #outputArea { width: 100%; height: 100px; background: #111; color: #0f0; font-family: monospace; font-size: 0.8rem; margin-top: 10px; }
     </style>
 </head>
@@ -152,36 +208,16 @@
         <div class="dashboard">
             <div class="sidebar">
                 <h1>🚀 KEI Lab Admin</h1>
-                <!-- 順序変更: 収益計算を1番目に -->
-                <div class="menu-btn active" onclick="switchPanel('calc')">💰 収益・秒数計算</div>
-                <div class="menu-btn" onclick="switchPanel('cms')">📝 コンテンツ編集</div>
+                <div class="menu-btn active" onclick="switchPanel('cms')">📝 コンテンツ編集</div>
+                <div class="menu-btn" onclick="switchPanel('calc')">💰 収益・秒数計算</div>
                 <div class="menu-btn" onclick="switchPanel('users')">👥 権限管理</div>
                 <div class="menu-btn" onclick="logout()" style="margin-top:auto; background:#c0392b; color:white;">🔒 ログアウト</div>
             </div>
 
             <div class="main-content">
 
-                <!-- 計算機パネル (デフォルト表示) -->
-                <div id="panel-calc" class="panel active">
-                    <div class="calc-container">
-                        <h2>💰 無料通話秒数 シミュレーター</h2>
-                        <div class="calc-grid">
-                            <div><label>動画広告単価</label><input type="number" id="adPrice" value="1.5" step="0.1"> 円</div>
-                            <div><label>通話原価 (1分)</label><input type="number" id="callCost" value="3.0" step="0.1"> 円</div>
-                        </div>
-                        <label>確保したい利益率 (%) <span id="marginDisplay" style="color:#007acc; margin-left:10px;">20%</span></label>
-                        <input type="range" id="margin" min="0" max="50" value="20" oninput="document.getElementById('marginDisplay').innerText = this.value + '%'">
-                        <button class="btn-calc" onclick="calcSeconds()">計算する</button>
-                        <div class="calc-result-box">
-                            <div style="color:#aaa; font-size:0.9rem;">アプリに設定すべきチャージ秒数</div>
-                            <div id="calcOutput" class="calc-number">--- 秒</div>
-                            <div id="profitOutput" class="calc-sub">(広告1回あたりの純利益: --- 円)</div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- CMSパネル -->
-                <div id="panel-cms" class="panel">
+                <div id="panel-cms" class="panel active">
                     <div class="cms-layout">
                         <!-- エディタ -->
                         <div class="editor-area">
@@ -195,7 +231,6 @@
                             <div class="form-group">
                                 <label>カテゴリ</label>
                                 <select id="inCategory" class="input-white" style="width:100% !important;" onchange="updatePreview()">
-                                    <!-- 順序変更: 更新情報を一番上に -->
                                     <option value="update">更新情報</option>
                                     <option value="release">プレスリリース</option>
                                     <option value="start">プロジェクト開始 (Coming Soon)</option>
@@ -204,7 +239,6 @@
                                 </select>
                             </div>
 
-                            <!-- プロジェクト名（連結UI） -->
                             <div class="form-group">
                                 <label>プロジェクト名</label>
                                 <div class="input-group">
@@ -220,7 +254,6 @@
                             </div>
 
                             <div class="form-group">
-                                <!-- ラベル変更 -->
                                 <label>お知らせ・キャッチコピー</label>
                                 <input type="text" id="inTitle" class="input-white stack-top" placeholder="タイトル (JP)" oninput="updatePreview()" autocomplete="off">
                                 <div class="stack-bottom-group">
@@ -229,7 +262,6 @@
                                 </div>
                             </div>
 
-                            <!-- 画像選択（カスタムプルダウン） -->
                             <div class="form-group">
                                 <label>画像ファイル (index_photフォルダ)</label>
                                 <input type="hidden" id="inImage" onchange="updatePreview()">
@@ -273,10 +305,8 @@
                                 <span class="news-date" id="prevDate">2026.03.15</span>
                                 <span class="news-tag tag-update" id="prevTag">更新情報</span>
                                 <div style="flex:1;">
-                                    <!-- プロジェクト名（太字）を追加 -->
                                     <span style="font-weight:bold; margin-right:10px; color:#333;" id="prevProjectName">プロジェクト名</span>
                                     <span class="news-link" id="prevTitle">お知らせ・キャッチコピー</span>
-                                    <!-- 説明文は非表示 -->
                                 </div>
                             </div>
 
@@ -285,13 +315,13 @@
                                 <div class="highlight-card">
                                     <div class="highlight-img-area">
                                         <img src="" alt="No Image" id="prevImg" class="highlight-img">
+                                        <!-- カテゴリバッジを画像内に移動 -->
+                                        <span class="highlight-category-badge tag-update" id="prevCardCatBadge">更新情報</span>
                                     </div>
                                     <div class="highlight-content">
                                         <div class="highlight-meta">
-                                            <!-- 日付を先頭に移動 -->
                                             <span class="meta-date" id="prevCardDate">2026.03.15</span> | 
-                                            <span class="meta-proj" id="prevCardProj">プロジェクト名</span> | 
-                                            <span class="meta-cat" id="prevCardCat">更新情報</span>
+                                            <span class="meta-proj" id="prevCardProj">プロジェクト名</span>
                                         </div>
                                         <div class="highlight-title" id="prevCardTitle">
                                             お知らせ・キャッチコピーがここに入ります。
@@ -310,6 +340,25 @@
                                 <img src="" id="prevPageImg" style="display:none;">
                                 <div id="prevBody">本文...</div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 計算機パネル -->
+                <div id="panel-calc" class="panel">
+                    <div class="calc-container">
+                        <h2>💰 無料通話秒数 シミュレーター</h2>
+                        <div class="calc-grid">
+                            <div><label>動画広告単価</label><input type="number" id="adPrice" value="1.5" step="0.1"> 円</div>
+                            <div><label>通話原価 (1分)</label><input type="number" id="callCost" value="3.0" step="0.1"> 円</div>
+                        </div>
+                        <label>確保したい利益率 (%) <span id="marginDisplay" style="color:#007acc; margin-left:10px;">20%</span></label>
+                        <input type="range" id="margin" min="0" max="50" value="20" oninput="document.getElementById('marginDisplay').innerText = this.value + '%'">
+                        <button class="btn-calc" onclick="calcSeconds()">計算する</button>
+                        <div class="calc-result-box">
+                            <div style="color:#aaa; font-size:0.9rem;">アプリに設定すべきチャージ秒数</div>
+                            <div id="calcOutput" class="calc-number">--- 秒</div>
+                            <div id="profitOutput" class="calc-sub">(広告1回あたりの純利益: --- 円)</div>
                         </div>
                     </div>
                 </div>
@@ -377,10 +426,6 @@
             const savedToken = localStorage.getItem('gh_token');
             if (savedToken) checkIdentity(savedToken);
             renderUserList();
-        });
-
-        document.querySelectorAll('.input-gray-en, .input-half').forEach(input => {
-            input.addEventListener('input', function() { this.value = this.value.replace(/[^\x00-\x7F]/g, ''); });
         });
 
         // --- 2. パネル切り替え ---
@@ -513,6 +558,7 @@
                 body = document.getElementById('inBodyEn').value || document.getElementById('inBody').value || "Body...";
             }
 
+            // お知らせプレビュー
             document.getElementById('prevDate').textContent = date;
             document.getElementById('prevTitle').textContent = title;
             document.getElementById('prevProjectName').textContent = project;
@@ -523,6 +569,7 @@
             const catNamesEn = {'release':'Release','update':'Update','start':'Project Start','steam':'Steam','game':'Mini Game'};
             tagEl.textContent = (previewLang === 'ja') ? catNamesJp[category] : catNamesEn[category];
 
+            // 最新の活動プレビュー (Highlights)
             const highlightBox = document.getElementById('highlightPreviewBox');
             const highlightMsg = document.getElementById('highlightMsg');
             const isHighlight = (category === 'release' || category === 'start' || category === 'steam') && image !== "";
@@ -534,12 +581,17 @@
                 document.getElementById('prevCardTitle').textContent = title;
                 document.getElementById('prevCardProj').textContent = project;
                 document.getElementById('prevCardDate').textContent = date;
-                document.getElementById('prevCardCat').textContent = tagEl.textContent;
+                
+                // カード内のカテゴリバッジ（画像左下）
+                const cardCatBadge = document.getElementById('prevCardCatBadge');
+                cardCatBadge.textContent = tagEl.textContent;
+                cardCatBadge.className = 'highlight-category-badge tag-' + category; // 色クラス適用
             } else {
                 highlightBox.style.opacity = "0.4";
                 highlightMsg.textContent = "※このカテゴリまたは画像なしのため、「最新の活動」には表示されません。";
             }
 
+            // 詳細ページプレビュー
             document.getElementById('prevPageTitle').textContent = title;
             document.getElementById('prevPageDate').textContent = date;
             document.getElementById('prevPageProject').textContent = project;
