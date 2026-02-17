@@ -6,7 +6,7 @@
     <title>KEI Lab マスター・コックピット</title>
 
     <!-- 外部データの読み込み -->
-    <script src="news-data.js"></script>
+    <script src="news_data.js"></script>
     <script src="allowed_users.js"></script>
     <script src="index_phot.js"></script>
 
@@ -353,7 +353,7 @@
         const GITHUB_CONFIG = {
             owner: "KeiAppLab",
             repo: "KeiAppLab",
-            path: "news-data.js",
+            path: "news_data.js",
         };
 
         let previewLang = 'ja';
@@ -727,7 +727,7 @@
                 const putRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`, {
                     method: "PUT",
                     headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
-                    body: JSON.stringify({ message: "Update news-data.js (Append)", content: encodedContent, sha: sha })
+                    body: JSON.stringify({ message: "Update news_data.js (Append)", content: encodedContent, sha: sha })
                 });
 
                 if (putRes.ok) { alert("GitHubへの保存（追記）に成功しました！"); allPosts = []; }
