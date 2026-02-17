@@ -1,6 +1,27 @@
 // このファイルは admin.html で生成されました
 const newsData = [
-     {
+    {
+        "id": 1771339740409,
+        "date": "2026.02.17",
+        "category": "start",
+        "image": "index_phot/index_play.png",
+        "project": "テストプロジェクト",
+        "title": "テストのお知らせ。そうテストだよ。",
+        "body": "カテゴリや画像有無の条件（透明化）に関わらず、入力されたテキストや画像が常にカードに反映されるようにしました。",
+        "project_en": "",
+        "title_en": "",
+        "body_en": "",
+        "project_de": "",
+        "title_de": "",
+        "body_de": "",
+        "project_fr": "",
+        "title_fr": "",
+        "body_fr": "",
+        "project_es": "",
+        "title_es": "",
+        "body_es": ""
+    },
+    {
         "id": 1771326215208,
         "date": "2026.02.17",
         "category": "update",
