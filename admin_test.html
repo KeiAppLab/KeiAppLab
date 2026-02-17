@@ -6,6 +6,7 @@
     <title>KEI Lab マスター・コックピット (Global)</title>
 
     <!-- 外部データの読み込み -->
+    <!-- 修正: ファイル名を news_data.js に変更 -->
     <script src="news_data.js"></script>
     <script src="allowed_users.js"></script>
     <script src="index_phot.js"></script>
@@ -47,52 +48,11 @@
         input, select, textarea { width: 100%; padding: 10px; border: 1px solid #555; border-radius: 4px; box-sizing: border-box; font-size: 1rem; }
         .input-white { background-color: #ffffff !important; color: #333 !important; border: 1px solid #ccc !important; font-weight: bold; }
         
-        /* 連結入力フィールド (修正: 50:50) */
+        /* 連結入力フィールド */
         .input-group { display: flex; width: 100%; }
-        .input-group input { 
-            flex: 1; /* 50% */
-            border-top-right-radius: 0 !important; 
-            border-bottom-right-radius: 0 !important; 
-            border-right: 0 !important; 
-        }
-        /* プロジェクト履歴用のカスタムセレクトラッパー */
-        .input-group .custom-select-wrapper {
-            flex: 1; /* 50% */
-            width: auto; /* 幅制限解除 */
-            max-width: none;
-        }
-        .input-group .custom-select__trigger {
-            border-top-left-radius: 0 !important;
-            border-bottom-left-radius: 0 !important;
-            background-color: #e6e6e6 !important;
-            color: #0056b3 !important;
-            border-left: 1px solid #ccc;
-        }
-
-        /* 英語入力欄 */
-        .stack-top { border-bottom: none !important; border-bottom-left-radius: 0 !important; border-bottom-right-radius: 0 !important; margin-bottom: 0 !important; }
-        .stack-bottom-group { display: flex; align-items: center; background: #e0e0e0; border: 1px solid #ccc; border-top: none; border-bottom-left-radius: 4px; border-bottom-right-radius: 4px; }
-        .en-label { color: #e67e22; font-weight: 900; padding: 0 10px; font-family: 'Roboto', sans-serif; background: #e0e0e0; user-select: none; }
-        .stack-bottom-group input, .stack-bottom-group textarea { border: none !important; background: transparent !important; padding-left: 0; }
-        .stack-bottom-group input:focus, .stack-bottom-group textarea:focus { outline: none; }
-        .input-gray-en { font-family: 'Roboto', sans-serif; }
-
-        /* カスタム画像選択ボックス & プロジェクト履歴ボックス共通 */
-        .custom-select-wrapper { position: relative; user-select: none; width: 100%; }
-        .custom-select { position: relative; display: flex; flex-direction: column; }
-        .custom-select__trigger { position: relative; display: flex; align-items: center; justify-content: space-between; padding: 10px; font-size: 1rem; font-weight: bold; color: #333; background: #ffffff; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; }
-        .custom-options { 
-            position: absolute; display: block; top: 100%; left: 0; right: 0; 
-            border: 1px solid #ccc; border-top: 0; background: #fff; transition: all 0.3s; 
-            opacity: 0; visibility: hidden; pointer-events: none; z-index: 100; 
-            max-height: 200px; /* 修正: 6件程度でスクロール */
-            overflow-y: auto; border-radius: 0 0 4px 4px; 
-        }
-        .custom-select.open .custom-options { opacity: 1; visibility: visible; pointer-events: all; }
-        .custom-option { position: relative; display: flex; align-items: center; padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; transition: all 0.2s; color: #333; }
-        .custom-option:hover { background-color: #f2f9fc; color: #0056b3; }
-        .option-img { width: 50px; height: 50px; object-fit: cover; border-radius: 4px; margin-right: 15px; border: 1px solid #ddd; }
-        .option-text { font-size: 0.9rem; font-weight: bold; }
+        /* 修正: 幅を半分ずつ (flex: 1) に変更 */
+        .input-group input { flex: 1; border-top-right-radius: 0 !important; border-bottom-right-radius: 0 !important; border-right: 0 !important; }
+        .input-group select { flex: 1; border-top-left-radius: 0 !important; border-bottom-left-radius: 0 !important; background-color: #e6e6e6 !important; color: #0056b3 !important; cursor: pointer; }
 
         /* --- 言語タブ (エディタ用) --- */
         .editor-lang-tabs { display: flex; gap: 5px; margin-bottom: 15px; border-bottom: 1px solid #555; padding-bottom: 10px; }
@@ -103,7 +63,19 @@
         /* 言語ごとの入力エリア制御 */
         .lang-input-group { display: none; animation: fadeIn 0.3s; }
         .lang-input-group.active { display: block; }
+        
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* カスタム画像選択ボックス */
+        .custom-select-wrapper { position: relative; user-select: none; width: 450px; max-width: 100%; }
+        .custom-select { position: relative; display: flex; flex-direction: column; }
+        .custom-select__trigger { position: relative; display: flex; align-items: center; justify-content: space-between; padding: 10px; font-size: 1rem; font-weight: bold; color: #333; background: #ffffff; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; }
+        .custom-options { position: absolute; display: block; top: 100%; left: 0; right: 0; border: 1px solid #ccc; border-top: 0; background: #fff; transition: all 0.3s; opacity: 0; visibility: hidden; pointer-events: none; z-index: 100; max-height: 300px; overflow-y: auto; border-radius: 0 0 4px 4px; }
+        .custom-select.open .custom-options { opacity: 1; visibility: visible; pointer-events: all; }
+        .custom-option { position: relative; display: flex; align-items: center; padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; transition: all 0.2s; color: #333; }
+        .custom-option:hover { background-color: #f2f9fc; color: #0056b3; }
+        .option-img { width: 50px; height: 50px; object-fit: cover; border-radius: 4px; margin-right: 15px; border: 1px solid #ddd; }
+        .option-text { font-size: 0.9rem; font-weight: bold; }
 
         /* プレビュー */
         .preview-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-bottom: 10px; }
@@ -115,9 +87,6 @@
         .news-tag { font-size: 0.8rem; padding: 2px 8px; border-radius: 4px; margin-right: 15px; color: white; width: 110px; text-align: center; }
         .tag-release { background: #0056b3; }
         .tag-update { background: #e67e22; }
-        .tag-start { background: #8e44ad; }
-        .tag-steam { background: #2c3e50; }
-        .tag-game { background: #27ae60; }
         .news-link { text-decoration: none; color: #333; font-weight: 500; font-family: 'Noto Serif JP', serif; }
 
         /* 最新の活動カード */
@@ -139,6 +108,7 @@
         #prevBody, .news-link { white-space: pre-wrap; }
 
         button { padding: 12px 20px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 10px; width: 100%; }
+        .btn-calc { background: #007acc; color: white; font-size: 1.1rem; }
         .btn-save { background: #27ae60; color: white; }
         .btn-copy { background: #e67e22; color: white; margin-top: 20px; }
         
@@ -183,7 +153,7 @@
 
             <div class="main-content">
 
-                <!-- 計算機パネル -->
+                <!-- 計算機パネル (デフォルト表示) -->
                 <div id="panel-calc" class="panel active">
                     <div class="calc-container">
                         <h2>💰 無料通話秒数 シミュレーター</h2>
@@ -226,13 +196,12 @@
                                 </select>
                             </div>
 
-                            <!-- 画像選択（カスタムプルダウン） -->
                             <div class="form-group">
                                 <label>画像ファイル (index_photフォルダ)</label>
                                 <input type="hidden" id="inImage" onchange="updatePreview()">
                                 <div class="custom-select-wrapper">
-                                    <div class="custom-select" id="imageSelect">
-                                        <div class="custom-select__trigger" onclick="toggleCustomSelect('imageSelect')">
+                                    <div class="custom-select">
+                                        <div class="custom-select__trigger" onclick="toggleImageSelect()">
                                             <span id="selectedImageText">画像を選択してください...</span>
                                             <span>▼</span>
                                         </div>
@@ -255,21 +224,13 @@
                             <!-- 日本語入力 (デフォルト表示) -->
                             <div id="group-ja" class="lang-input-group active">
                                 <div class="form-group">
-                                    <!-- ラベル変更 -->
+                                    <!-- 修正: ラベル名変更 -->
                                     <label>プロジェクト名 (JP)　　　news_data.js</label>
                                     <div class="input-group">
-                                        <!-- 入力欄 (50%) -->
-                                        <input type="text" id="inProject" class="input-white" placeholder="入力" oninput="autoFillProject()" autocomplete="off">
-                                        <!-- 履歴選択 (50%・カスタムセレクト) -->
-                                        <div class="custom-select-wrapper">
-                                            <div class="custom-select" id="projectSelect">
-                                                <div class="custom-select__trigger" onclick="toggleCustomSelect('projectSelect')">
-                                                    <span id="selectedProjectText">▼ 履歴...</span>
-                                                    <span>▼</span>
-                                                </div>
-                                                <div class="custom-options" id="projectOptions"></div>
-                                            </div>
-                                        </div>
+                                        <input type="text" id="inProject" class="input-white" placeholder="入力または右から選択" oninput="autoFillProject()" autocomplete="off">
+                                        <select id="projectSelectHelper" class="input-white" onchange="syncProjectSelect()">
+                                            <option value="">▼ 履歴...</option>
+                                        </select>
                                     </div>
                                 </div>
                                 <div class="form-group">
@@ -319,7 +280,7 @@
                         <div class="preview-area">
                             <div class="preview-header">
                                 <h2 style="border:none; margin:0; font-size:1.1rem; color:#333;">👁️ リアルタイムプレビュー</h2>
-                                <!-- 言語切り替えボタン廃止（自動連動） -->
+                                <!-- 修正: 言語切り替えボタンを削除 -->
                             </div>
                             
                             <span class="preview-label">▼ お知らせ (News List)</span>
@@ -386,6 +347,7 @@
         const GITHUB_CONFIG = {
             owner: "KeiAppLab",
             repo: "KeiAppLab",
+            // 修正: ファイル名を news_data.js に変更
             path: "news_data.js",
         };
 
@@ -455,7 +417,7 @@
         const today = new Date();
         document.getElementById('inDate').value = today.getFullYear() + '.' + (today.getMonth()+1).toString().padStart(2, '0') + '.' + today.getDate().toString().padStart(2, '0');
 
-        // エディタの言語切り替え（プレビューも連動）
+        // エディタの言語切り替え
         function switchEditorLang(lang) {
             document.querySelectorAll('.lang-input-group').forEach(el => el.classList.remove('active'));
             document.getElementById('group-' + lang).classList.add('active');
@@ -463,75 +425,34 @@
             document.querySelectorAll('.edit-tab').forEach(el => el.classList.remove('active'));
             event.currentTarget.classList.add('active');
 
-            // プレビュー言語も同期
+            // 修正: プレビューも連動して切り替える
             previewLang = lang;
             updatePreview();
         }
 
-        // --- プロジェクトリストの自動生成（カスタムセレクト用） ---
         function initProjectList() {
             if (typeof newsData === 'undefined') return;
             const projectSet = new Set(newsData.map(item => item.project).filter(p => p));
-            const container = document.getElementById('projectOptions');
-            container.innerHTML = ''; // クリア
-
+            const selectBox = document.getElementById('projectSelectHelper');
+            selectBox.innerHTML = '<option value="">▼ 履歴...</option>';
             projectSet.forEach(projName => {
-                const div = document.createElement('div');
-                div.className = 'custom-option';
-                div.onclick = function() { selectProject(projName); };
-                div.innerHTML = `<span class="option-text">${projName}</span>`;
-                container.appendChild(div);
+                const option = document.createElement('option');
+                option.value = projName;
+                option.textContent = projName;
+                selectBox.appendChild(option);
             });
         }
 
-        // --- カスタムセレクト共通処理 ---
-        function toggleCustomSelect(id) {
-            const select = document.getElementById(id);
-            select.classList.toggle('open');
+        function syncProjectSelect() {
+            const selectBox = document.getElementById('projectSelectHelper');
+            const inputBox = document.getElementById('inProject');
+            if (selectBox.value !== "") {
+                inputBox.value = selectBox.value;
+                autoFillProject();
+                selectBox.selectedIndex = 0;
+            }
         }
 
-        function selectProject(projName) {
-            document.getElementById('inProject').value = projName;
-            // 選択状態はリセット（常に「▼ 履歴...」に戻す）
-            document.querySelector('#projectSelect').classList.remove('open');
-            autoFillProject();
-        }
-
-        // --- 画像選択ロジック ---
-        function initImageSelector() {
-            const container = document.getElementById('imageOptions');
-            container.innerHTML = '';
-            const list = (typeof photoList !== 'undefined') ? photoList : ["no_image.png"];
-            list.forEach(imgName => {
-                const div = document.createElement('div');
-                div.className = 'custom-option';
-                div.onclick = function() { selectImage(imgName); };
-                div.innerHTML = `<img src="index_phot/${imgName}" class="option-img" onerror="this.src='https://via.placeholder.com/50'"><span class="option-text">${imgName}</span>`;
-                container.appendChild(div);
-            });
-        }
-
-        function selectImage(imgName) {
-            document.getElementById('inImage').value = "index_phot/" + imgName;
-            document.getElementById('selectedImageText').textContent = imgName;
-            document.querySelector('#imageSelect').classList.remove('open');
-            updatePreview();
-        }
-        
-        function setImageValue(fullPath) {
-            document.getElementById('inImage').value = fullPath;
-            const fileName = fullPath.split('/').pop() || "画像を選択してください...";
-            document.getElementById('selectedImageText').textContent = fileName;
-        }
-
-        // 画面外クリックで閉じる
-        window.addEventListener('click', function(e) {
-            document.querySelectorAll('.custom-select').forEach(select => {
-                if (!select.contains(e.target)) select.classList.remove('open');
-            });
-        });
-
-        // --- 自動入力＆クリア機能 ---
         function autoFillProject() {
             const inputProject = document.getElementById('inProject').value.trim();
             const fields = {
@@ -545,8 +466,7 @@
             // クリア処理
             if (inputProject === "") {
                 for (let lang in fields) {
-                    // プロジェクト名入力欄(JP)自体はクリアしない（ユーザーが消した操作なので）
-                    if(lang !== 'ja') document.getElementById(fields[lang].proj).value = "";
+                    document.getElementById(fields[lang].proj).value = "";
                     document.getElementById(fields[lang].title).value = "";
                     document.getElementById(fields[lang].body).value = "";
                 }
@@ -558,6 +478,7 @@
                 const targetPost = newsData.slice().reverse().find(post => post.project === inputProject);
                 if (targetPost) {
                     // 各言語のデータを自動入力
+                    document.getElementById('inProject').value = targetPost.project || "";
                     document.getElementById('inTitle').value = targetPost.title || "";
                     document.getElementById('inBody').value = targetPost.body || "";
                     
@@ -582,6 +503,36 @@
             }
             updatePreview();
         }
+
+        function initImageSelector() {
+            const container = document.getElementById('imageOptions');
+            container.innerHTML = '';
+            const list = (typeof photoList !== 'undefined') ? photoList : ["no_image.png"];
+            list.forEach(imgName => {
+                const div = document.createElement('div');
+                div.className = 'custom-option';
+                div.onclick = function() { selectImage(imgName); };
+                div.innerHTML = `<img src="index_phot/${imgName}" class="option-img" onerror="this.src='https://via.placeholder.com/50'"><span class="option-text">${imgName}</span>`;
+                container.appendChild(div);
+            });
+        }
+
+        function toggleImageSelect() { document.querySelector('.custom-select').classList.toggle('open'); }
+        function selectImage(imgName) {
+            document.getElementById('inImage').value = "index_phot/" + imgName;
+            document.getElementById('selectedImageText').textContent = imgName;
+            document.querySelector('.custom-select').classList.remove('open');
+            updatePreview();
+        }
+        function setImageValue(fullPath) {
+            document.getElementById('inImage').value = fullPath;
+            const fileName = fullPath.split('/').pop() || "画像を選択してください...";
+            document.getElementById('selectedImageText').textContent = fileName;
+        }
+        window.addEventListener('click', function(e) {
+            const select = document.querySelector('.custom-select');
+            if (!select.contains(e.target)) select.classList.remove('open');
+        });
 
         function updatePreview() {
             const date = document.getElementById('inDate').value;
@@ -609,28 +560,4 @@
             // カテゴリ名の多言語化
             const catNames = {
                 'ja': {'release':'プレスリリース','update':'更新情報','start':'プロジェクト開始','steam':'Steamリリース','game':'ミニゲーム'},
-                'en': {'release':'Release','update':'Update','start':'Project Start','steam':'Steam','game':'Mini Game'},
-                'de': {'release':'Veröffentlichung','update':'Aktualisierung','start':'Projektstart','steam':'Steam','game':'Minispiel'},
-                'fr': {'release':'Sortie','update':'Mise à jour','start':'Début du projet','steam':'Steam','game':'Mini-jeu'},
-                'es': {'release':'Lanzamiento','update':'Actualización','start':'Inicio del proyecto','steam':'Steam','game':'Mini juego'}
-            };
-            tagEl.textContent = catNames[previewLang][category];
-
-            // 最新の活動プレビュー
-            const highlightBox = document.getElementById('highlightPreviewBox');
-            const highlightMsg = document.getElementById('highlightMsg');
-            const isHighlight = (category === 'release' || category === 'start' || category === 'steam') && image !== "";
-
-            if (isHighlight) {
-                highlightBox.style.opacity = "1";
-                highlightMsg.textContent = "";
-                document.getElementById('prevImg').src = image;
-                document.getElementById('prevCardTitle').textContent = title;
-                document.getElementById('prevCardProj').textContent = project;
-                document.getElementById('prevCardDate').textContent = date;
-                
-                const cardCatBadge = document.getElementById('prevCardCatBadge');
-                cardCatBadge.textContent = tagEl.textContent;
-                cardCatBadge.className = 'highlight-category-badge tag-' + category;
-            } else {
-                highlightBox.style.opacity =
+                'en': {'release'
