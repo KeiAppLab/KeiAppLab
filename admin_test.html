@@ -403,15 +403,26 @@
                     </div>
                 </div>
                 
-                <!-- 修正: 中身を復元 -->
+                <!-- ユーザー管理パネル -->
                 <div id="panel-users" class="panel">
                     <div class="calc-container">
                         <h2>👥 編集権限者の管理</h2>
+                        <p style="margin-bottom:20px; color:#aaa; font-size:0.9rem;">
+                            ここで登録されたGitHubユーザーIDのみが、この管理画面にログインできます。<br>
+                            現在のリスト: <strong>allowed_users.js</strong>
+                        </p>
+                        
+                        <!-- 入力エリア -->
                         <div style="display:flex; gap:10px; margin-bottom:20px;">
-                            <input type="text" id="newUserId" placeholder="GitHubユーザーID" style="flex:1;">
-                            <button class="btn-save" style="width:auto;" onclick="addUser()">追加</button>
+                            <input type="text" id="newUserId" placeholder="GitHubユーザーID" class="input-white" style="flex:1;">
+                            <button class="btn-save" style="width:auto; margin-top:0;" onclick="addUser()">追加</button>
                         </div>
-                        <ul id="userList" style="background:#1e1e1e; padding:20px; border-radius:8px; list-style:none;"></ul>
+
+                        <!-- リスト表示エリア -->
+                        <ul id="userList" style="background:#1e1e1e; padding:20px; border-radius:8px; list-style:none; max-height:300px; overflow-y:auto; border:1px solid #444;">
+                            <!-- JSでここにリストが生成されます -->
+                        </ul>
+
                         <button class="btn-copy" onclick="saveUsersToGitHub()">💾 権限設定をGitHubに保存</button>
                     </div>
                 </div>
@@ -562,7 +573,99 @@
         function calcSeconds() { /* ロジック省略 */ }
         function addPost() { /* ロジック省略 */ }
         function saveToGitHub() { /* ロジック省略 */ }
-        function renderUserList() { /* ロジック省略 */ }
+        // --- 6. ユーザー権限管理（ロジック復元） ---
+        
+        // リストを描画する関数
+        function renderUserList() {
+            const list = document.getElementById('userList');
+            if(!list) return;
+            list.innerHTML = ''; // 一度クリア
+            
+            // allowed_users.js から読み込んだデータがあるか確認
+            if (typeof allowedUsersData !== 'undefined' && Array.isArray(allowedUsersData)) {
+                allowedUsersData.forEach((user, index) => {
+                    const li = document.createElement('li');
+                    li.style = "display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333; color:#fff;";
+                    
+                    // ユーザー名と削除ボタン
+                    li.innerHTML = `
+                        <span style="font-weight:bold;">${user}</span>
+                        <button style="background:#c0392b; width:auto; padding:5px 10px; font-size:0.8rem; margin:0;" onclick="removeUser(${index})">削除</button>
+                    `;
+                    list.appendChild(li);
+                });
+            } else {
+                list.innerHTML = '<li style="color:red;">allowed_users.js が読み込めないか、形式が不正です。</li>';
+            }
+        }
+
+        // ユーザーを追加する関数
+        function addUser() {
+            const input = document.getElementById('newUserId');
+            const id = input.value.trim();
+            if(!id) return;
+            
+            // 重複チェック
+            if(allowedUsersData.includes(id)) { 
+                alert("既に登録されています"); 
+                return; 
+            }
+            
+            allowedUsersData.push(id); // 配列に追加
+            input.value = ''; // 入力欄クリア
+            renderUserList(); // リスト再描画
+        }
+
+        // ユーザーを削除する関数
+        function removeUser(index) {
+            if(confirm("このユーザーを削除しますか？\n（保存するまで確定しません）")) { 
+                allowedUsersData.splice(index, 1); // 配列から削除
+                renderUserList(); // リスト再描画
+            }
+        }
+
+        // GitHubへ保存する関数
+        async function saveUsersToGitHub() {
+            const token = localStorage.getItem("gh_token");
+            if (!token) { alert("認証が必要です"); return; }
+            if(!confirm("GitHub上の allowed_users.js を更新します。よろしいですか？\n※この操作は取り消せません。")) return;
+
+            // JSファイルの中身を作成
+            const jsonString = JSON.stringify(allowedUsersData, null, 4);
+            const content = `// 編集権限を持つユーザーリスト\nconst allowedUsersData = ${jsonString};`;
+            
+            // Base64エンコード
+            const encodedContent = btoa(unescape(encodeURIComponent(content)));
+
+            try {
+                // 1. 現在のファイルのSHA（ハッシュ）を取得
+                const getRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/allowed_users.js`, { 
+                    headers: { Authorization: `token ${token}` } 
+                });
+                
+                if (!getRes.ok) throw new Error("ファイル情報の取得に失敗しました");
+                const fileData = await getRes.json();
+
+                // 2. 上書き保存 (PUT)
+                const putRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/allowed_users.js`, {
+                    method: "PUT",
+                    headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                        message: "Update allowed users list from Admin", 
+                        content: encodedContent, 
+                        sha: fileData.sha 
+                    })
+                });
+
+                if (putRes.ok) {
+                    alert("権限設定を更新しました！\n次回ログイン時から反映されます。");
+                } else { 
+                    alert("保存に失敗しました。トークンの権限などを確認してください。");
+                }
+            } catch (err) { 
+                alert("エラー: " + err.message); 
+            }
+        }
         function addUser() { /* ロジック省略 */ }
         function removeUser(i) { /* ロジック省略 */ }
         function saveUsersToGitHub() { /* ロジック省略 */ }
