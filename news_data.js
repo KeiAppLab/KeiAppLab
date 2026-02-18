@@ -1,6 +1,27 @@
 // このファイルは admin.html で生成されました
 const newsData = [
     {
+        "id": 1771442705419,
+        "date": "2026.02.19",
+        "category": "update",
+        "image": "index_phot/index_play.png",
+        "project": "ゴリラクリニック",
+        "title": "ゴリラが経営するちょっと怖いけど、本当は心優しいシルバーバックのおじさん。",
+        "body": "ゴリラって何種類いるか知っていますか？生息地を負われ絶滅寸前。彼らは心優しきＢ型のゴリラさん。植物しか食べないのに全身筋肉の凄い奴。",
+        "project_en": "",
+        "title_en": "",
+        "body_en": "",
+        "project_de": "",
+        "title_de": "",
+        "body_de": "",
+        "project_fr": "",
+        "title_fr": "",
+        "body_fr": "",
+        "project_es": "",
+        "title_es": "",
+        "body_es": ""
+    },
+    {
         "id": 1771404678022,
         "date": "2026.02.18",
         "category": "update",
