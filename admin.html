@@ -81,11 +81,40 @@
         .custom-select-wrapper { position: relative; user-select: none; width: 100%; }
         .custom-select { position: relative; display: flex; flex-direction: column; }
         .custom-select__trigger { position: relative; display: flex; align-items: center; justify-content: space-between; padding: 10px; font-size: 1rem; font-weight: bold; color: #333; background: #ffffff; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; }
-        .custom-options { position: absolute; display: block; top: 100%; left: 0; right: 0; border: 1px solid #ccc; border-top: 0; background: #fff; transition: all 0.3s; opacity: 0; visibility: hidden; pointer-events: none; z-index: 100; max-height: 300px; overflow-y: auto; border-radius: 0 0 4px 4px; }
+        
+        /* 修正: グリッド表示に変更 */
+        .custom-options { 
+            position: absolute; display: block; top: 100%; left: 0; right: 0; 
+            border: 1px solid #ccc; border-top: 0; background: #fff; 
+            transition: all 0.3s; opacity: 0; visibility: hidden; pointer-events: none; z-index: 100; 
+            max-height: 400px; overflow-y: auto; border-radius: 0 0 4px 4px;
+            /* Grid設定 */
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            gap: 10px;
+            padding: 10px;
+        }
         .custom-select.open .custom-options { opacity: 1; visibility: visible; pointer-events: all; }
-        .custom-option { position: relative; display: flex; align-items: center; padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; transition: all 0.2s; color: #333; }
-        .custom-option:hover { background-color: #f2f9fc; color: #0056b3; }
-        .option-img { width: 50px; height: 50px; object-fit: cover; border-radius: 4px; margin-right: 15px; border: 1px solid #ddd; }
+        
+        /* 修正: アイテムを縦並び(画像上、文字下)に変更 */
+        .custom-option { 
+            position: relative; display: flex; flex-direction: column; align-items: center; text-align: center;
+            padding: 5px; border: 1px solid #eee; border-radius: 4px;
+            cursor: pointer; transition: all 0.2s; color: #333; 
+        }
+        .custom-option:hover { background-color: #f2f9fc; border-color: #0056b3; color: #0056b3; }
+        
+        /* 修正: 画像サイズを1.5倍(75px)に */
+        .option-img { 
+            width: 75px; height: 75px; 
+            object-fit: cover; border-radius: 4px; 
+            margin-bottom: 5px; /* 文字との隙間 */
+            border: 1px solid #ddd; 
+        }
+        .option-text { 
+            font-size: 0.8rem; font-weight: bold; 
+            word-break: break-all; /* 長いファイル名の折り返し */
+        }
 
         /* --- プレビューエリア --- */
         .preview-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-bottom: 10px; }
@@ -367,8 +396,36 @@
                     </div>
                 </div>
 
-                <div id="panel-projects" class="panel"><div class="calc-container"><h2>📂 全プロジェクト情報</h2></div></div>
-                <div id="panel-users" class="panel"><div class="calc-container"><h2>👥 権限管理</h2></div></div>
+<div id="panel-projects" class="panel">
+                    <div class="calc-container">
+                        <h2>📂 全プロジェクト情報</h2>
+                        <p>ここで登録されたアプリ一覧（apps_list.js）を管理します（実装準備中）</p>
+                    </div>
+                </div>
+                
+                <!-- ユーザー管理パネル -->
+                <div id="panel-users" class="panel">
+                    <div class="calc-container">
+                        <h2>👥 編集権限者の管理</h2>
+                        <p style="margin-bottom:20px; color:#aaa; font-size:0.9rem;">
+                            ここで登録されたGitHubユーザーIDのみが、この管理画面にログインできます。<br>
+                            現在のリスト: <strong>allowed_users.js</strong>
+                        </p>
+                        
+                        <!-- 入力エリア -->
+                        <div style="display:flex; gap:10px; margin-bottom:20px;">
+                            <input type="text" id="newUserId" placeholder="GitHubユーザーID" class="input-white" style="flex:1;">
+                            <button class="btn-save" style="width:auto; margin-top:0;" onclick="addUser()">追加</button>
+                        </div>
+
+                        <!-- リスト表示エリア -->
+                        <ul id="userList" style="background:#1e1e1e; padding:20px; border-radius:8px; list-style:none; max-height:300px; overflow-y:auto; border:1px solid #444;">
+                            <!-- JSでここにリストが生成されます -->
+                        </ul>
+
+                        <button class="btn-copy" onclick="saveUsersToGitHub()">💾 権限設定をGitHubに保存</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -513,13 +570,128 @@
             document.getElementById('prevBody').innerHTML=body;
         }
 
-        function calcSeconds() { /* ロジック省略 */ }
-        function addPost() { /* ロジック省略 */ }
-        function saveToGitHub() { /* ロジック省略 */ }
-        function renderUserList() { /* ロジック省略 */ }
-        function addUser() { /* ロジック省略 */ }
-        function removeUser(i) { /* ロジック省略 */ }
-        function saveUsersToGitHub() { /* ロジック省略 */ }
+        // --- コアロジック ---
+        function calcSeconds() {
+            const adPrice = parseFloat(document.getElementById('adPrice').value);
+            const callCost = parseFloat(document.getElementById('callCost').value);
+            const margin = parseFloat(document.getElementById('margin').value);
+            const costPerSec = callCost / 60;
+            const profit = adPrice * (margin / 100);
+            const seconds = Math.floor((adPrice - profit) / costPerSec);
+            document.getElementById('calcOutput').innerText = seconds + " 秒";
+        }
+
+        function addPost() {
+            const newPost = {
+                id: Date.now(),
+                date: document.getElementById('inDate').value,
+                category: document.getElementById('inCategory').value,
+                image: document.getElementById('inImage').value,
+                project: document.getElementById('inProject').value,
+                title: document.getElementById('inTitle').value,
+                body: document.getElementById('inBody').value,
+                project_en: document.getElementById('inProjectEn').value,
+                title_en: document.getElementById('inTitleEn').value,
+                body_en: document.getElementById('inBodyEn').value,
+                project_de: document.getElementById('inProjectDe').value,
+                title_de: document.getElementById('inTitleDe').value,
+                body_de: document.getElementById('inBodyDe').value,
+                project_fr: document.getElementById('inProjectFr').value,
+                title_fr: document.getElementById('inTitleFr').value,
+                body_fr: document.getElementById('inBodyFr').value,
+                project_es: document.getElementById('inProjectEs').value,
+                title_es: document.getElementById('inTitleEs').value,
+                body_es: document.getElementById('inBodyEs').value
+            };
+            if (!newPost.project) { alert("プロジェクト名(JP)を入力してください"); return; }
+            allPosts.unshift(newPost);
+            alert(`「${newPost.title}」を追加しました。\n現在 ${allPosts.length} 件のデータがあります。`);
+        }
+
+        async function saveToGitHub() {
+            const token = localStorage.getItem("gh_token");
+            if (!token) { alert("認証が必要です"); return; }
+            if(!confirm(`GitHub上の ${GITHUB_CONFIG.path} を更新します。よろしいですか？`)) return;
+
+            try {
+                const getRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`, {
+                    headers: { Authorization: `token ${token}` }
+                });
+                
+                let existingData = [];
+                let sha = null;
+
+                if (getRes.ok) {
+                    const fileData = await getRes.json();
+                    sha = fileData.sha;
+                    const content = decodeURIComponent(escape(atob(fileData.content)));
+                    const jsonPart = content.match(/\[.*\]/s);
+                    if (jsonPart) { existingData = JSON.parse(jsonPart[0]); }
+                }
+
+                const newIds = new Set(allPosts.map(p => p.id));
+                const mergedData = [...allPosts, ...existingData.filter(p => !newIds.has(p.id))];
+
+                const jsonString = JSON.stringify(mergedData, null, 4);
+                const newContent = `// このファイルは admin.html で生成されました\nconst newsData = ${jsonString};`;
+                const encodedContent = btoa(unescape(encodeURIComponent(newContent)));
+
+                const putRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`, {
+                    method: "PUT",
+                    headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: "Update news_data.js (Append)", content: encodedContent, sha: sha })
+                });
+
+                if (putRes.ok) { alert("GitHubへの保存（追記）に成功しました！"); allPosts = []; }
+                else { alert("保存に失敗しました。"); }
+            } catch (err) { alert("エラー: " + err.message); }
+        }
+
+        // --- ユーザー管理ロジック (省略せず記述) ---
+        function renderUserList() {
+            const list = document.getElementById('userList');
+            if(!list) return;
+            list.innerHTML = '';
+            if (typeof allowedUsersData !== 'undefined' && Array.isArray(allowedUsersData)) {
+                allowedUsersData.forEach((user, index) => {
+                    const li = document.createElement('li');
+                    li.style = "display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333; color:#fff;";
+                    li.innerHTML = `<span style="font-weight:bold;">${user}</span><button style="background:#c0392b; width:auto; padding:5px 10px; font-size:0.8rem; margin:0;" onclick="removeUser(${index})">削除</button>`;
+                    list.appendChild(li);
+                });
+            } else { list.innerHTML = '<li style="color:red;">allowed_users.js が読み込めないか、形式が不正です。</li>'; }
+        }
+
+        function addUser() {
+            const input = document.getElementById('newUserId');
+            const id = input.value.trim();
+            if(!id) return;
+            if(allowedUsersData.includes(id)) { alert("既に登録されています"); return; }
+            allowedUsersData.push(id); input.value = ''; renderUserList();
+        }
+
+        function removeUser(index) {
+            if(confirm("削除しますか？")) { allowedUsersData.splice(index, 1); renderUserList(); }
+        }
+
+        async function saveUsersToGitHub() {
+            const token = localStorage.getItem("gh_token");
+            if (!token) { alert("認証が必要です"); return; }
+            if(!confirm("GitHub上の allowed_users.js を更新します。よろしいですか？")) return;
+            const jsonString = JSON.stringify(allowedUsersData, null, 4);
+            const content = `// 編集権限を持つユーザーリスト\nconst allowedUsersData = ${jsonString};`;
+            const encodedContent = btoa(unescape(encodeURIComponent(content)));
+            try {
+                const getRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/allowed_users.js`, { headers: { Authorization: `token ${token}` } });
+                const fileData = await getRes.json();
+                const putRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/allowed_users.js`, {
+                    method: "PUT",
+                    headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: "Update allowed users list", content: encodedContent, sha: fileData.sha })
+                });
+                if (putRes.ok) alert("権限設定を更新しました！"); else alert("保存に失敗しました。");
+            } catch (err) { alert("エラー: " + err.message); }
+        }
     </script>
 </body>
 </html>
