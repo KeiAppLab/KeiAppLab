@@ -10,6 +10,242 @@
     <script src="index_phot.js"></script>
 
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700;900&family=Roboto:wght@400;500;900&display=swap');
+
+        /* --- 全体レイアウト --- */
+        body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Arial, sans-serif; background: #1e1e1e; color: #ddd; height: 100vh; overflow: hidden; }
+        #mainWrapper { display: none; height: 100%; }
+
+        /* --- ログイン画面 --- */
+        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #2c3e50; z-index: 9999; display: flex; justify-content: center; align-items: center; }
+        .login-container-split { display: flex; width: 800px; height: 500px; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .login-left { width: 40%; padding: 40px; display: flex; flex-direction: column; justify-content: center; background: #f9f9f9; border-right: 1px solid #eee; }
+        .login-left input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ccc; border-radius: 5px; }
+        .login-left button { width: 100%; padding: 12px; background: #0056b3; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .login-left button:hover { background: #003d82; }
+        .login-right { width: 60%; padding: 40px; overflow-y: auto; color: #333; line-height: 1.6; }
+
+        /* --- メイン画面 --- */
+        .dashboard { display: grid; grid-template-columns: 250px 1fr; height: 100%; }
+        .sidebar { background: #252526; border-right: 1px solid #333; display: flex; flex-direction: column; padding: 10px; box-sizing: border-box; }
+        .sidebar h1 { font-size: 1.2rem; color: #fff; margin: 20px 10px; border-bottom: 2px solid #007acc; padding-bottom: 10px; }
+        .menu-btn { padding: 15px; margin-bottom: 5px; cursor: pointer; border-radius: 5px; color: #aaa; font-weight: bold; transition: 0.2s; display: flex; align-items: center; gap: 10px; }
+        .menu-btn:hover { background: #3c3c3c; color: #fff; }
+        .menu-btn.active { background: #007acc; color: white; }
+        .spacer { flex-grow: 1; min-height: 20px; border-bottom: 1px solid #333; margin-bottom: 10px; }
+
+        .main-content { position: relative; overflow: hidden; height: 100%; }
+        .panel { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; overflow-y: auto; padding: 30px; box-sizing: border-box; }
+        .panel.active { display: block; }
+
+        /* --- CMSレイアウト (40:60に変更) --- */
+        .cms-layout { display: flex; height: 100%; gap: 0; /* 隙間なしで背景分けるため */ }
+        .editor-area { width: 40%; overflow-y: auto; padding-right: 20px; height: 100%; box-sizing: border-box; }
+        .preview-area { width: 60%; background: #e0e0e0; color: #333; overflow-y: auto; padding: 20px; height: 100%; box-sizing: border-box; }
+
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-top: 5px; margin-bottom: 5px; font-weight: bold; font-size: 0.9rem; color: #aaa; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #555; border-radius: 4px; box-sizing: border-box; font-size: 1rem; }
+        .input-white { background-color: #ffffff !important; color: #333 !important; border: 1px solid #ccc !important; font-weight: bold; }
+        
+        /* 横並び用 */
+        .row-group { display: flex; gap: 10px; }
+        .row-group > div { flex: 1; }
+
+        .input-group { display: flex; width: 100%; }
+        .input-group input { flex: 1; border-top-right-radius: 0 !important; border-bottom-right-radius: 0 !important; border-right: 0 !important; }
+        .input-group select { flex: 1; border-top-left-radius: 0 !important; border-bottom-left-radius: 0 !important; background-color: #e6e6e6 !important; color: #0056b3 !important; cursor: pointer; }
+
+        .editor-lang-tabs { display: flex; gap: 5px; margin-bottom: 15px; border-bottom: 1px solid #555; padding-bottom: 10px; }
+        .edit-tab { padding: 8px 15px; background: #333; color: #aaa; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .edit-tab:hover { background: #444; color: #fff; }
+        .edit-tab.active { background: #007acc; color: white; }
+        
+        .lang-input-group { display: none; animation: fadeIn 0.3s; }
+        .lang-input-group.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* ステータススイッチ */
+        .status-switch { display: flex; gap: 10px; margin-bottom: 5px; background: #333; padding: 5px; border-radius: 4px; width: fit-content; }
+        .status-label { color: #aaa; font-size: 0.8rem; display: flex; align-items: center; gap: 5px; cursor: pointer; }
+        .status-label input { width: auto; margin: 0; }
+
+        /* 画像選択 */
+        .custom-select-wrapper { position: relative; user-select: none; width: 100%; }
+        .custom-select { position: relative; display: flex; flex-direction: column; }
+        .custom-select__trigger { position: relative; display: flex; align-items: center; justify-content: space-between; padding: 10px; font-size: 1rem; font-weight: bold; color: #333; background: #ffffff; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; }
+        .custom-options { position: absolute; display: block; top: 100%; left: 0; right: 0; border: 1px solid #ccc; border-top: 0; background: #fff; transition: all 0.3s; opacity: 0; visibility: hidden; pointer-events: none; z-index: 100; max-height: 300px; overflow-y: auto; border-radius: 0 0 4px 4px; }
+        .custom-select.open .custom-options { opacity: 1; visibility: visible; pointer-events: all; }
+        .custom-option { position: relative; display: flex; align-items: center; padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; transition: all 0.2s; color: #333; }
+        .custom-option:hover { background-color: #f2f9fc; color: #0056b3; }
+        .option-img { width: 50px; height: 50px; object-fit: cover; border-radius: 4px; margin-right: 15px; border: 1px solid #ddd; }
+
+        /* --- プレビューエリア --- */
+        .preview-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-bottom: 10px; }
+        .preview-label { font-size: 0.8rem; color: #666; font-weight: bold; border-bottom: 1px dashed #999; display: block; margin-bottom: 10px; }
+        
+        .news-item { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #ccc; }
+        .news-date { font-family: 'Roboto', sans-serif; color: #666; width: 100px; font-size: 0.9rem; }
+        .news-tag { font-size: 0.8rem; padding: 2px 8px; border-radius: 4px; margin-right: 15px; color: white; width: 110px; text-align: center; }
+        .tag-release { background: #0056b3; } .tag-update  { background: #e67e22; } .tag-start   { background: #8e44ad; } .tag-steam   { background: #2c3e50; } .tag-game    { background: #27ae60; }
+        .news-link { text-decoration: none; color: #333; font-weight: 500; font-family: 'Noto Serif JP', serif; }
+
+        /* プレビュー分割コンテナ */
+        .preview-split-row { display: flex; border: 1px solid #ccc; border-radius: 8px; overflow: hidden; margin-bottom: 30px; }
+        .split-col { flex: 1; padding: 15px; display: flex; flex-direction: column; align-items: center; }
+        .split-col.left { background: #f0f0f0; border-right: 1px solid #ddd; }
+        .split-col.right { background: #e8e8e8; }
+
+        /* 共通カードスタイル */
+        .highlight-card { width: 100%; max-width: 300px; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 1px solid rgba(0,0,0,0.05); }
+        .highlight-img-area { width: 100%; height: 160px; overflow: hidden; background: #eee; position: relative; }
+        .highlight-img { width: 100%; height: 100%; object-fit: cover; object-position: center; transition: opacity 0.3s; }
+        .highlight-category-badge { position: absolute; bottom: 0; left: 0; color: white; font-size: 0.8rem; padding: 4px 12px; border-top-right-radius: 8px; font-weight: bold; z-index: 2; }
+        
+        /* 最新の活動用スタイル */
+        .highlight-card.dimmed { opacity: 0.4; } /* 半透明化 */
+        .highlight-content-tight { padding: 5px 0 0 0; text-align: left; } /* 余白なし */
+        .highlight-title-tight { 
+            font-family: 'Noto Serif JP', serif; font-size: 1rem; font-weight: 900; color: #333; line-height: 1.4; margin: 0; 
+            width: 18em; /* 18文字制限 */
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; /* はみ出し防止 */
+        }
+        .highlight-meta { font-size: 0.75rem; color: #666; margin-bottom: 2px; font-family: 'Roboto', sans-serif; }
+
+        /* アプリ紹介用スタイル */
+        .coming-soon-overlay { 
+            display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-10deg); 
+            font-size: 1.8rem; font-weight: 900; color: #fff; text-shadow: 2px 2px 0 #000, -1px -1px 0 #000; 
+            border: 3px solid #fff; padding: 5px 20px; box-shadow: 3px 3px 0 rgba(0,0,0,0.5); z-index: 10; pointer-events: none;
+        }
+        .highlight-img.coming-soon-mode { opacity: 0.5; filter: grayscale(50%); }
+
+        .project-name-badge {
+            position: absolute; bottom: 5px; left: 5px; z-index: 5;
+            background: rgba(255, 255, 255, 0.95); color: #111;
+            font-family: 'Roboto', sans-serif; font-weight: 900; font-size: 0.85rem;
+            padding: 3px 8px; border: 2px solid #333; border-radius: 4px;
+            box-shadow: 2px 2px 0 rgba(0,0,0,0.2);
+        }
+
+        .app-desc-content { padding: 15px; text-align: left; }
+        .app-desc-text {
+            font-family: 'Noto Serif JP', serif; font-size: 0.9rem; color: #444; line-height: 1.6;
+            height: 6.4em; /* 4行分確保 (1.6 * 4) */
+            overflow: hidden;
+        }
+
+        /* 詳細ページプレビュー */
+        .page-preview { font-family: 'Noto Serif JP', serif; line-height: 1.8; margin-top: 20px; background: white; padding: 20px; border-radius: 8px; }
+        .page-preview h1 { border-bottom: 3px solid #0056b3; display: inline-block; padding-bottom: 5px; margin-bottom: 20px; font-size: 1.5rem; }
+        .page-preview img { max-width: 100%; border-radius: 10px; margin: 20px 0; }
+        #prevBody, .news-link { white-space: pre-wrap; }
+
+        button { padding: 12px 20px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 10px; width: 100%; }
+        .btn-save { background: #27ae60; color: white; }
+        .btn-copy { background: #e67e22; color: white; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div id="loginOverlay">
+        <div class="login-container-split">
+            <div class="login-left">
+                <h2>🚀 KEI Lab Admin</h2>
+                <input type="password" id="tokenInput" placeholder="GitHub Token (ghp_...)">
+                <button onclick="checkIdentity()">ログイン</button>
+                <div id="authStatus"></div>
+            </div>
+            <div class="login-right">
+                <h3>🔑 トークン発行</h3><ol><li>Generate new token</li><li>Check [repo]</li></ol>
+            </div>
+        </div>
+    </div>
+
+    <div id="mainWrapper">
+        <div class="dashboard">
+            <div class="sidebar">
+                <h1>🚀 KEI Lab Admin</h1>
+                <div class="menu-btn active" onclick="switchPanel('calc')">💰 収益・秒数計算</div>
+                <div class="menu-btn" onclick="switchPanel('cms')">📝 コンテンツ編集</div>
+                <div class="menu-btn" onclick="switchPanel('projects')">📂 全プロジェクト情報</div>
+                <div class="spacer"></div>
+                <div class="menu-btn" onclick="switchPanel('users')">👥 権限管理</div>
+                <div class="menu-btn" onclick="logout()" style="margin-top:auto; background:#c0392b; color:white;">🔒 ログアウト</div>
+            </div>
+
+            <div class="main-content">
+                <!-- 計算パネル -->
+                <div id="panel-calc" class="panel active">
+                    <div class="calc-container">
+                        <h2>💰 シミュレーター</h2>
+                        <!-- 計算機の中身は省略せず維持 -->
+                        <div class="calc-grid">
+                            <div><label>動画広告単価</label><input type="number" id="adPrice" value="1.5" step="0.1"></div>
+                            <div><label>通話原価 (1分)</label><input type="number" id="callCost" value="3.0" step="0.1"></div>
+                        </div>
+                        <label>利益率 <span id="marginDisplay">20%</span></label>
+                        <input type="range" id="margin" min="0" max="50" value="20" oninput="document.getElementById('marginDisplay').innerText = this.value + '%'">
+                        <button class="btn-calc" onclick="calcSeconds()">計算する</button>
+                        <div class="calc-result-box"><div id="calcOutput" class="calc-number">--- 秒</div></div>
+                    </div>
+                </div>
+
+                <!-- CMSパネル -->
+                <div id="panel-cms" class="panel">
+                    <div class="cms-layout">
+                        <!-- エディタ (40%) -->
+                        <div class="editor-area">
+                            <h2>📝 記事・プロジェクト作成</h2>
+                            
+                            <!-- 日付とカテゴリを同じ列に -->
+                            <div class="row-group">
+                                <div class="form-group"><label>日付</label><input type="text" id="inDate" class="input-white"></div>
+                                <div class="form-group">
+                                    <label>カテゴリ</label>
+                                    <select id="inCategory" class="input-white" onchange="updatePreview()">
+                                        <option value="update">更新情報</option>
+                                        <option value="release">プレスリリース</option>
+                                        <option value="start">プロジェクト開始</option>
+                                        <option value="steam">Steamリリース</option>
+                                        <option value="game">ミニゲーム</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>画像ファイル (index_photフォルダ)</label>
+                                <input type="hidden" id="inImage" onchange="updatePreview()">
+                                <div class="custom-select-wrapper">
+                                    <div class="custom-select">
+                                        <div class="custom-select__trigger" onclick="toggleImageSelect()"><span id="selectedImageText">画像を選択...</span><span>▼</span></div>
+                                        <div class="custom-options" id="imageOptions"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr style="border:0; border-top:1px dashed #555; margin: 20px 0;">
+
+                            <div class="editor-lang-tabs">
+                                <button class="edit-tab active" onclick="switchEditorLang('ja')">🇯🇵 JP</button>
+                                <button class="edit-tab" onclick="switchEditorLang('en')">🇺🇸 EN</button>
+                                <button class="edit-tab" onclick="switchEditorLang('de')">🇩🇪 DE</button>
+                                <button class="edit-tab" onclick="switchEditorLang('fr')">🇫🇷 FR</button>
+                                <button class="edit-tab" onclick="switchEditorLang('es')">🇪🇸 ES</button>
+                            </div>
+
+                            <!-- ステータス切り替え（全言語共通の設定として配置、または各言語連動） -->
+                            <div class="form-group" sty<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KEI Lab マスター・コックピット</title>
+
+    <script src="news_data.js"></script>
+    <script src="allowed_users.js"></script>
+    <script src="index_phot.js"></script>
+
+    <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700;900&family=Roboto:wght@400;500;700;900&display=swap');
 
         /* --- 全体レイアウト --- */
