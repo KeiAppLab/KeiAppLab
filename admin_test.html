@@ -18,12 +18,16 @@
 
         /* --- ログイン画面 --- */
         #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #2c3e50; z-index: 9999; display: flex; justify-content: center; align-items: center; }
-        .login-container-split { display: flex; width: 800px; height: 500px; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .login-container-split { display: flex; width: 850px; height: 550px; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
         .login-left { width: 40%; padding: 40px; display: flex; flex-direction: column; justify-content: center; background: #f9f9f9; border-right: 1px solid #eee; }
         .login-left input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ccc; border-radius: 5px; }
         .login-left button { width: 100%; padding: 12px; background: #0056b3; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
         .login-left button:hover { background: #003d82; }
         .login-right { width: 60%; padding: 40px; overflow-y: auto; color: #333; line-height: 1.6; }
+        .login-right h3 { border-bottom: 2px solid #0056b3; padding-bottom: 10px; margin-top: 0; }
+        .login-right ol { padding-left: 20px; margin-bottom: 20px; }
+        .login-right li { margin-bottom: 8px; font-size: 0.9rem; }
+        .warning-box { background: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 10px; border-radius: 5px; font-size: 0.85rem; margin-top: 15px; }
 
         /* --- メイン画面 --- */
         .dashboard { display: grid; grid-template-columns: 250px 1fr; height: 100%; }
@@ -38,17 +42,20 @@
         .panel { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; overflow-y: auto; padding: 30px; box-sizing: border-box; }
         .panel.active { display: block; }
 
-        /* --- CMSレイアウト (40:60に変更) --- */
-        .cms-layout { display: flex; height: 100%; gap: 0; /* 隙間なしで背景分けるため */ }
+        /* --- CMSレイアウト (40:60) --- */
+        .cms-layout { display: flex; height: 100%; gap: 0; }
         .editor-area { width: 40%; overflow-y: auto; padding-right: 20px; height: 100%; box-sizing: border-box; }
         .preview-area { width: 60%; background: #e0e0e0; color: #333; overflow-y: auto; padding: 20px; height: 100%; box-sizing: border-box; }
 
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-top: 5px; margin-bottom: 5px; font-weight: bold; font-size: 0.9rem; color: #aaa; }
+        /* ラベル行のフレックス設定（ステータススイッチ配置用） */
+        .label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .label-row label { margin: 0; }
+
         input, select, textarea { width: 100%; padding: 10px; border: 1px solid #555; border-radius: 4px; box-sizing: border-box; font-size: 1rem; }
         .input-white { background-color: #ffffff !important; color: #333 !important; border: 1px solid #ccc !important; font-weight: bold; }
         
-        /* 横並び用 */
         .row-group { display: flex; gap: 10px; }
         .row-group > div { flex: 1; }
 
@@ -66,8 +73,8 @@
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         /* ステータススイッチ */
-        .status-switch { display: flex; gap: 10px; margin-bottom: 5px; background: #333; padding: 5px; border-radius: 4px; width: fit-content; }
-        .status-label { color: #aaa; font-size: 0.8rem; display: flex; align-items: center; gap: 5px; cursor: pointer; }
+        .status-switch { display: flex; gap: 10px; background: #333; padding: 2px 8px; border-radius: 4px; }
+        .status-label { color: #fff; font-size: 0.8rem; display: flex; align-items: center; gap: 5px; cursor: pointer; font-weight: normal; margin: 0; }
         .status-label input { width: auto; margin: 0; }
 
         /* 画像選択 */
@@ -90,7 +97,6 @@
         .tag-release { background: #0056b3; } .tag-update  { background: #e67e22; } .tag-start   { background: #8e44ad; } .tag-steam   { background: #2c3e50; } .tag-game    { background: #27ae60; }
         .news-link { text-decoration: none; color: #333; font-weight: 500; font-family: 'Noto Serif JP', serif; }
 
-        /* プレビュー分割コンテナ */
         .preview-split-row { display: flex; border: 1px solid #ccc; border-radius: 8px; overflow: hidden; margin-bottom: 30px; }
         .split-col { flex: 1; padding: 15px; display: flex; flex-direction: column; align-items: center; }
         .split-col.left { background: #f0f0f0; border-right: 1px solid #ddd; }
@@ -102,17 +108,20 @@
         .highlight-img { width: 100%; height: 100%; object-fit: cover; object-position: center; transition: opacity 0.3s; }
         .highlight-category-badge { position: absolute; bottom: 0; left: 0; color: white; font-size: 0.8rem; padding: 4px 12px; border-top-right-radius: 8px; font-weight: bold; z-index: 2; }
         
-        /* 最新の活動用スタイル */
-        .highlight-card.dimmed { opacity: 0.4; } /* 半透明化 */
-        .highlight-content-tight { padding: 5px 0 0 0; text-align: left; } /* 余白なし */
+        /* 最新の活動用 */
+        .highlight-card.dimmed { opacity: 0.4; }
+        .highlight-content-tight { padding: 5px 0 0 0; text-align: left; }
+        /* 修正: 18文字×3列 */
         .highlight-title-tight { 
-            font-family: 'Noto Serif JP', serif; font-size: 1rem; font-weight: 900; color: #333; line-height: 1.4; margin: 0; 
-            width: 18em; /* 18文字制限 */
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; /* はみ出し防止 */
+            font-family: 'Noto Serif JP', serif; font-size: 1rem; font-weight: 900; color: #333; line-height: 1.5; margin: 0; 
+            width: 18em; /* 18文字幅 */
+            white-space: normal; /* 折り返し有効 */
+            display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+            height: 4.5em; /* 1.5 * 3行 */
         }
         .highlight-meta { font-size: 0.75rem; color: #666; margin-bottom: 2px; font-family: 'Roboto', sans-serif; }
 
-        /* アプリ紹介用スタイル */
+        /* アプリ紹介用 */
         .coming-soon-overlay { 
             display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-10deg); 
             font-size: 1.8rem; font-weight: 900; color: #fff; text-shadow: 2px 2px 0 #000, -1px -1px 0 #000; 
@@ -120,22 +129,27 @@
         }
         .highlight-img.coming-soon-mode { opacity: 0.5; filter: grayscale(50%); }
 
+        /* 修正: 左下一杯に配置・色付き枠 */
         .project-name-badge {
-            position: absolute; bottom: 5px; left: 5px; z-index: 5;
-            background: rgba(255, 255, 255, 0.95); color: #111;
-            font-family: 'Roboto', sans-serif; font-weight: 900; font-size: 0.85rem;
-            padding: 3px 8px; border: 2px solid #333; border-radius: 4px;
-            box-shadow: 2px 2px 0 rgba(0,0,0,0.2);
+            position: absolute; bottom: 0; left: 0; z-index: 5;
+            background: #0056b3; /* 色付き枠 (青) */
+            color: #fff;
+            font-family: 'Roboto', sans-serif; font-weight: 900; font-size: 0.9rem;
+            padding: 5px 12px; 
+            border-top-right-radius: 8px; /* 右上だけ丸くして左下は直角 */
+            box-shadow: 2px -2px 5px rgba(0,0,0,0.3);
+            max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
 
-        .app-desc-content { padding: 15px; text-align: left; }
+        /* 修正: 余白削減・20文字×4列 */
+        .app-desc-content { padding: 8px 10px; text-align: left; } /* 余白削減 */
         .app-desc-text {
-            font-family: 'Noto Serif JP', serif; font-size: 0.9rem; color: #444; line-height: 1.6;
-            height: 6.4em; /* 4行分確保 (1.6 * 4) */
-            overflow: hidden;
+            font-family: 'Noto Serif JP', serif; font-size: 0.9rem; color: #444; line-height: 1.5;
+            width: 20em; /* 20文字幅 */
+            height: 6em; /* 1.5 * 4行 */
+            display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
         }
 
-        /* 詳細ページプレビュー */
         .page-preview { font-family: 'Noto Serif JP', serif; line-height: 1.8; margin-top: 20px; background: white; padding: 20px; border-radius: 8px; }
         .page-preview h1 { border-bottom: 3px solid #0056b3; display: inline-block; padding-bottom: 5px; margin-bottom: 20px; font-size: 1.5rem; }
         .page-preview img { max-width: 100%; border-radius: 10px; margin: 20px 0; }
@@ -156,7 +170,18 @@
                 <div id="authStatus"></div>
             </div>
             <div class="login-right">
-                <h3>🔑 トークン発行</h3><ol><li>Generate new token</li><li>Check [repo]</li></ol>
+                <h3>🔑 トークンの発行手順</h3>
+                <ol>
+                    <li><a href="https://github.com/settings/tokens" target="_blank" style="color:#007acc; font-weight:bold;">GitHub Token設定ページへ移動 ↗</a></li>
+                    <li>[Generate new token (classic)] を選択</li>
+                    <li>Expiration（期限）を設定（90 days推奨）</li>
+                    <li><strong>[repo]</strong> にチェックを入れる（必須）</li>
+                    <li>一番下の [Generate token] を押してコピー</li>
+                </ol>
+                <div class="warning-box">
+                    <strong>⚠️ 警告：</strong><br>
+                    トークンが漏洩した場合は、直ちにGitHub設定ページで該当トークンを削除（Revoke）してください。トークンがあれば誰でもサイトを書き換えられてしまいます。
+                </div>
             </div>
         </div>
     </div>
@@ -178,7 +203,6 @@
                 <div id="panel-calc" class="panel active">
                     <div class="calc-container">
                         <h2>💰 シミュレーター</h2>
-                        <!-- 計算機の中身は省略せず維持 -->
                         <div class="calc-grid">
                             <div><label>動画広告単価</label><input type="number" id="adPrice" value="1.5" step="0.1"></div>
                             <div><label>通話原価 (1分)</label><input type="number" id="callCost" value="3.0" step="0.1"></div>
@@ -197,7 +221,6 @@
                         <div class="editor-area">
                             <h2>📝 記事・プロジェクト作成</h2>
                             
-                            <!-- 日付とカテゴリを同じ列に -->
                             <div class="row-group">
                                 <div class="form-group"><label>日付</label><input type="text" id="inDate" class="input-white"></div>
                                 <div class="form-group">
@@ -233,15 +256,6 @@
                                 <button class="edit-tab" onclick="switchEditorLang('es')">🇪🇸 ES</button>
                             </div>
 
-                            <!-- ステータス切り替え（全言語共通の設定として配置、または各言語連動） -->
-                            <div class="form-group" style="margin-bottom:5px;">
-                                <label>ステータス</label>
-                                <div class="status-switch">
-                                    <label class="status-label"><input type="radio" name="appStatus" value="released" checked onchange="updatePreview()"> リリース済み</label>
-                                    <label class="status-label"><input type="radio" name="appStatus" value="coming" onchange="updatePreview()"> Coming Soon</label>
-                                </div>
-                            </div>
-
                             <!-- 日本語 -->
                             <div id="group-ja" class="lang-input-group active">
                                 <div class="form-group">
@@ -251,33 +265,31 @@
                                         <select id="projectSelectHelper" class="input-white" onchange="syncProjectSelect()"><option value="">▼ 履歴...</option></select>
                                     </div>
                                 </div>
-                                <!-- 2行に変更 -->
                                 <div class="form-group"><label>お知らせ・キャッチコピー (JP)</label><textarea id="inTitle" class="input-white" rows="2" oninput="updatePreview()"></textarea></div>
-                                <!-- 3行に変更 -->
-                                <div class="form-group"><label>アプリ紹介本文 (JP)</label><textarea id="inBody" class="input-white" rows="3" oninput="updatePreview()"></textarea></div>
+                                
+                                <!-- 修正: ラベルの横にステータススイッチを配置 -->
+                                <div class="form-group">
+                                    <div class="label-row">
+                                        <label>アプリ紹介本文 (JP)</label>
+                                        <div class="status-switch">
+                                            <label class="status-label"><input type="radio" name="appStatus" value="released" checked onchange="updatePreview()"> リリース済み</label>
+                                            <label class="status-label"><input type="radio" name="appStatus" value="coming" onchange="updatePreview()"> Coming Soon</label>
+                                        </div>
+                                    </div>
+                                    <textarea id="inBody" class="input-white" rows="3" oninput="updatePreview()"></textarea>
+                                </div>
                             </div>
 
-                            <!-- 多言語 (入力欄復元) -->
+                            <!-- 多言語 -->
                             <div id="group-en" class="lang-input-group">
                                 <div class="form-group"><label>Project (EN)</label><input type="text" id="inProjectEn" class="input-white" oninput="updatePreview()"></div>
                                 <div class="form-group"><label>Title (EN)</label><textarea id="inTitleEn" class="input-white" rows="2" oninput="updatePreview()"></textarea></div>
                                 <div class="form-group"><label>App Intro (EN)</label><textarea id="inBodyEn" class="input-white" rows="3" oninput="updatePreview()"></textarea></div>
                             </div>
-                            <div id="group-de" class="lang-input-group">
-                                <div class="form-group"><label>Project (DE)</label><input type="text" id="inProjectDe" class="input-white" oninput="updatePreview()"></div>
-                                <div class="form-group"><label>Title (DE)</label><textarea id="inTitleDe" class="input-white" rows="2" oninput="updatePreview()"></textarea></div>
-                                <div class="form-group"><label>App Intro (DE)</label><textarea id="inBodyDe" class="input-white" rows="3" oninput="updatePreview()"></textarea></div>
-                            </div>
-                            <div id="group-fr" class="lang-input-group">
-                                <div class="form-group"><label>Project (FR)</label><input type="text" id="inProjectFr" class="input-white" oninput="updatePreview()"></div>
-                                <div class="form-group"><label>Title (FR)</label><textarea id="inTitleFr" class="input-white" rows="2" oninput="updatePreview()"></textarea></div>
-                                <div class="form-group"><label>App Intro (FR)</label><textarea id="inBodyFr" class="input-white" rows="3" oninput="updatePreview()"></textarea></div>
-                            </div>
-                            <div id="group-es" class="lang-input-group">
-                                <div class="form-group"><label>Project (ES)</label><input type="text" id="inProjectEs" class="input-white" oninput="updatePreview()"></div>
-                                <div class="form-group"><label>Title (ES)</label><textarea id="inTitleEs" class="input-white" rows="2" oninput="updatePreview()"></textarea></div>
-                                <div class="form-group"><label>App Intro (ES)</label><textarea id="inBodyEs" class="input-white" rows="3" oninput="updatePreview()"></textarea></div>
-                            </div>
+                            <!-- (他言語省略せず記述) -->
+                            <div id="group-de" class="lang-input-group"><div class="form-group"><label>Project (DE)</label><input type="text" id="inProjectDe" class="input-white" oninput="updatePreview()"></div><div class="form-group"><label>Title (DE)</label><textarea id="inTitleDe" class="input-white" rows="2" oninput="updatePreview()"></textarea></div><div class="form-group"><label>App Intro (DE)</label><textarea id="inBodyDe" class="input-white" rows="3" oninput="updatePreview()"></textarea></div></div>
+                            <div id="group-fr" class="lang-input-group"><div class="form-group"><label>Project (FR)</label><input type="text" id="inProjectFr" class="input-white" oninput="updatePreview()"></div><div class="form-group"><label>Title (FR)</label><textarea id="inTitleFr" class="input-white" rows="2" oninput="updatePreview()"></textarea></div><div class="form-group"><label>App Intro (FR)</label><textarea id="inBodyFr" class="input-white" rows="3" oninput="updatePreview()"></textarea></div></div>
+                            <div id="group-es" class="lang-input-group"><div class="form-group"><label>Project (ES)</label><input type="text" id="inProjectEs" class="input-white" oninput="updatePreview()"></div><div class="form-group"><label>Title (ES)</label><textarea id="inTitleEs" class="input-white" rows="2" oninput="updatePreview()"></textarea></div><div class="form-group"><label>App Intro (ES)</label><textarea id="inBodyEs" class="input-white" rows="3" oninput="updatePreview()"></textarea></div></div>
 
                             <button class="btn-save" onclick="addPost()">リストに追加 (一時保存)</button>
                             <button class="btn-copy" onclick="saveToGitHub()">🚀 GitHubへ直接保存</button>
@@ -289,7 +301,6 @@
                                 <h2 style="border:none; margin:0; font-size:1.1rem; color:#333;">👁️ リアルタイムプレビュー</h2>
                             </div>
                             
-                            <!-- ニュースリスト -->
                             <div style="margin-bottom:30px;">
                                 <span class="preview-label">▼ お知らせ (News List)</span>
                                 <div class="news-item">
@@ -302,7 +313,6 @@
                                 </div>
                             </div>
 
-                            <!-- カードプレビュー分割 -->
                             <div class="preview-split-row">
                                 <!-- 左: 最新の活動 -->
                                 <div class="split-col left">
@@ -317,7 +327,7 @@
                                                 <span class="meta-date" id="prevCardDate">2026.03.15</span> | 
                                                 <span class="meta-proj" id="prevCardProj">プロジェクト名</span>
                                             </div>
-                                            <!-- 文字余白なし、18文字制限 -->
+                                            <!-- 修正: 18文字×3行 -->
                                             <div class="highlight-title-tight" id="prevCardTitle" style="padding:0 10px 10px 10px;">お知らせ・キャッチコピー</div>
                                         </div>
                                     </div>
@@ -329,13 +339,13 @@
                                     <div class="highlight-card">
                                         <div class="highlight-img-area">
                                             <img src="" alt="No Image" id="prevAppImg" class="highlight-img">
-                                            <!-- 画像上のComing Soon文字 -->
                                             <div id="comingSoonOverlay" class="coming-soon-overlay">Coming Soon</div>
-                                            <!-- 左下のプロジェクト名枠付き -->
+                                            <!-- 修正: 左下隅に色付き枠 -->
                                             <div class="project-name-badge" id="prevAppProj">プロジェクト名</div>
                                         </div>
+                                        <!-- 修正: 余白削減 -->
                                         <div class="app-desc-content">
-                                            <!-- 紹介文 4行 -->
+                                            <!-- 修正: 20文字×4行 -->
                                             <div class="app-desc-text" id="prevAppDesc">
                                                 アプリ紹介本文がここに入ります...
                                             </div>
@@ -344,7 +354,6 @@
                                 </div>
                             </div>
 
-                            <!-- 詳細ページ -->
                             <span class="preview-label">▼ 詳細ページ (Project Page)</span>
                             <div class="page-preview">
                                 <h1 id="prevPageTitle">タイトル</h1>
@@ -359,7 +368,7 @@
                 </div>
 
                 <div id="panel-projects" class="panel"><div class="calc-container"><h2>📂 全プロジェクト情報</h2></div></div>
-                <div id="panel-users" class="panel"><div class="calc-container"><h2>👥 権限管理</h2><!-- 既存ユーザー管理UI --></div></div>
+                <div id="panel-users" class="panel"><div class="calc-container"><h2>👥 権限管理</h2></div></div>
             </div>
         </div>
     </div>
@@ -427,15 +436,8 @@
         }
         function autoFillProject() {
             const val = document.getElementById('inProject').value.trim();
-            const keys = {
-                ja:['inProject','inTitle','inBody'], en:['inProjectEn','inTitleEn','inBodyEn'], 
-                de:['inProjectDe','inTitleDe','inBodyDe'], fr:['inProjectFr','inTitleFr','inBodyFr'], es:['inProjectEs','inTitleEs','inBodyEs']
-            };
-            
-            if(!val) { 
-                Object.values(keys).flat().forEach(id => document.getElementById(id).value = ""); 
-                setImageValue(""); updatePreview(); return; 
-            }
+            const keys = {ja:['inProject','inTitle','inBody'], en:['inProjectEn','inTitleEn','inBodyEn'], de:['inProjectDe','inTitleDe','inBodyDe'], fr:['inProjectFr','inTitleFr','inBodyFr'], es:['inProjectEs','inTitleEs','inBodyEs']};
+            if(!val) { Object.values(keys).flat().forEach(id => document.getElementById(id).value = ""); setImageValue(""); updatePreview(); return; }
             if (typeof newsData !== 'undefined') {
                 const post = newsData.slice().reverse().find(p => p.project === val);
                 if (post) {
@@ -473,15 +475,12 @@
             const proj = document.getElementById('inProject'+s).value || "Project";
             const title = document.getElementById('inTitle'+s).value || "Title";
             const body = document.getElementById('inBody'+s).value || "Body...";
-
-            // Status Check
             const statusRadio = document.querySelector('input[name="appStatus"]:checked');
             const isComingSoon = statusRadio && statusRadio.value === 'coming';
 
             document.getElementById('prevDate').textContent=date;
             document.getElementById('prevTitle').textContent=title;
             document.getElementById('prevProjectName').textContent=proj;
-            
             const tag = document.getElementById('prevTag');
             tag.className='news-tag tag-'+cat;
             const cats={ja:{'update':'更新情報','release':'プレスリリース','start':'プロジェクト開始','steam':'Steamリリース','game':'ミニゲーム'}};
@@ -493,7 +492,6 @@
             };
             setImg('prevImg'); setImg('prevAppImg'); setImg('prevPageImg');
 
-            // 1. 最新の活動カード (半透明判定)
             const card1 = document.getElementById('prevHighlightCard');
             if(['release','start','steam'].includes(cat)) { card1.classList.remove('dimmed'); } else { card1.classList.add('dimmed'); }
             
@@ -503,35 +501,25 @@
             const badge = document.getElementById('prevCardCatBadge');
             badge.textContent=tag.textContent; badge.className='highlight-category-badge tag-'+cat;
             
-            // 2. アプリ紹介カード
             document.getElementById('prevAppProj').textContent = proj;
             document.getElementById('prevAppDesc').textContent = body;
-            
             const appImg = document.getElementById('prevAppImg');
             const overlay = document.getElementById('comingSoonOverlay');
-            if(isComingSoon) {
-                appImg.classList.add('coming-soon-mode');
-                overlay.style.display = 'block';
-            } else {
-                appImg.classList.remove('coming-soon-mode');
-                overlay.style.display = 'none';
-            }
+            if(isComingSoon) { appImg.classList.add('coming-soon-mode'); overlay.style.display = 'block'; } else { appImg.classList.remove('coming-soon-mode'); overlay.style.display = 'none'; }
 
-            // 3. 詳細ページ
             document.getElementById('prevPageTitle').textContent=title;
             document.getElementById('prevPageDate').textContent=date;
             document.getElementById('prevPageProject').textContent=proj;
             document.getElementById('prevBody').innerHTML=body;
         }
 
-        function calcSeconds() { /* 計算機ロジック省略 */ }
-        function addPost() { /* 保存ロジック省略 */ }
-        function saveToGitHub() { /* GitHub保存ロジック省略 */ }
-        function renderUserList() { /* ユーザー管理ロジック省略 */ }
-        function addUser() { /* ユーザー管理ロジック省略 */ }
-        function removeUser(i) { /* ユーザー管理ロジック省略 */ }
-        function saveUsersToGitHub() { /* ユーザー管理ロジック省略 */ }
-
+        function calcSeconds() { /* ロジック省略 */ }
+        function addPost() { /* ロジック省略 */ }
+        function saveToGitHub() { /* ロジック省略 */ }
+        function renderUserList() { /* ロジック省略 */ }
+        function addUser() { /* ロジック省略 */ }
+        function removeUser(i) { /* ロジック省略 */ }
+        function saveUsersToGitHub() { /* ロジック省略 */ }
     </script>
 </body>
 </html>
