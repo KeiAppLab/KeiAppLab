@@ -570,105 +570,128 @@
             document.getElementById('prevBody').innerHTML=body;
         }
 
-        function calcSeconds() { /* ロジック省略 */ }
-        function addPost() { /* ロジック省略 */ }
-        function saveToGitHub() { /* ロジック省略 */ }
-        // --- 6. ユーザー権限管理（ロジック復元） ---
-        
-        // リストを描画する関数
+        // --- コアロジック ---
+        function calcSeconds() {
+            const adPrice = parseFloat(document.getElementById('adPrice').value);
+            const callCost = parseFloat(document.getElementById('callCost').value);
+            const margin = parseFloat(document.getElementById('margin').value);
+            const costPerSec = callCost / 60;
+            const profit = adPrice * (margin / 100);
+            const seconds = Math.floor((adPrice - profit) / costPerSec);
+            document.getElementById('calcOutput').innerText = seconds + " 秒";
+        }
+
+        function addPost() {
+            const newPost = {
+                id: Date.now(),
+                date: document.getElementById('inDate').value,
+                category: document.getElementById('inCategory').value,
+                image: document.getElementById('inImage').value,
+                project: document.getElementById('inProject').value,
+                title: document.getElementById('inTitle').value,
+                body: document.getElementById('inBody').value,
+                project_en: document.getElementById('inProjectEn').value,
+                title_en: document.getElementById('inTitleEn').value,
+                body_en: document.getElementById('inBodyEn').value,
+                project_de: document.getElementById('inProjectDe').value,
+                title_de: document.getElementById('inTitleDe').value,
+                body_de: document.getElementById('inBodyDe').value,
+                project_fr: document.getElementById('inProjectFr').value,
+                title_fr: document.getElementById('inTitleFr').value,
+                body_fr: document.getElementById('inBodyFr').value,
+                project_es: document.getElementById('inProjectEs').value,
+                title_es: document.getElementById('inTitleEs').value,
+                body_es: document.getElementById('inBodyEs').value
+            };
+            if (!newPost.project) { alert("プロジェクト名(JP)を入力してください"); return; }
+            allPosts.unshift(newPost);
+            alert(`「${newPost.title}」を追加しました。\n現在 ${allPosts.length} 件のデータがあります。`);
+        }
+
+        async function saveToGitHub() {
+            const token = localStorage.getItem("gh_token");
+            if (!token) { alert("認証が必要です"); return; }
+            if(!confirm(`GitHub上の ${GITHUB_CONFIG.path} を更新します。よろしいですか？`)) return;
+
+            try {
+                const getRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`, {
+                    headers: { Authorization: `token ${token}` }
+                });
+                
+                let existingData = [];
+                let sha = null;
+
+                if (getRes.ok) {
+                    const fileData = await getRes.json();
+                    sha = fileData.sha;
+                    const content = decodeURIComponent(escape(atob(fileData.content)));
+                    const jsonPart = content.match(/\[.*\]/s);
+                    if (jsonPart) { existingData = JSON.parse(jsonPart[0]); }
+                }
+
+                const newIds = new Set(allPosts.map(p => p.id));
+                const mergedData = [...allPosts, ...existingData.filter(p => !newIds.has(p.id))];
+
+                const jsonString = JSON.stringify(mergedData, null, 4);
+                const newContent = `// このファイルは admin.html で生成されました\nconst newsData = ${jsonString};`;
+                const encodedContent = btoa(unescape(encodeURIComponent(newContent)));
+
+                const putRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`, {
+                    method: "PUT",
+                    headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: "Update news_data.js (Append)", content: encodedContent, sha: sha })
+                });
+
+                if (putRes.ok) { alert("GitHubへの保存（追記）に成功しました！"); allPosts = []; }
+                else { alert("保存に失敗しました。"); }
+            } catch (err) { alert("エラー: " + err.message); }
+        }
+
+        // --- ユーザー管理ロジック (省略せず記述) ---
         function renderUserList() {
             const list = document.getElementById('userList');
             if(!list) return;
-            list.innerHTML = ''; // 一度クリア
-            
-            // allowed_users.js から読み込んだデータがあるか確認
+            list.innerHTML = '';
             if (typeof allowedUsersData !== 'undefined' && Array.isArray(allowedUsersData)) {
                 allowedUsersData.forEach((user, index) => {
                     const li = document.createElement('li');
                     li.style = "display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333; color:#fff;";
-                    
-                    // ユーザー名と削除ボタン
-                    li.innerHTML = `
-                        <span style="font-weight:bold;">${user}</span>
-                        <button style="background:#c0392b; width:auto; padding:5px 10px; font-size:0.8rem; margin:0;" onclick="removeUser(${index})">削除</button>
-                    `;
+                    li.innerHTML = `<span style="font-weight:bold;">${user}</span><button style="background:#c0392b; width:auto; padding:5px 10px; font-size:0.8rem; margin:0;" onclick="removeUser(${index})">削除</button>`;
                     list.appendChild(li);
                 });
-            } else {
-                list.innerHTML = '<li style="color:red;">allowed_users.js が読み込めないか、形式が不正です。</li>';
-            }
+            } else { list.innerHTML = '<li style="color:red;">allowed_users.js が読み込めないか、形式が不正です。</li>'; }
         }
 
-        // ユーザーを追加する関数
         function addUser() {
             const input = document.getElementById('newUserId');
             const id = input.value.trim();
             if(!id) return;
-            
-            // 重複チェック
-            if(allowedUsersData.includes(id)) { 
-                alert("既に登録されています"); 
-                return; 
-            }
-            
-            allowedUsersData.push(id); // 配列に追加
-            input.value = ''; // 入力欄クリア
-            renderUserList(); // リスト再描画
+            if(allowedUsersData.includes(id)) { alert("既に登録されています"); return; }
+            allowedUsersData.push(id); input.value = ''; renderUserList();
         }
 
-        // ユーザーを削除する関数
         function removeUser(index) {
-            if(confirm("このユーザーを削除しますか？\n（保存するまで確定しません）")) { 
-                allowedUsersData.splice(index, 1); // 配列から削除
-                renderUserList(); // リスト再描画
-            }
+            if(confirm("削除しますか？")) { allowedUsersData.splice(index, 1); renderUserList(); }
         }
 
-        // GitHubへ保存する関数
         async function saveUsersToGitHub() {
             const token = localStorage.getItem("gh_token");
             if (!token) { alert("認証が必要です"); return; }
-            if(!confirm("GitHub上の allowed_users.js を更新します。よろしいですか？\n※この操作は取り消せません。")) return;
-
-            // JSファイルの中身を作成
+            if(!confirm("GitHub上の allowed_users.js を更新します。よろしいですか？")) return;
             const jsonString = JSON.stringify(allowedUsersData, null, 4);
             const content = `// 編集権限を持つユーザーリスト\nconst allowedUsersData = ${jsonString};`;
-            
-            // Base64エンコード
             const encodedContent = btoa(unescape(encodeURIComponent(content)));
-
             try {
-                // 1. 現在のファイルのSHA（ハッシュ）を取得
-                const getRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/allowed_users.js`, { 
-                    headers: { Authorization: `token ${token}` } 
-                });
-                
-                if (!getRes.ok) throw new Error("ファイル情報の取得に失敗しました");
+                const getRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/allowed_users.js`, { headers: { Authorization: `token ${token}` } });
                 const fileData = await getRes.json();
-
-                // 2. 上書き保存 (PUT)
                 const putRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/allowed_users.js`, {
                     method: "PUT",
                     headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
-                    body: JSON.stringify({ 
-                        message: "Update allowed users list from Admin", 
-                        content: encodedContent, 
-                        sha: fileData.sha 
-                    })
+                    body: JSON.stringify({ message: "Update allowed users list", content: encodedContent, sha: fileData.sha })
                 });
-
-                if (putRes.ok) {
-                    alert("権限設定を更新しました！\n次回ログイン時から反映されます。");
-                } else { 
-                    alert("保存に失敗しました。トークンの権限などを確認してください。");
-                }
-            } catch (err) { 
-                alert("エラー: " + err.message); 
-            }
+                if (putRes.ok) alert("権限設定を更新しました！"); else alert("保存に失敗しました。");
+            } catch (err) { alert("エラー: " + err.message); }
         }
-        function addUser() { /* ロジック省略 */ }
-        function removeUser(i) { /* ロジック省略 */ }
-        function saveUsersToGitHub() { /* ロジック省略 */ }
     </script>
 </body>
 </html>
