@@ -81,11 +81,40 @@
         .custom-select-wrapper { position: relative; user-select: none; width: 100%; }
         .custom-select { position: relative; display: flex; flex-direction: column; }
         .custom-select__trigger { position: relative; display: flex; align-items: center; justify-content: space-between; padding: 10px; font-size: 1rem; font-weight: bold; color: #333; background: #ffffff; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; }
-        .custom-options { position: absolute; display: block; top: 100%; left: 0; right: 0; border: 1px solid #ccc; border-top: 0; background: #fff; transition: all 0.3s; opacity: 0; visibility: hidden; pointer-events: none; z-index: 100; max-height: 300px; overflow-y: auto; border-radius: 0 0 4px 4px; }
+        
+        /* 修正: グリッド表示に変更 */
+        .custom-options { 
+            position: absolute; display: block; top: 100%; left: 0; right: 0; 
+            border: 1px solid #ccc; border-top: 0; background: #fff; 
+            transition: all 0.3s; opacity: 0; visibility: hidden; pointer-events: none; z-index: 100; 
+            max-height: 400px; overflow-y: auto; border-radius: 0 0 4px 4px;
+            /* Grid設定 */
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            gap: 10px;
+            padding: 10px;
+        }
         .custom-select.open .custom-options { opacity: 1; visibility: visible; pointer-events: all; }
-        .custom-option { position: relative; display: flex; align-items: center; padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; transition: all 0.2s; color: #333; }
-        .custom-option:hover { background-color: #f2f9fc; color: #0056b3; }
-        .option-img { width: 50px; height: 50px; object-fit: cover; border-radius: 4px; margin-right: 15px; border: 1px solid #ddd; }
+        
+        /* 修正: アイテムを縦並び(画像上、文字下)に変更 */
+        .custom-option { 
+            position: relative; display: flex; flex-direction: column; align-items: center; text-align: center;
+            padding: 5px; border: 1px solid #eee; border-radius: 4px;
+            cursor: pointer; transition: all 0.2s; color: #333; 
+        }
+        .custom-option:hover { background-color: #f2f9fc; border-color: #0056b3; color: #0056b3; }
+        
+        /* 修正: 画像サイズを1.5倍(75px)に */
+        .option-img { 
+            width: 75px; height: 75px; 
+            object-fit: cover; border-radius: 4px; 
+            margin-bottom: 5px; /* 文字との隙間 */
+            border: 1px solid #ddd; 
+        }
+        .option-text { 
+            font-size: 0.8rem; font-weight: bold; 
+            word-break: break-all; /* 長いファイル名の折り返し */
+        }
 
         /* --- プレビューエリア --- */
         .preview-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-bottom: 10px; }
@@ -367,8 +396,25 @@
                     </div>
                 </div>
 
-                <div id="panel-projects" class="panel"><div class="calc-container"><h2>📂 全プロジェクト情報</h2></div></div>
-                <div id="panel-users" class="panel"><div class="calc-container"><h2>👥 権限管理</h2></div></div>
+<div id="panel-projects" class="panel">
+                    <div class="calc-container">
+                        <h2>📂 全プロジェクト情報</h2>
+                        <p>ここで登録されたアプリ一覧（apps_list.js）を管理します（実装準備中）</p>
+                    </div>
+                </div>
+                
+                <!-- 修正: 中身を復元 -->
+                <div id="panel-users" class="panel">
+                    <div class="calc-container">
+                        <h2>👥 編集権限者の管理</h2>
+                        <div style="display:flex; gap:10px; margin-bottom:20px;">
+                            <input type="text" id="newUserId" placeholder="GitHubユーザーID" style="flex:1;">
+                            <button class="btn-save" style="width:auto;" onclick="addUser()">追加</button>
+                        </div>
+                        <ul id="userList" style="background:#1e1e1e; padding:20px; border-radius:8px; list-style:none;"></ul>
+                        <button class="btn-copy" onclick="saveUsersToGitHub()">💾 権限設定をGitHubに保存</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
