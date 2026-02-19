@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KEI Lab マスター・コックピット</title>
 
-    <script src="news_data.js"></script>
+    <script src="admin_master.js"></script>
     <script src="allowed_users.js"></script>
     <script src="index_phot.js"></script>
 
@@ -288,7 +288,7 @@
                             <!-- 日本語 -->
                             <div id="group-ja" class="lang-input-group active">
                                 <div class="form-group">
-                                    <label>プロジェクト名 (JP)　news_data.js</label>
+                                    <label>プロジェクト名 (JP)　admin_master.js</label>
                                     <div class="input-group">
                                         <input type="text" id="inProject" class="input-white" oninput="autoFillProject()">
                                         <select id="projectSelectHelper" class="input-white" onchange="syncProjectSelect()"><option value="">▼ 履歴...</option></select>
@@ -732,18 +732,7 @@
                             }
                         }
                     } 
-                    // B. 古いデータ構造 (news_data.js形式) の場合への後方互換対応
-                    else {
-                        document.getElementById('inProject').value = post.project || "";
-                        document.getElementById('inTitle').value = post.title || "";
-                        document.getElementById('inBody').value = post.body || "";
-                        // 英語や他言語は旧データにあれば入れる
-                        document.getElementById('inProjectEn').value = post.project_en || "";
-                        document.getElementById('inTitleEn').value = post.title_en || "";
-                        document.getElementById('inBodyEn').value = post.body_en || "";
-                        // ...他言語は省略
-                    }
-    
+                        
                     // 画像パスのセット
                     const imgPath = post.image || "";
                     document.getElementById('inImage').value = imgPath;
