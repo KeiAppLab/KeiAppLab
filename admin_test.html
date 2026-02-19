@@ -944,25 +944,25 @@
                     // B. HTML生成
                     // テンプレートHTMLを作成して保存
                     const htmlContent = `<!DOCTYPE html>
-    <html lang="ja">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>${data.ja.proj} | KEI App Lab</title>
-        <!-- 共通スタイル等の読み込み -->
-        <link rel="stylesheet" href="../style.css">
-        <!-- データ読み込み -->
-        <script src="news.js"></script>
-        <script src="old_news.js"></script>
-    </head>
-    <body>
-        <h1>${data.ja.proj}</h1>
-        <div id="app-content">
-            <!-- JSでnews.jsの内容などを表示するロジックをここに書く -->
-            <p>Loading...</p>
-        </div>
-    </body>
-    </html>`;
+                        <html lang="ja">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <title>${data.ja.proj} | KEI App Lab</title>
+                            <!-- 共通スタイル等の読み込み -->
+                            <link rel="stylesheet" href="../style.css">
+                            <!-- データ読み込み -->
+                            <script src="news.js"></script>
+                            <script src="old_news.js"></script>
+                        </head>
+                        <body>
+                            <h1>${data.ja.proj}</h1>
+                            <div id="app-content">
+                                <!-- JSでnews.jsの内容などを表示するロジックをここに書く -->
+                                <p>Loading...</p>
+                            </div>
+                        </body>
+                        </html>`;
                     const encodedHtml = btoa(unescape(encodeURIComponent(htmlContent)));
                     await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${currentProjectId}/index.html`, {
                         method: "PUT",
