@@ -3,238 +3,1034 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Us | 啓 App Lab</title>
+    <title>KEI Lab マスター・コックピット</title>
+
+    <!-- 3つの主要データファイル読み込み -->
+    <script src="admin_master.js"></script>
+    <script src="index_news.js"></script>
+    <script src="apps_catalog.js"></script>
+    
+    <script src="allowed_users.js"></script>
+    <script src="index_phot.js"></script>
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@500;900&family=Roboto:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700;900&family=Roboto:wght@400;500;900&display=swap');
 
-        :root { --text-color: #111; --accent-color: #0056b3; }
+        /* --- 全体レイアウト --- */
+        body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Arial, sans-serif; background: #1e1e1e; color: #ddd; height: 100vh; overflow: hidden; }
+        #mainWrapper { display: none; height: 100%; }
 
-        body, html {
-            margin: 0; padding: 0;
-            min-height: 100vh;
-            width: 100vw;
-            background: radial-gradient(circle at 10% 10%, #ffffff 0%, #d8d8d8 45%, #b0b0b0 100%);
-            font-family: 'Noto Serif JP', serif;
-            color: var(--text-color);
-            overflow-x: hidden;
-        }
+        /* --- ログイン画面 --- */
+        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #2c3e50; z-index: 9999; display: flex; justify-content: center; align-items: center; }
+        .login-container-split { display: flex; width: 850px; height: 550px; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .login-left { width: 40%; padding: 40px; display: flex; flex-direction: column; justify-content: center; background: #f9f9f9; border-right: 1px solid #eee; }
+        .login-left input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ccc; border-radius: 5px; }
+        .login-left button { width: 100%; padding: 12px; background: #0056b3; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .login-left button:hover { background: #003d82; }
+        .login-right { width: 60%; padding: 40px; overflow-y: auto; color: #333; line-height: 1.6; }
+        .login-right h3 { border-bottom: 2px solid #0056b3; padding-bottom: 10px; margin-top: 0; }
+        .login-right ol { padding-left: 20px; margin-bottom: 20px; }
+        .login-right li { margin-bottom: 8px; font-size: 0.9rem; }
+        .warning-box { background: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 10px; border-radius: 5px; font-size: 0.85rem; margin-top: 15px; }
 
-        /* --- 言語切り替え表示制御 --- */
-        body[data-lang="en"] .lang-ja { display: none !important; }
-        body[data-lang="ja"] .lang-en { display: none !important; }
+        /* --- メイン画面 --- */
+        .dashboard { display: grid; grid-template-columns: 250px 1fr; height: 100%; }
+        .sidebar { background: #252526; border-right: 1px solid #333; display: flex; flex-direction: column; padding: 10px; box-sizing: border-box; }
+        .sidebar h1 { font-size: 1.2rem; color: #fff; margin: 20px 10px; border-bottom: 2px solid #007acc; padding-bottom: 10px; }
+        .menu-btn { padding: 15px; margin-bottom: 5px; cursor: pointer; border-radius: 5px; color: #aaa; font-weight: bold; transition: 0.2s; display: flex; align-items: center; gap: 10px; }
+        .menu-btn:hover { background: #3c3c3c; color: #fff; }
+        .menu-btn.active { background: #007acc; color: white; }
+        .spacer { flex-grow: 1; min-height: 20px; border-bottom: 1px solid #333; margin-bottom: 10px; }
 
-        .overlay-shadow {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(135deg, transparent 30%, rgba(0,0,0,0.2) 90%);
-            pointer-events: none; z-index: 0;
-        }
+        .main-content { position: relative; overflow: hidden; height: 100%; }
+        .panel { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; overflow-y: auto; padding: 30px; box-sizing: border-box; }
+        .panel.active { display: block; }
 
-        header {
-            position: fixed; top: 0; left: 0; width: 100%;
-            padding: 20px;
-            display: flex; justify-content: space-between; align-items: center;
-            z-index: 200; box-sizing: border-box;
-        }
+        /* --- CMSレイアウト (40:60) --- */
+        .cms-layout { display: flex; height: 100%; gap: 0; }
+        .editor-area { width: 40%; overflow-y: auto; padding-right: 20px; height: 100%; box-sizing: border-box; }
+        .preview-area { width: 60%; background: #e0e0e0; color: #333; overflow-y: auto; padding: 20px; height: 100%; box-sizing: border-box; }
 
-        .back-link {
-            text-decoration: none; color: var(--accent-color); font-weight: 900;
-            display: flex; align-items: center; gap: 5px;
-        }
-        .back-link:hover { text-decoration: underline; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-top: 5px; margin-bottom: 5px; font-weight: bold; font-size: 0.9rem; color: #aaa; }
+        /* ラベル行のフレックス設定（ステータススイッチ配置用） */
+        .label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .label-row label { margin: 0; }
 
-        .lang-switch {
-            font-family: 'Roboto', sans-serif;
-            border: 1px solid var(--accent-color);
-            padding: 5px 15px; border-radius: 20px; font-size: 0.9rem;
-            cursor: pointer; color: var(--accent-color); background: rgba(255,255,255,0.5);
-            transition: all 0.3s;
-            user-select: none;
-        }
-        .lang-switch:hover { background: var(--accent-color); color: white; }
-
-        .content-container {
-            position: relative; z-index: 10;
-            max-width: 900px;
-            margin: 100px auto 50px;
-            padding: 60px 50px;
-            background: rgba(255, 255, 255, 0.45);
-            backdrop-filter: blur(12px);
-            border-radius: 20px;
-            box-shadow: 0 15px 45px rgba(0,0,0,0.08);
-            border: 1px solid rgba(255,255,255,0.6);
-            animation: fade-in-up 1.2s ease-out forwards;
-        }
-
-        h1 {
-            font-size: 2.8rem; margin-bottom: 40px; border-bottom: 3px solid var(--accent-color);
-            display: inline-block; padding-bottom: 10px;
-        }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #555; border-radius: 4px; box-sizing: border-box; font-size: 1rem; }
+        .input-white { background-color: #ffffff !important; color: #333 !important; border: 1px solid #ccc !important; font-weight: bold; }
         
-        h2 { font-size: 1.7rem; margin-top: 50px; margin-bottom: 20px; color: #222; position: relative; }
-        h2::before { content: ""; position: absolute; left: -20px; top: 50%; width: 5px; height: 1.2em; background: var(--accent-color); transform: translateY(-50%); }
+        .row-group { display: flex; gap: 10px; }
+        .row-group > div { flex: 1; }
 
-        p { line-height: 2.0; margin-bottom: 25px; font-size: 1.1rem; text-align: justify; }
-      
-        /* 言語が英語（en）の時だけ、左寄せにする設定を追加 */
-        body[data-lang="en"] p {
-        text-align: left;         /* 左寄せ（右側はガタガタでOK） */
-        hyphens: none;            /* ハイフンを強制的にオフにする */
-        word-break: normal;       /* 単語の途中では絶対に切らない */
-        overflow-wrap: break-word; /* 非常に長いURLなどがある場合だけ切る（保険） */
+        .input-group { display: flex; width: 100%; }
+        .input-group input { flex: 1; border-top-right-radius: 0 !important; border-bottom-right-radius: 0 !important; border-right: 0 !important; }
+        .input-group select { flex: 1; border-top-left-radius: 0 !important; border-bottom-left-radius: 0 !important; background-color: #e6e6e6 !important; color: #0056b3 !important; cursor: pointer; }
+
+        .editor-lang-tabs { display: flex; gap: 5px; margin-bottom: 15px; border-bottom: 1px solid #555; padding-bottom: 10px; }
+        .edit-tab { padding: 8px 15px; background: #333; color: #aaa; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .edit-tab:hover { background: #444; color: #fff; }
+        .edit-tab.active { background: #007acc; color: white; }
+        
+        .lang-input-group { display: none; animation: fadeIn 0.3s; }
+        .lang-input-group.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* ステータススイッチ */
+        .status-switch { display: flex; gap: 10px; background: #333; padding: 2px 8px; border-radius: 4px; }
+        .status-label { color: #fff; font-size: 0.8rem; display: flex; align-items: center; gap: 5px; cursor: pointer; font-weight: normal; margin: 0; }
+        .status-label input { width: auto; margin: 0; }
+
+        /* 画像選択 (グリッド表示) */
+        .custom-select-wrapper { position: relative; user-select: none; width: 100%; }
+        .custom-select { position: relative; display: flex; flex-direction: column; }
+        .custom-select__trigger { position: relative; display: flex; align-items: center; justify-content: space-between; padding: 10px; font-size: 1rem; font-weight: bold; color: #333; background: #ffffff; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; }
+        
+        .custom-options { 
+            position: absolute; display: block; top: 100%; left: 0; right: 0; 
+            border: 1px solid #ccc; border-top: 0; background: #fff; 
+            transition: all 0.3s; opacity: 0; visibility: hidden; pointer-events: none; z-index: 100; 
+            max-height: 400px; overflow-y: auto; border-radius: 0 0 4px 4px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            gap: 10px;
+            padding: 10px;
+        }
+        .custom-select.open .custom-options { opacity: 1; visibility: visible; pointer-events: all; }
+        
+        .custom-option { 
+            position: relative; display: flex; flex-direction: column; align-items: center; text-align: center;
+            padding: 5px; border: 1px solid #eee; border-radius: 4px;
+            cursor: pointer; transition: all 0.2s; color: #333; 
+        }
+        .custom-option:hover { background-color: #f2f9fc; border-color: #0056b3; color: #0056b3; }
+        
+        .option-img { 
+            width: 75px; height: 75px; 
+            object-fit: cover; border-radius: 4px; 
+            margin-bottom: 5px;
+            border: 1px solid #ddd; 
+        }
+        .option-text { 
+            font-size: 0.8rem; font-weight: bold; 
+            word-break: break-all;
         }
 
-        /* --- 特徴的な理念セクション（横並び） --- */
-        .philosophy-section {
-            display: flex;
-            align-items: flex-start;
-            gap: 30px;
-            margin: 40px 0;
+        /* --- プレビューエリア --- */
+        .preview-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-bottom: 10px; }
+        .preview-label { font-size: 0.8rem; color: #666; font-weight: bold; border-bottom: 1px dashed #999; display: block; margin-bottom: 10px; }
+        
+        .news-item { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #ccc; }
+        .news-date { font-family: 'Roboto', sans-serif; color: #666; width: 100px; font-size: 0.9rem; }
+        .news-tag { font-size: 0.8rem; padding: 2px 8px; border-radius: 4px; margin-right: 15px; color: white; width: 110px; text-align: center; }
+        .tag-release { background: #0056b3; } .tag-update  { background: #e67e22; } .tag-start   { background: #8e44ad; } .tag-steam   { background: #2c3e50; } .tag-game    { background: #27ae60; }
+        .news-link { text-decoration: none; color: #333; font-weight: 500; font-family: 'Noto Serif JP', serif; }
+
+        .preview-split-row { display: flex; border: 1px solid #ccc; border-radius: 8px; overflow: hidden; margin-bottom: 30px; }
+        .split-col { flex: 1; padding: 15px; display: flex; flex-direction: column; align-items: center; }
+        .split-col.left { background: #f0f0f0; border-right: 1px solid #ddd; }
+        .split-col.right { background: #e8e8e8; }
+
+        /* 共通カードスタイル */
+        .highlight-card { width: 100%; max-width: 300px; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 1px solid rgba(0,0,0,0.05); }
+        .highlight-img-area { width: 100%; height: 160px; overflow: hidden; background: #eee; position: relative; }
+        .highlight-img { width: 100%; height: 100%; object-fit: cover; object-position: center; transition: opacity 0.3s; }
+        .highlight-category-badge { position: absolute; bottom: 0; left: 0; color: white; font-size: 0.8rem; padding: 4px 12px; border-top-right-radius: 8px; font-weight: bold; z-index: 2; }
+        
+        /* 最新の活動用 */
+        .highlight-card.dimmed { opacity: 0.4; }
+        .highlight-content-tight { padding: 5px 0 0 0; text-align: left; }
+        .highlight-title-tight { 
+            font-family: 'Noto Serif JP', serif; font-size: 1rem; font-weight: 900; color: #333; line-height: 1.5; margin: 0; 
+            width: 18em; white-space: normal;
+            display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+            height: 4.5em; 
+        }
+        .highlight-meta { font-size: 0.75rem; color: #666; margin-bottom: 2px; font-family: 'Roboto', sans-serif; }
+
+        /* アプリ紹介用 */
+        .coming-soon-overlay { 
+            display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-10deg); 
+            font-size: 1.8rem; font-weight: 900; color: #fff; text-shadow: 2px 2px 0 #000, -1px -1px 0 #000; 
+            border: 3px solid #fff; padding: 5px 20px; box-shadow: 3px 3px 0 rgba(0,0,0,0.5); z-index: 10; pointer-events: none;
+        }
+        .highlight-img.coming-soon-mode { opacity: 0.5; filter: grayscale(50%); }
+
+        .project-name-badge {
+            position: absolute; bottom: 0; left: 0; z-index: 5;
+            background: #0056b3; color: #fff;
+            font-family: 'Roboto', sans-serif; font-weight: 900; font-size: 0.9rem;
+            padding: 5px 12px; 
+            border-top-right-radius: 8px; box-shadow: 2px -2px 5px rgba(0,0,0,0.3);
+            max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
 
-        .philosophy-box {
-            flex: 1;
-            padding: 30px;
-            background: rgba(0, 86, 179, 0.05);
-            border-radius: 10px;
-            font-size: 1.1rem;
-            line-height: 1.8;
+        .app-desc-content { padding: 8px 10px; text-align: left; }
+        .app-desc-text {
+            font-family: 'Noto Serif JP', serif; font-size: 0.9rem; color: #444; line-height: 1.5;
+            width: 20em; height: 6em;
+            display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
         }
 
-        .philosophy-image {
-            flex: 1;
-            width: 100%;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            border: 1px solid rgba(255,255,255,0.5);
-            object-fit: cover;
-        }
+        .page-preview { font-family: 'Noto Serif JP', serif; line-height: 1.8; margin-top: 20px; background: white; padding: 20px; border-radius: 8px; }
+        .page-preview h1 { border-bottom: 3px solid #0056b3; display: inline-block; padding-bottom: 5px; margin-bottom: 20px; font-size: 1.5rem; }
+        .page-preview img { max-width: 100%; border-radius: 10px; margin: 20px 0; }
+        #prevBody, .news-link { white-space: pre-wrap; }
 
-        .mission-text {
-            font-size: 1.3rem;
-            font-weight: 900;
-            color: var(--accent-color);
-            display: block;
-            margin-bottom: 10px;
-        }
-
-        rt { font-family: 'Roboto', sans-serif; font-size: 0.5em; font-weight: normal; }
-
-        @keyframes fade-in-up {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* スマホ対応：横並びを解除 */
-        @media (max-width: 768px) {
-            .content-container { margin: 80px 15px 40px; padding: 35px 20px; }
-            h1 { font-size: 2rem; }
-            h2 { font-size: 1.4rem; }
-            p { font-size: 1rem; }
-            
-            .philosophy-section {
-                flex-direction: column; /* 縦並びに変更 */
-            }
-            .philosophy-image {
-                order: -1; /* スマホでは画像を先に表示 */
-                max-width: 100%;
-            }
-        }
+        button { padding: 12px 20px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 10px; width: 100%; }
+        .btn-save { background: #27ae60; color: white; }
+        .btn-copy { background: #e67e22; color: white; margin-top: 20px; }
     </style>
 </head>
-<body data-lang="ja">
-
-    <div class="overlay-shadow"></div>
-
-    <header>
-        <a href="index.html" class="back-link">
-            <span>←</span>
-            <span class="lang-ja">トップへ戻る</span>
-            <span class="lang-en">Back to Top</span>
-        </a>
-        <div class="lang-switch" id="lang-btn">Language</div>
-    </header>
-
-    <div class="content-container">
-        <!-- 日本語コンテンツ -->
-        <div class="lang-ja">
-            <h1>私たちについて</h1>
-            <p>啓（KEI）App Labは、テクノロジーという光を用いて「日常の不便を解き明かし、心の高鳴りを呼び起こす」ことを使命としたクリエイティブ・ラボです。私たちは、単にプログラムを組む集団ではありません。ユーザーの隣に立ち、まだ見ぬ便利さと楽しさの扉を一つずつ「啓く」パートナーでありたいと考えています。</p>
-
-            <!-- 理念と画像の横並びセクション -->
-            <div class="philosophy-section">
-                <div class="philosophy-box">
-                    <span class="mission-text">
-                        「日常を<ruby>啓<rt>ひら</rt></ruby>く便利さ。心を<ruby>啓<rt>ひら</rt></ruby>く遊び心。」
-                    </span>
-                    この言葉こそが、私たちの開発における不変の指針です。
-                </div>
-                <!-- 用意された画像をここに配置 -->
-                <img src="about_img.png" alt="Lab Vision" class="philosophy-image">
+<body>
+    <div id="loginOverlay">
+        <div class="login-container-split">
+            <div class="login-left">
+                <h2>🚀 KEI Lab Admin</h2>
+                <input type="password" id="tokenInput" placeholder="GitHub Token (ghp_...)">
+                <button onclick="checkIdentity()">ログイン</button>
+                <div id="authStatus"></div>
             </div>
-
-            <h2>二つの視点、一つの情熱</h2>
-            <p>私たちの最大の強みは、世代を超えた「多角的な視点」にあります。日々の生活の中で見落とされがちな微細なニーズを捉える鋭い観察眼と、それを実現するための最先端のコンピュータ理工学。この二つが融合することで、既存の枠組みに捉われない革新的なプロダクトが生まれます。</p>
-
-            <h2>日常を啓く：実用への拘り</h2>
-            <p>主力プロダクトである「FreeCallApp」をはじめ、私たちが提供するツールはすべて「徹底的なユーザー体験の最適化」から設計されています。複雑なものをシンプルに。高価なものを身近に。デジタルという冷たい技術に、人間の温かな気配りを注ぎ込むことで、使うたびに発見がある利便性を追求しています。</p>
-
-            <h2>心を啓く：遊びへの挑戦</h2>
-            <p>また、私たちは「遊び」が持つ根源的なエネルギーを信じています。<!-- Steam等のプラットフォームを通じて展開する -->ゲーム開発プロジェクトでは、日常の延長線上にある驚きや、知的好奇心を刺激する体験を追求しています。ツールが時間を「節約」するものであるならば、ゲームは時間を「豊か」にするもの。私たちはその両輪で、人々のライフスタイルを照らします。</p>
-
-            <h2>未来への歩み</h2>
-            <p>啓 App Labは、常に研究者（Lab）としての探究心を忘れず、一歩先の未来が今日より少しだけ明るく、楽しくなるような、そんな「光」となるアプリを届けてまいります。</p>
+            <div class="login-right">
+                <h3>🔑 トークンの発行手順</h3>
+                <ol>
+                    <li><a href="https://github.com/settings/tokens" target="_blank" style="color:#007acc; font-weight:bold;">GitHub Token設定ページへ移動 ↗</a></li>
+                    <li>[Generate new token (classic)] を選択</li>
+                    <li>Expiration（期限）を設定（90 days推奨）</li>
+                    <li><strong>[repo]</strong> にチェックを入れる（必須）</li>
+                    <li>一番下の [Generate token] を押してコピー</li>
+                </ol>
+                <div class="warning-box">
+                    <strong>⚠️ 警告：</strong><br>
+                    トークンが漏洩した場合は、直ちにGitHub設定ページで該当トークンを削除（Revoke）してください。
+                </div>
+            </div>
         </div>
+    </div>
 
-        <!-- 英語コンテンツ -->
-        <div class="lang-en">
-            <h1>About Us</h1>
-            <p>KEI App Lab is a creative laboratory whose mission is to "unravel the inconveniences of daily life and awaken the excitement of the heart" using the light of technology. We are more than just a group of programmers. We aspire to be a partner that stands beside the user, "opening" the doors to unseen convenience and joy one by one.</p>
-
-            <div class="philosophy-section">
-                <div class="philosophy-box">
-                    <span class="mission-text">
-                        "Convenience to open daily life. Playfulness to open the heart."
-                    </span>
-                    This philosophy is the unwavering guide for our development.
-                </div>
-                <img src="lab-image.png" alt="Lab Vision" class="philosophy-image">
+    <div id="mainWrapper">
+        <div class="dashboard">
+            <div class="sidebar">
+                <h1>🚀 KEI Lab Admin</h1>
+                <div class="menu-btn active" onclick="switchPanel('calc')">💰 収益・秒数計算</div>
+                <div class="menu-btn" onclick="switchPanel('cms')">📝 コンテンツ編集</div>
+                <div class="menu-btn" onclick="switchPanel('projects')">📂 全プロジェクト情報</div>
+                <div class="spacer"></div>
+                <div class="menu-btn" onclick="switchPanel('users')">👥 権限管理</div>
+                <div class="menu-btn" onclick="logout()" style="margin-top:auto; background:#c0392b; color:white;">🔒 ログアウト</div>
             </div>
 
-            <h2>Two Perspectives, One Passion</h2>
-            <p>Our greatest strength lies in our "multi-generational perspective." A keen eye for observation that captures subtle needs often overlooked in daily life, combined with cutting-edge computer science to realize them. This fusion gives birth to innovative products that transcend existing frameworks.</p>
+            <div class="main-content">
+                <!-- 計算パネル -->
+                <div id="panel-calc" class="panel active">
+                    <div class="calc-container">
+                        <h2>💰 シミュレーター</h2>
+                        <div class="calc-grid">
+                            <div><label>動画広告単価</label><input type="number" id="adPrice" value="1.5" step="0.1"></div>
+                            <div><label>通話原価 (1分)</label><input type="number" id="callCost" value="3.0" step="0.1"></div>
+                        </div>
+                        <label>利益率 <span id="marginDisplay">20%</span></label>
+                        <input type="range" id="margin" min="0" max="50" value="20" oninput="document.getElementById('marginDisplay').innerText = this.value + '%'">
+                        <button class="btn-calc" onclick="calcSeconds()">計算する</button>
+                        <div class="calc-result-box"><div id="calcOutput" class="calc-number">--- 秒</div></div>
+                    </div>
+                </div>
 
-            <h2>Opening Daily Life: Commitment to Utility</h2>
-            <p>Starting with our flagship "FreeCallApp," every tool we provide is designed through "thorough optimization of the user experience." Turning complexity into simplicity. Bringing expensive services within reach. By infusing the cold technology of the digital realm with human warmth and attentiveness, we pursue convenience that offers new discoveries with every use.</p>
+                <!-- CMSパネル -->
+                <div id="panel-cms" class="panel">
+                    <div class="cms-layout">
+                        <!-- エディタ (40%) -->
+                        <div class="editor-area">
+                            <h2>📝 記事・プロジェクト作成</h2>
+                            
+                            <div class="row-group">
+                                <div class="form-group"><label>日付</label><input type="text" id="inDate" class="input-white"></div>
+                                <div class="form-group">
+                                    <label>カテゴリ</label>
+                                    <select id="inCategory" class="input-white" onchange="updatePreview()">
+                                        <option value="update">更新情報</option>
+                                        <option value="release">プレスリリース</option>
+                                        <option value="start">プロジェクト開始</option>
+                                        <option value="steam">Steamリリース</option>
+                                        <option value="game">ミニゲーム</option>
+                                    </select>
+                                </div>
+                            </div>
 
-            <h2>Opening the Heart: A Challenge to Play</h2>
-            <p>We believe in the fundamental energy of "play." Through our game development projects<!-- on platforms like Steam -->, we seek to provoke intellectual curiosity and create surprises that extend beyond daily life. If a tool is meant to "save" time, a game is meant to "enrich" it. We illuminate lifestyles through these two pillars.</p>
+                            <div class="form-group">
+                                <label>画像ファイル (index_photフォルダ)</label>
+                                <input type="hidden" id="inImage" onchange="updatePreview()">
+                                <div class="custom-select-wrapper">
+                                    <div class="custom-select">
+                                        <div class="custom-select__trigger" onclick="toggleImageSelect()"><span id="selectedImageText">画像を選択...</span><span>▼</span></div>
+                                        <div class="custom-options" id="imageOptions"></div>
+                                    </div>
+                                </div>
+                            </div>
 
-            <h2>Steps Toward the Future</h2>
-            <p>As KEI App Lab, we will never forget our inquisitive spirit as researchers. We are dedicated to delivering applications that act as a "light," making the future one step ahead just a little brighter and more enjoyable than today.</p>
+                            <hr style="border:0; border-top:1px dashed #555; margin: 20px 0;">
+
+                            <div class="editor-lang-tabs">
+                                <button class="edit-tab active" onclick="switchEditorLang('ja')">🇯🇵 JP</button>
+                                <button class="edit-tab" onclick="switchEditorLang('en')">🇺🇸 EN</button>
+                                <button class="edit-tab" onclick="switchEditorLang('de')">🇩🇪 DE</button>
+                                <button class="edit-tab" onclick="switchEditorLang('fr')">🇫🇷 FR</button>
+                                <button class="edit-tab" onclick="switchEditorLang('es')">🇪🇸 ES</button>
+                            </div>
+
+                            <!-- 日本語 -->
+                            <div id="group-ja" class="lang-input-group active">
+                                <div class="form-group">
+                                    <label>プロジェクト名 (JP)　admin_master.js</label>
+                                    <div class="input-group">
+                                        <input type="text" id="inProject" class="input-white" oninput="autoFillProject()">
+                                        <select id="projectSelectHelper" class="input-white" onchange="syncProjectSelect()"><option value="">▼ 履歴...</option></select>
+                                    </div>
+                                </div>
+                                <div class="form-group"><label>お知らせ・キャッチコピー (JP)</label><textarea id="inTitle" class="input-white" rows="2" oninput="updatePreview()"></textarea></div>
+                                
+                                <div class="form-group">
+                                    <div class="label-row">
+                                        <label>アプリ紹介本文 (JP)</label>
+                                        <div class="status-switch">
+                                            <label class="status-label"><input type="radio" name="appStatus" value="released" checked onchange="updatePreview()"> リリース済み</label>
+                                            <label class="status-label"><input type="radio" name="appStatus" value="coming" onchange="updatePreview()"> Coming Soon</label>
+                                        </div>
+                                    </div>
+                                    <textarea id="inBody" class="input-white" rows="3" oninput="updatePreview()"></textarea>
+                                </div>
+                            </div>
+
+                            <!-- 多言語 -->
+                            <div id="group-en" class="lang-input-group">
+                                <div class="form-group"><label>Project (EN)</label><input type="text" id="inProjectEn" class="input-white" oninput="updatePreview()"></div>
+                                <div class="form-group"><label>Title (EN)</label><textarea id="inTitleEn" class="input-white" rows="2" oninput="updatePreview()"></textarea></div>
+                                <div class="form-group"><label>App Intro (EN)</label><textarea id="inBodyEn" class="input-white" rows="3" oninput="updatePreview()"></textarea></div>
+                            </div>
+                            <div id="group-de" class="lang-input-group"><div class="form-group"><label>Project (DE)</label><input type="text" id="inProjectDe" class="input-white" oninput="updatePreview()"></div><div class="form-group"><label>Title (DE)</label><textarea id="inTitleDe" class="input-white" rows="2" oninput="updatePreview()"></textarea></div><div class="form-group"><label>App Intro (DE)</label><textarea id="inBodyDe" class="input-white" rows="3" oninput="updatePreview()"></textarea></div></div>
+                            <div id="group-fr" class="lang-input-group"><div class="form-group"><label>Project (FR)</label><input type="text" id="inProjectFr" class="input-white" oninput="updatePreview()"></div><div class="form-group"><label>Title (FR)</label><textarea id="inTitleFr" class="input-white" rows="2" oninput="updatePreview()"></textarea></div><div class="form-group"><label>App Intro (FR)</label><textarea id="inBodyFr" class="input-white" rows="3" oninput="updatePreview()"></textarea></div></div>
+                            <div id="group-es" class="lang-input-group"><div class="form-group"><label>Project (ES)</label><input type="text" id="inProjectEs" class="input-white" oninput="updatePreview()"></div><div class="form-group"><label>Title (ES)</label><textarea id="inTitleEs" class="input-white" rows="2" oninput="updatePreview()"></textarea></div><div class="form-group"><label>App Intro (ES)</label><textarea id="inBodyEs" class="input-white" rows="3" oninput="updatePreview()"></textarea></div></div>
+
+                            <button class="btn-save" onclick="addPost()">リストに追加 (一時保存)</button>
+                            <button class="btn-copy" onclick="saveToGitHub()">🚀 GitHubへ直接保存</button>
+                        </div>
+
+                        <!-- プレビュー (60%) -->
+                        <div class="preview-area">
+                            <div class="preview-header">
+                                <h2 style="border:none; margin:0; font-size:1.1rem; color:#333;">👁️ リアルタイムプレビュー</h2>
+                            </div>
+                            
+                            <div style="margin-bottom:30px;">
+                                <span class="preview-label">▼ お知らせ (News List)</span>
+                                <div class="news-item">
+                                    <span class="news-date" id="prevDate">2026.03.15</span>
+                                    <span class="news-tag tag-update" id="prevTag">更新情報</span>
+                                    <div style="flex:1;">
+                                        <span style="font-weight:bold; margin-right:10px; color:#333;" id="prevProjectName">プロジェクト名</span>
+                                        <span class="news-link" id="prevTitle">タイトル</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="preview-split-row">
+                                <div class="split-col left">
+                                    <span class="preview-label" style="margin-bottom:10px;">▼ 最新の活動 (Highlights)</span>
+                                    <div class="highlight-card" id="prevHighlightCard">
+                                        <div class="highlight-img-area">
+                                            <img src="" alt="No Image" id="prevImg" class="highlight-img">
+                                            <span class="highlight-category-badge tag-update" id="prevCardCatBadge">更新情報</span>
+                                        </div>
+                                        <div class="highlight-content-tight">
+                                            <div class="highlight-meta" style="padding:0 10px;">
+                                                <span class="meta-date" id="prevCardDate">2026.03.15</span> | 
+                                                <span class="meta-proj" id="prevCardProj">プロジェクト名</span>
+                                            </div>
+                                            <div class="highlight-title-tight" id="prevCardTitle" style="padding:0 10px 10px 10px;">お知らせ・キャッチコピー</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="split-col right">
+                                    <span class="preview-label" style="margin-bottom:10px;">▼ アプリ紹介 (App List)</span>
+                                    <div class="highlight-card">
+                                        <div class="highlight-img-area">
+                                            <img src="" alt="No Image" id="prevAppImg" class="highlight-img">
+                                            <div id="comingSoonOverlay" class="coming-soon-overlay">Coming Soon</div>
+                                            <div class="project-name-badge" id="prevAppProj">プロジェクト名</div>
+                                        </div>
+                                        <div class="app-desc-content">
+                                            <div class="app-desc-text" id="prevAppDesc">アプリ紹介本文がここに入ります...</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <span class="preview-label">▼ 詳細ページ (Project Page)</span>
+                            <div id="realPagePreview" style="display:none; width:100%; height:400px; border:1px solid #ccc; background:#fff;">
+                                <iframe id="prevIframe" style="width:100%; height:100%; border:none;"></iframe>
+                            </div>
+                            <div id="simulatedPagePreview" class="page-preview">
+                                <h1 id="prevPageTitle">タイトル</h1>
+                                <div style="color:#666; font-size:0.9rem; margin-bottom:20px;">
+                                    <span id="prevPageDate"></span> | <span id="prevPageProject"></span>
+                                </div>
+                                <img src="" id="prevPageImg" style="display:none;">
+                                <div id="prevBody">本文...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="panel-projects" class="panel">
+                    <div class="calc-container">
+                        <h2>📂 全プロジェクト情報</h2>
+                        <p>ここで登録されたアプリ一覧（apps_catalog.js）を管理します（実装準備中）</p>
+                    </div>
+                </div>
+                
+                <div id="panel-users" class="panel">
+                    <div class="calc-container">
+                        <h2>👥 編集権限者の管理</h2>
+                        <div style="display:flex; gap:10px; margin-bottom:20px;">
+                            <input type="text" id="newUserId" placeholder="GitHubユーザーID" class="input-white" style="flex:1;">
+                            <button class="btn-save" style="width:auto; margin-top:0;" onclick="addUser()">追加</button>
+                        </div>
+                        <ul id="userList" style="background:#1e1e1e; padding:20px; border-radius:8px; list-style:none; max-height:300px; overflow-y:auto; border:1px solid #444;"></ul>
+                        <button class="btn-copy" onclick="saveUsersToGitHub()">💾 権限設定をGitHubに保存</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        function setLanguage(lang) {
-            localStorage.setItem('preferredLang', lang);
-            document.body.setAttribute('data-lang', lang === 'ja' ? 'ja' : 'en');
+            // ▼▼▼ 設定 ▼▼▼
+            const GITHUB_CONFIG = { owner: "KeiAppLab", repo: "KeiAppLab" };
+            let previewLang = 'ja';
+            let currentProjectId = ""; // 現在入力中のプロジェクトID
+            
+            // --- 認証・初期化 ---
+            async function checkIdentity() {
+                const token = document.getElementById('tokenInput').value.trim() || arguments[0];
+                const status = document.getElementById('authStatus');
+                if (!token) { status.innerText = "⚠️ トークンを入力"; status.style.color = "orange"; return; }
+                status.innerText = "確認中..."; status.style.color = "black";
+                try {
+                    const res = await fetch("https://api.github.com/user", { headers: { Authorization: `token ${token}` } });
+                    if (!res.ok) throw new Error("無効なトークン");
+                    const user = await res.json();
+                    if (typeof allowedUsersData !== 'undefined' && allowedUsersData.includes(user.login)) {
+                        localStorage.setItem('gh_token', token);
+                        showDashboard();
+                    } else { status.innerText = "❌ 未許可ID: " + user.login; status.style.color = "red"; }
+                } catch (err) { status.innerText = "⚠️ " + err.message; status.style.color = "red"; }
+            }
+            
+            function showDashboard() {
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('mainWrapper').style.display = 'block';
+                updatePreview();
+                initProjectList(); // admin_master.js から履歴を生成
+                initImageSelector(); // 初回はデフォルト画像リスト
+            }
+            
+            function logout() { localStorage.removeItem('gh_token'); location.reload(); }
+            window.addEventListener('load', () => {
+                const t = localStorage.getItem('gh_token'); if(t) checkIdentity(t); renderUserList();
+            });
+            
+            // --- パネル切り替え ---
+            function switchPanel(id) {
+                document.querySelectorAll('.panel').forEach(e => e.classList.remove('active'));
+                document.querySelectorAll('.menu-btn').forEach(e => e.classList.remove('active'));
+                document.getElementById('panel-' + id).classList.add('active');
+                event.currentTarget.classList.add('active');
+            }
+            
+            // --- CMSロジック: 初期化と入力補助 ---
+            const today = new Date();
+            document.getElementById('inDate').value = today.getFullYear() + '.' + (today.getMonth()+1).toString().padStart(2,'0') + '.' + today.getDate().toString().padStart(2,'0');
+            
+            function switchEditorLang(lang) {
+                document.querySelectorAll('.lang-input-group').forEach(e => e.classList.remove('active'));
+                document.getElementById('group-' + lang).classList.add('active');
+                document.querySelectorAll('.edit-tab').forEach(e => e.classList.remove('active'));
+                event.currentTarget.classList.add('active');
+                previewLang = lang; updatePreview();
+            }
+            
+            // プロジェクト履歴 (admin_master.js から生成)
+            function initProjectList() {
+                // admin_master.js が読み込まれている前提 (adminMasterData)
+                if (typeof adminMasterData === 'undefined') return;
+                const sel = document.getElementById('projectSelectHelper');
+                sel.innerHTML = '<option value="">▼ 履歴...</option>';
+                
+                // adminMasterData は [{projectId: "kei_rpg", data: {...}}, ...] の形式を想定
+                // または単純に履歴として保存された配列
+                adminMasterData.forEach(item => {
+                    const option = document.createElement('option');
+                    // 保存されているプロジェクト名(JP)を表示
+                    option.value = item.project_id; 
+                    option.textContent = item.project_ja || item.project_id;
+                    sel.appendChild(option);
+                });
+            }
+            
+            // 履歴選択時の自動入力
+            function syncProjectSelect() {
+                const sel = document.getElementById('projectSelectHelper');
+                const pid = sel.value;
+                if(pid){ 
+                    const item = adminMasterData.find(d => d.project_id === pid);
+                    if(item) fillForm(item);
+                    sel.selectedIndex=0; 
+                }
+            }
+            
+            function fillForm(data) {
+                // 各言語フィールドに値をセット
+                const langs = ['ja', 'en', 'de', 'fr', 'es'];
+                const fields = ['Project', 'Title', 'Body']; // Title=お知らせ, Body=アプリ紹介
+                
+                langs.forEach(lang => {
+                    const suffix = lang === 'ja' ? '' : lang.charAt(0).toUpperCase() + lang.slice(1);
+                    document.getElementById('inProject' + suffix).value = data['project_' + lang] || "";
+                    document.getElementById('inTitle' + suffix).value = data['title_' + lang] || "";
+                    document.getElementById('inBody' + suffix).value = data['body_' + lang] || "";
+                });
+                
+                setImageValue(data.image || "");
+                
+                // ステータスラジオボタン
+                if (data.status) {
+                    const radio = document.querySelector(`input[name="appStatus"][value="${data.status}"]`);
+                    if(radio) radio.checked = true;
+                }
+                
+                // IDセット
+                currentProjectId = data.project_id;
+                updatePreview();
+                checkProjectImages(data.project_id);
+                checkProjectUrl(data.project_id);
+            }
+            
+            // 入力同期: 英語プロジェクト名が変わったらIDを生成して画像/プレビューをチェック
+            document.getElementById('inProjectEn').addEventListener('input', async function() {
+                const enName = this.value.trim();
+                if (enName) {
+                    // ID生成: 小文字化、スペースをアンダースコアに
+                    currentProjectId = enName.replace(/\s+/g, '_').toLowerCase();
+                    await checkProjectImages(currentProjectId); // 画像フォルダチェック
+                    checkProjectUrl(currentProjectId); // iframeチェック
+                }
+                updatePreview();
+            });
+            
+            // --- 画像選択ロジック ---
+            let currentImageList = [];
+            
+            async function checkProjectImages(projectId) {
+                const token = localStorage.getItem('gh_token');
+                if (!token) return;
+            
+                // [project_id] フォルダの内容を確認
+                try {
+                    const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${projectId}`, {
+                        headers: { Authorization: `token ${token}` }
+                    });
+                    
+                    if (res.ok) {
+                        const files = await res.json();
+                        // pngファイルだけ抽出
+                        const pngs = files.filter(f => f.name.endsWith('.png')).map(f => f.name);
+                        if (pngs.length > 0) {
+                            // プロジェクト専用画像リストを使用
+                            renderImageSelector(pngs, projectId + "/");
+                            return;
+                        }
+                    }
+                } catch (e) { console.log("New project folder not found, using default."); }
+            
+                // フォルダがない、または画像がない場合はデフォルトを使用
+                const list = (typeof photoList !== 'undefined') ? photoList : ["no_image.png"];
+                renderImageSelector(list, "index_phot/");
+            }
+            
+            function initImageSelector() {
+                const list = (typeof photoList !== 'undefined') ? photoList : ["no_image.png"];
+                renderImageSelector(list, "index_phot/");
+            }
+            
+            function renderImageSelector(list, basePath) {
+                const c = document.getElementById('imageOptions'); c.innerHTML='';
+                list.forEach(n => {
+                    const d=document.createElement('div'); d.className='custom-option';
+                    // フルパスをセットする
+                    const fullPath = basePath + n;
+                    d.onclick=()=>{ selectImage(fullPath, n) }; 
+                    d.innerHTML=`<img src="${fullPath}" class="option-img"><span class="option-text">${n}</span>`;
+                    c.appendChild(d);
+                });
+            }
+            
+            function toggleImageSelect(){ document.querySelector('.custom-select').classList.toggle('open'); }
+            function selectImage(p, n){ 
+                document.getElementById('inImage').value = p; 
+                document.getElementById('selectedImageText').textContent = n; 
+                document.querySelector('.custom-select').classList.remove('open'); 
+                updatePreview(); 
+            }
+            function setImageValue(p){ 
+                document.getElementById('inImage').value=p; 
+                document.getElementById('selectedImageText').textContent=p.split('/').pop()||"画像を選択..."; 
+            }
+            window.onclick=e=>{ if(!e.target.closest('.custom-select')) document.querySelector('.custom-select').classList.remove('open'); }
+            
+            
+            // --- プレビューロジック ---
+            function checkProjectUrl(projectId) {
+                // 簡易ロジック: adminMasterDataにIDがあれば「既存」とみなしてiframe表示
+                const exists = typeof adminMasterData !== 'undefined' && adminMasterData.some(d => d.project_id === projectId);
+                const iframe = document.getElementById('prevIframe');
+                const realPreview = document.getElementById('realPagePreview');
+                const simPreview = document.getElementById('simulatedPagePreview');
+                
+                if (exists) {
+                    realPreview.style.display = 'block';
+                    simPreview.style.display = 'none';
+                    iframe.src = `https://${GITHUB_CONFIG.owner.toLowerCase()}.github.io/${GITHUB_CONFIG.repo}/${projectId}/index.html`;
+                } else {
+                    realPreview.style.display = 'none';
+                    simPreview.style.display = 'block';
+                }
+            }
+            
+            function updatePreview() {
+                const date = document.getElementById('inDate').value;
+                const cat = document.getElementById('inCategory').value;
+                const img = document.getElementById('inImage').value;
+                const s = previewLang==='ja'?'':previewLang.charAt(0).toUpperCase()+previewLang.slice(1);
+                
+                const proj = document.getElementById('inProject'+s).value || "Project";
+                const title = document.getElementById('inTitle'+s).value || "Title";
+                const body = document.getElementById('inBody'+s).value || "App Intro Body...";
+                const statusRadio = document.querySelector('input[name="appStatus"]:checked');
+                const isComingSoon = statusRadio && statusRadio.value === 'coming';
+            
+                // 1. お知らせリスト (Titleを表示)
+                document.getElementById('prevDate').textContent=date;
+                document.getElementById('prevTitle').textContent=title;
+                document.getElementById('prevProjectName').textContent=proj;
+                const tag = document.getElementById('prevTag');
+                tag.className='news-tag tag-'+cat;
+                // 多言語マッピング省略
+                tag.textContent = cat; 
+            
+                // 画像
+                const setImg = (id) => {
+                    const el = document.getElementById(id); el.src=img;
+                    el.style.display = img ? 'block' : 'none';
+                };
+                setImg('prevImg'); setImg('prevAppImg'); setImg('prevPageImg');
+            
+                // 2. 最新の活動 (Titleを表示)
+                const card1 = document.getElementById('prevHighlightCard');
+                // リリース枠以外は少し薄くするなどの処理があればここに
+                if(['release','start','steam'].includes(cat)) { card1.classList.remove('dimmed'); } else { card1.classList.add('dimmed'); }
+    
+                document.getElementById('prevCardTitle').textContent=title;
+                document.getElementById('prevCardProj').textContent=proj;
+                document.getElementById('prevCardDate').textContent=date;
+                const badge = document.getElementById('prevCardCatBadge');
+                badge.textContent=cat; badge.className='highlight-category-badge tag-'+cat;
+                
+                // 3. アプリ紹介 (Bodyを表示)
+                document.getElementById('prevAppProj').textContent = proj;
+                document.getElementById('prevAppDesc').textContent = body; // ここは紹介文
+                const appImg = document.getElementById('prevAppImg');
+                const overlay = document.getElementById('comingSoonOverlay');
+                if(isComingSoon) { appImg.classList.add('coming-soon-mode'); overlay.style.display = 'block'; } else { appImg.classList.remove('coming-soon-mode'); overlay.style.display = 'none'; }
+            
+                // 4. 詳細ページ (シミュレーション)
+                document.getElementById('prevPageTitle').textContent=title;
+                document.getElementById('prevPageDate').textContent=date;
+                document.getElementById('prevPageProject').textContent=proj;
+                document.getElementById('prevBody').innerHTML=title; // 詳細ページではニュース本文(＝お知らせ)を表示
+            }
+            
+            // --- ★核心：保存ロジック ---
+            async function saveToGitHub() {
+                const token = localStorage.getItem("gh_token");
+                if (!token) { alert("認証が必要です"); return; }
+            
+                // 1. プロジェクトIDチェック
+                const projectEn = document.getElementById('inProjectEn').value.trim();
+                if (!projectEn) { alert("⚠️ 英語のプロジェクト名を入力してください（ID生成に必要です）"); return; }
+                
+                const projectId = projectEn.replace(/\s+/g, '_').toLowerCase();
+                
+                if(!confirm(`以下のIDで保存処理を開始します。\nProject ID: ${projectId}\n\nよろしいですか？`)) return;
+            
+                // 入力データの収集
+                const inputData = getInputData(projectId);
+            
+                try {
+                    // --- A. admin_master.js (管理者用・上書き) ---
+                    let newMasterData = (typeof adminMasterData !== 'undefined') ? [...adminMasterData] : [];
+                    const idx = newMasterData.findIndex(d => d.project_id === projectId);
+                    if(idx >= 0) newMasterData[idx] = inputData.master; // 上書き
+                    else newMasterData.push(inputData.master); // 新規
+                    
+                    await writeJsFile('admin_master.js', newMasterData, "Update admin_master");
+            
+                    // --- B. index_news.js (トップ用・速報) ---
+                    let indexNews = (typeof indexNewsData !== 'undefined') ? [...indexNewsData] : [];
+                    indexNews.unshift(inputData.indexItem);
+                    
+                    // リリース枠(10)と更新枠(10)に分けて抽出
+                    const releaseCats = ['release', 'start', 'steam'];
+                    const updateCats = ['update', 'game'];
+                    
+                    const releases = indexNews.filter(i => releaseCats.includes(i.category)).slice(0, 10);
+                    const updates = indexNews.filter(i => updateCats.includes(i.category)).slice(0, 10);
+                    const newIndexNews = [...releases, ...updates];
+                    
+                    await writeJsFile('index_news.js', newIndexNews, "Update index_news");
+            
+                    // --- C. apps_catalog.js (一覧用・カタログ) ---
+                    let catalog = (typeof appsCatalogData !== 'undefined') ? [...appsCatalogData] : [];
+                    const catIdx = catalog.findIndex(d => d.project_id === projectId);
+                    if(catIdx >= 0) catalog[catIdx] = inputData.catalogItem;
+                    else catalog.push(inputData.catalogItem);
+                    
+                    await writeJsFile('apps_catalog.js', catalog, "Update apps_catalog");
+            
+                    // --- D. [id]/news.js (個別最新3件) ---
+                    const newsPath = `${projectId}/news.js`;
+                    let currentAppNews = await fetchExistingJs(newsPath) || [];
+                    currentAppNews.unshift(inputData.newsItem);
+                    const newAppNews = currentAppNews.slice(0, 3); // 最新3件
+                    
+                    await writeJsFile(newsPath, newAppNews, `Update ${projectId} news`);
+            
+                    // --- E. [id]/old_news.js (アーカイブ) ---
+                    const oldNewsPath = `${projectId}/old_news.js`;
+                    let currentOldNews = await fetchExistingJs(oldNewsPath) || [];
+                    currentOldNews.unshift(inputData.newsItem); // 全件保存（削除なし）
+                    
+                    await writeJsFile(oldNewsPath, currentOldNews, `Update ${projectId} archive`);
+            
+                    // --- F. 画像コピー & HTML生成 (新規プロジェクト時) ---
+                    // 画像パスが index_phot/ 始まりなら、それを [id]/index.png にコピー
+                    if (inputData.master.image.startsWith('index_phot/')) {
+                        await copyImageToProject(inputData.master.image, `${projectId}/index.png`);
+                    }
+            
+                    // HTML生成 ([id]/index.html がなければ作成)
+                    await createProjectHtml(projectId);
+            
+                    alert("✅ 全てのデータの保存が完了しました！");
+                    // データをリロード（簡易リロード）
+                    location.reload();
+            
+                } catch (err) {
+                    console.error(err);
+                    alert("❌ 保存中にエラーが発生しました:\n" + err.message);
+                }
+            }
+            
+            // データ収集ヘルパー
+            function getInputData(pid) {
+                const date = document.getElementById('inDate').value;
+                const cat = document.getElementById('inCategory').value;
+                const img = document.getElementById('inImage').value; // フルパス
+                const status = document.querySelector('input[name="appStatus"]:checked').value;
+                
+                // 多言語データの取得
+                const langs = ['ja', 'en', 'de', 'fr', 'es'];
+                let names={}, titles={}, bodies={};
+                langs.forEach(l => {
+                    const s = l==='ja'?'':l.charAt(0).toUpperCase()+l.slice(1);
+                    names['project_'+l] = document.getElementById('inProject'+s).value;
+                    titles['title_'+l] = document.getElementById('inTitle'+s).value; // お知らせ
+                    bodies['body_'+l] = document.getElementById('inBody'+s).value; // アプリ紹介
+                });
+            
+                // 1. Master用 (全部入り)
+                const master = { project_id: pid, date, category: cat, image: img, status, ...names, ...titles, ...bodies };
+            
+                // 2. Index用 (お知らせ重視・紹介文なし・画像は固定パス化)
+                const indexItem = {
+                    id: Date.now(), // 一意のID
+                    date, category: cat,
+                    image: `${pid}/index.png`, // 固定パス
+                    link: `${pid}/index.html`,
+                    ...names, ...titles // 紹介文なし
+                };
+            
+                // 3. Catalog用 (紹介文重視・お知らせなし)
+                const catalogItem = {
+                    project_id: pid,
+                    status,
+                    image: `${pid}/index.png`,
+                    ...names, ...bodies // お知らせなし
+                };
+            
+                // 4. AppNews用 (お知らせのみ)
+                const newsItem = {
+                    date, category: cat,
+                    ...titles // お知らせのみ
+                };
+            
+                return { master, indexItem, catalogItem, newsItem };
+            }
+            
+            // GitHub API ヘルパー: ファイル書き込み
+            async function writeJsFile(path, dataObj, msg) {
+                const token = localStorage.getItem("gh_token");
+                // 既存ファイルのSHAを取得して上書き
+                let sha = null;
+                try {
+                    const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
+                        headers: { Authorization: `token ${token}` }
+                    });
+                    if (res.ok) {
+                        const json = await res.json();
+                        sha = json.sha;
+                    }
+                } catch(e) {}
+            
+                // JSファイル形式に変換
+                // pathから変数名を推測 (簡易的)
+                let varName = "data";
+                if(path.includes("admin_master")) varName = "adminMasterData";
+                else if(path.includes("index_news")) varName = "indexNewsData";
+                else if(path.includes("apps_catalog")) varName = "appsCatalogData";
+                else if(path.includes("old_news")) varName = "oldNewsData"; // 先に判定
+                else if(path.includes("news")) varName = "newsData";
+            
+                const contentStr = `const ${varName} = ${JSON.stringify(dataObj, null, 4)};`;
+                const encoded = btoa(unescape(encodeURIComponent(contentStr)));
+            
+                const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
+                    method: "PUT",
+                    headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: msg, content: encoded, sha: sha })
+                });
+                if (!res.ok) throw new Error(`Failed to write ${path}`);
+            }
+            
+            // GitHub API ヘルパー: 既存JSの読み込み
+            async function fetchExistingJs(path) {
+                const token = localStorage.getItem("gh_token");
+                try {
+                    const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
+                        headers: { Authorization: `token ${token}` } // キャッシュ回避推奨
+                    });
+                    if (!res.ok) return null;
+                    const json = await res.json();
+                    const content = decodeURIComponent(escape(atob(json.content)));
+                    // JSON部分を抽出
+                    const match = content.match(/\[.*\]/s); // 配列を探す
+                    if (match) return JSON.parse(match[0]);
+                } catch (e) { console.log("File not found or parse error:", path); }
+                return null;
+            }
+            
+            // 画像コピー
+            async function copyImageToProject(srcPath, destPath) {
+                const token = localStorage.getItem("gh_token");
+                // 1. 元画像をバイナリ(Blob->Base64)で取得
+                const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${srcPath}`, {
+                    headers: { Authorization: `token ${token}` }
+                });
+                if(!res.ok) return; // 画像がない
+                const data = await res.json();
+                const content = data.content; // Base64のまま
+            
+                // 2. 宛先に書き込み (存在チェックして上書きするか、常にするか。ここでは常に上書き)
+                let sha = null;
+                try {
+                    const check = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${destPath}`, {
+                         headers: { Authorization: `token ${token}` }
+                    });
+                    if(check.ok) sha = (await check.json()).sha;
+                } catch(e){}
+            
+                await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${destPath}`, {
+                    method: "PUT",
+                    headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        message: "Copy image to project folder",
+                        content: content,
+                        sha: sha
+                    })
+                });
+            }
+            
+            // HTMLテンプレート作成
+            async function createProjectHtml(projectId) {
+                const path = `${projectId}/index.html`;
+                const token = localStorage.getItem("gh_token");
+                
+                // 既に存在するかチェック
+                const check = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
+                     headers: { Authorization: `token ${token}` }
+                });
+                if(check.ok) return; // 既にあるなら何もしない
+            
+                // テンプレートHTML (scriptタグのエスケープ処理済み)
+                const htmlContent = `<!DOCTYPE html>
+            <html lang="ja">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>${projectId}</title>
+                <!-- 共通CSSやJSを読み込む -->
+                <script src="news.js"><\/script>
+            </head>
+            <body>
+                <h1>App Page: ${projectId}</h1>
+                <p>This page was automatically generated.</p>
+                <div id="news-container"></div>
+                <script>
+                    // newsDataを使って表示するロジック
+                    const container = document.getElementById('news-container');
+                    if(typeof newsData !== 'undefined'){
+                        newsData.forEach(item => {
+                            const div = document.createElement('div');
+                            div.className = 'news-box';
+                            div.style.marginBottom = '10px';
+                            div.innerHTML = '<b>' + item.date + '</b>: ' + (item.title_ja || item.title_en);
+                            container.appendChild(div);
+                        });
+                    }
+                <\/script>
+            </body>
+            </html>`;
+            
+                const encoded = btoa(unescape(encodeURIComponent(htmlContent)));
+                
+                await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
+                    method: "PUT",
+                    headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        message: "Create project homepage",
+                        content: encoded
+                    })
+                });
+            }
+            
+            // --- ユーザー管理・計算 (復元済み) ---
+            function renderUserList() {
+                const list = document.getElementById('userList');
+                if(!list) return;
+                list.innerHTML = '';
+                if (typeof allowedUsersData !== 'undefined') {
+                    allowedUsersData.forEach((user, index) => {
+                        const li = document.createElement('li');
+                        li.style = "display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid #444; color:#fff;";
+                        li.innerHTML = `<span>${user}</span><button style="background:#c0392b; width:auto; padding:2px 8px; font-size:0.8rem; margin:0;" onclick="removeUser(${index})">削除</button>`;
+                        list.appendChild(li);
+                    });
+                }
+            }
+            function addUser() {
+                const input = document.getElementById('newUserId');
+                const id = input.value.trim();
+                if(!id) return;
+                if(allowedUsersData.includes(id)) { alert("既に登録されています"); return; }
+                allowedUsersData.push(id);
+                input.value = '';
+                renderUserList();
+            }
+            function removeUser(index) {
+                if(confirm("削除しますか？")) { allowedUsersData.splice(index, 1); renderUserList(); }
+            }
+            async function saveUsersToGitHub() {
+                const token = localStorage.getItem("gh_token");
+                if (!token) { alert("認証が必要です"); return; }
+                if(!confirm("GitHub上の allowed_users.js を更新します。よろしいですか？")) return;
+                const jsonString = JSON.stringify(allowedUsersData, null, 4);
+                const content = `// 編集権限を持つユーザーリスト\nconst allowedUsersData = ${jsonString};`;
+                const encodedContent = btoa(unescape(encodeURIComponent(content)));
+                try {
+                    const getRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/allowed_users.js`, { headers: { Authorization: `token ${token}` } });
+                    const fileData = await getRes.json();
+                    const putRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/allowed_users.js`, {
+                        method: "PUT",
+                        headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                        body: JSON.stringify({ message: "Update allowed users list", content: encodedContent, sha: fileData.sha })
+                    });
+                    if (putRes.ok) alert("権限設定を更新しました！"); else alert("保存に失敗しました。");
+                } catch (err) { alert("エラー: " + err.message); }
+            }
+    
+            function calcSeconds() {
+                const adPrice = parseFloat(document.getElementById('adPrice').value);
+                const callCost = parseFloat(document.getElementById('callCost').value);
+                const margin = parseFloat(document.getElementById('margin').value);
+                const costPerSec = callCost / 60;
+                const profit = adPrice * (margin / 100);
+                const seconds = Math.floor((adPrice - profit) / costPerSec);
+                document.getElementById('calcOutput').innerText = seconds + " 秒";
+            }
+            
+            // addPostは一時保存用（メモリ内）
+            function addPost() { alert("一時保存しました（ページリロードで消えます）"); }
+        </script>
+    </body>
+    </html>
+            const encoded = btoa(unescape(encodeURIComponent(html)));
+            await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
+                method: "PUT",
+                headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                body: JSON.stringify({ message: "Create HP", content: encoded })
+            });
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const savedLang = localStorage.getItem('preferredLang');
-            if (savedLang) {
-                setLanguage(savedLang);
-            } else {
-                const browserLang = (window.navigator.language || window.navigator.userLanguage || 'ja').slice(0, 2).toLowerCase();
-                setLanguage(browserLang !== 'ja' ? 'en' : 'ja');
+        // --- ユーザー管理・計算 ---
+        function renderUserList() {
+            const list = document.getElementById('userList'); if(!list) return; list.innerHTML = '';
+            if (typeof allowedUsersData !== 'undefined') {
+                allowedUsersData.forEach((user, index) => {
+                    const li = document.createElement('li');
+                    li.style = "display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid #444; color:#fff;";
+                    li.innerHTML = `<span>${user}</span><button style="background:#c0392b; width:auto; padding:2px 8px; font-size:0.8rem; margin:0;" onclick="removeUser(${index})">削除</button>`;
+                    list.appendChild(li);
+                });
             }
-        });
+        }
+        function addUser() {
+            const id = document.getElementById('newUserId').value.trim();
+            if(!id || allowedUsersData.includes(id)) return;
+            allowedUsersData.push(id); document.getElementById('newUserId').value=''; renderUserList();
+        }
+        function removeUser(i) { if(confirm("削除?")) { allowedUsersData.splice(i, 1); renderUserList(); } }
+        
+        async function saveUsersToGitHub() {
+            const token = localStorage.getItem("gh_token");
+            if (!token) return;
+            const content = `const allowedUsersData = ${JSON.stringify(allowedUsersData, null, 4)};`;
+            const encoded = btoa(unescape(encodeURIComponent(content)));
+            const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/allowed_users.js`, { headers: { Authorization: `token ${token}` } });
+            const sha = (await res.json()).sha;
+            await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/allowed_users.js`, {
+                method: "PUT", headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                body: JSON.stringify({ message: "Update users", content: encoded, sha: sha })
+            });
+            alert("権限更新完了");
+        }
 
-        const langBtn = document.getElementById('lang-btn');
-        langBtn.addEventListener('click', () => {
-            const current = localStorage.getItem('preferredLang') || 'ja';
-            setLanguage(current === 'ja' ? 'en' : 'ja');
-        });
+        function calcSeconds() {
+            const p = parseFloat(document.getElementById('adPrice').value), c = parseFloat(document.getElementById('callCost').value), m = parseFloat(document.getElementById('margin').value);
+            document.getElementById('calcOutput').innerText = Math.floor((p - p*(m/100)) / (c/60)) + " 秒";
+        }
+        
+        // addPostは一時保存用（メモリ内）
+        function addPost() { alert("一時保存しました（ページリロードで消えます）"); }
     </script>
 </body>
 </html>
