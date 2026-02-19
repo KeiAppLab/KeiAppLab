@@ -672,10 +672,90 @@
         }
     
         // --- 自動入力 (admin_master.js から) ---
-        // ※ news_data.js が admin_master.js にリネームされた想定で読み込み
         function autoFillProject() {
-            // ... (以前のautoFillProjectと同様だが、読み込み元を adminMasterData 変数にする想定)
-            // 今回はコード量削減のため省略しますが、運用時は必要です
+            const val = document.getElementById('inProject').value.trim();
+            
+            // 全入力欄のIDリスト
+            const keys = {
+                ja: ['inProject', 'inTitle', 'inBody'],
+                en: ['inProjectEn', 'inTitleEn', 'inBodyEn'],
+                de: ['inProjectDe', 'inTitleDe', 'inBodyDe'],
+                fr: ['inProjectFr', 'inTitleFr', 'inBodyFr'],
+                es: ['inProjectEs', 'inTitleEs', 'inBodyEs']
+            };
+    
+            // 1. 空欄になったら全てクリア
+            if (!val) {
+                Object.values(keys).flat().forEach(id => document.getElementById(id).value = "");
+                document.getElementById('inImage').value = "";
+                document.getElementById('selectedImageText').textContent = "画像を選択...";
+                
+                // ID生成もリセット
+                document.getElementById('inProjectEn').value = "";
+                generateProjectId(); // ID表示をクリア
+                updatePreview();
+                return;
+            }
+    
+            // 2. admin_master.js (adminMasterData) からデータを探す
+            let sourceData = [];
+            if (typeof adminMasterData !== 'undefined') {
+                sourceData = adminMasterData;
+            } 
+    
+            if (sourceData.length > 0) {
+                // 日本語のプロジェクト名が一致するものを探す
+                // (新データ構造: p.ja.proj / 旧データ構造: p.project)
+                const post = sourceData.find(p => {
+                    if (p.ja && p.ja.proj) return p.ja.proj === val; // 新構造
+                    if (p.project) return p.project === val;         // 旧構造
+                    return false;
+                });
+    
+                if (post) {
+                    // --- データが見つかった場合の反映処理 ---
+    
+                    // A. 新しいデータ構造 (admin_master.js形式) の場合
+                    if (post.ja) {
+                        // 各言語のデータをセット
+                        ['ja', 'en', 'de', 'fr', 'es'].forEach(lang => {
+                            document.getElementById(keys[lang][0]).value = post[lang].proj || "";
+                            document.getElementById(keys[lang][1]).value = post[lang].title || "";
+                            document.getElementById(keys[lang][2]).value = post[lang].body || "";
+                        });
+                        
+                        // ステータス (released / coming)
+                        if (post.status) {
+                            const radios = document.getElementsByName('appStatus');
+                            for (const radio of radios) {
+                                if (radio.value === post.status) radio.checked = true;
+                            }
+                        }
+                    } 
+                    // B. 古いデータ構造 (news_data.js形式) の場合への後方互換対応
+                    else {
+                        document.getElementById('inProject').value = post.project || "";
+                        document.getElementById('inTitle').value = post.title || "";
+                        document.getElementById('inBody').value = post.body || "";
+                        // 英語や他言語は旧データにあれば入れる
+                        document.getElementById('inProjectEn').value = post.project_en || "";
+                        document.getElementById('inTitleEn').value = post.title_en || "";
+                        document.getElementById('inBodyEn').value = post.body_en || "";
+                        // ...他言語は省略
+                    }
+    
+                    // 画像パスのセット
+                    const imgPath = post.image || "";
+                    document.getElementById('inImage').value = imgPath;
+                    document.getElementById('selectedImageText').textContent = imgPath.split('/').pop() || "画像を選択...";
+    
+                    // ★重要: 英語名が入ったので、IDを再生成してフォルダチェックを走らせる
+                    generateProjectId();
+                    
+                    // プレビュー更新
+                    updatePreview();
+                }
+            }
         }
     
     
