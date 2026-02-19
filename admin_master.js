@@ -1,5 +1,5 @@
 // このファイルは admin.html で生成されました
-const newsData = [
+const adminMasterData = [
     {
         "id": 1771442705419,
         "date": "2026.02.19",
