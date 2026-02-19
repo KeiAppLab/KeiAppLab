@@ -456,21 +456,46 @@
         let currentProjectId = ""; // 計算された現在のID
         let isProjectExisting = false; // フォルダが存在するか
     
-        // --- 認証系 (変更なし) ---
-        async function checkIdentity() {
-            const token = document.getElementById('tokenInput').value.trim() || localStorage.getItem('gh_token');
+        // --- 認証系 ---
+        async function checkIdentity(optToken) {
+            // 修正: 引数(optToken)がある場合はそれを最優先し、なければ入力欄を見る
+            // これにより、localStorageからの自動ログインが確実になります
+            const tokenInputVal = document.getElementById('tokenInput').value.trim();
+            const token = (typeof optToken === 'string' && optToken) ? optToken : tokenInputVal;
+            
             const status = document.getElementById('authStatus');
-            if (!token) { if(status) status.innerText = "⚠️ トークンを入力"; return; }
+            
+            if (!token) { 
+                if(status) {
+                    status.innerText = "⚠️ トークンを入力"; 
+                    status.style.color = "orange";
+                }
+                return; 
+            }
+            
             if(status) { status.innerText = "確認中..."; status.style.color = "black"; }
+            
             try {
                 const res = await fetch("https://api.github.com/user", { headers: { Authorization: `token ${token}` } });
                 if (!res.ok) throw new Error("無効なトークン");
                 const user = await res.json();
-                if (typeof allowedUsersData !== 'undefined' && allowedUsersData.includes(user.login)) {
+                
+                // allowedUsersData の存在チェックを厳密化
+                if (typeof allowedUsersData !== 'undefined' && Array.isArray(allowedUsersData) && allowedUsersData.includes(user.login)) {
                     localStorage.setItem('gh_token', token);
                     showDashboard();
-                } else { if(status) status.innerText = "❌ 未許可ID: " + user.login; }
-            } catch (err) { if(status) status.innerText = "⚠️ " + err.message; }
+                } else { 
+                    if(status) {
+                        status.innerText = "❌ 未許可ID: " + user.login; 
+                        status.style.color = "red";
+                    }
+                }
+            } catch (err) { 
+                if(status) {
+                    status.innerText = "⚠️ " + err.message; 
+                    status.style.color = "red";
+                }
+            }
         }
     
         function showDashboard() {
