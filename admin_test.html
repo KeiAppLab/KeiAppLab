@@ -405,393 +405,584 @@
     </div>
 
     <script>
-        const GITHUB_CONFIG = { owner: "KeiAppLab", repo: "KeiAppLab" };
-        let previewLang = 'ja';
-        let currentProjectId = "";
-
-        // --- 認証 ---
-        async function checkIdentity() {
-            const token = document.getElementById('tokenInput').value.trim() || arguments[0];
-            const status = document.getElementById('authStatus');
-            if (!token) { status.innerText = "⚠️ トークンを入力"; status.style.color = "orange"; return; }
-            status.innerText = "確認中..."; status.style.color = "black";
-            try {
-                const res = await fetch("https://api.github.com/user", { headers: { Authorization: `token ${token}` } });
-                if (!res.ok) throw new Error("無効なトークン");
-                const user = await res.json();
-                if (typeof allowedUsersData !== 'undefined' && allowedUsersData.includes(user.login)) {
-                    localStorage.setItem('gh_token', token);
-                    showDashboard();
-                } else { status.innerText = "❌ 未許可ID: " + user.login; status.style.color = "red"; }
-            } catch (err) { status.innerText = "⚠️ " + err.message; status.style.color = "red"; }
-        }
-
-        function showDashboard() {
-            document.getElementById('loginOverlay').style.display = 'none';
-            document.getElementById('mainWrapper').style.display = 'block';
-            updatePreview();
-            initProjectList();
-            initImageSelector();
-        }
-        function logout() { localStorage.removeItem('gh_token'); location.reload(); }
-        window.addEventListener('load', () => {
-            const t = localStorage.getItem('gh_token'); if(t) checkIdentity(t); renderUserList();
-        });
-
-        // --- パネル ---
-        function switchPanel(id) {
-            document.querySelectorAll('.panel').forEach(e => e.classList.remove('active'));
-            document.querySelectorAll('.menu-btn').forEach(e => e.classList.remove('active'));
-            document.getElementById('panel-' + id).classList.add('active');
-            event.currentTarget.classList.add('active');
-        }
-
-        // --- CMS基本 ---
-        let allPosts = [];
-        const today = new Date();
-        document.getElementById('inDate').value = today.getFullYear() + '.' + (today.getMonth()+1).toString().padStart(2,'0') + '.' + today.getDate().toString().padStart(2,'0');
-
-        function switchEditorLang(lang) {
-            document.querySelectorAll('.lang-input-group').forEach(e => e.classList.remove('active'));
-            document.getElementById('group-' + lang).classList.add('active');
-            document.querySelectorAll('.edit-tab').forEach(e => e.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-            previewLang = lang; updatePreview();
-        }
-
-        // --- プロジェクト入力 ---
-        function initProjectList() {
-            if (typeof adminMasterData === 'undefined') return;
-            const sel = document.getElementById('projectSelectHelper');
-            sel.innerHTML = '<option value="">▼ 履歴...</option>';
-            adminMasterData.forEach(item => {
-                const option = document.createElement('option');
-                option.value = item.project_id; 
-                option.textContent = item.project_ja || item.project_id;
-                sel.appendChild(option);
+            // ▼▼▼ 設定 ▼▼▼
+            const GITHUB_CONFIG = { owner: "KeiAppLab", repo: "KeiAppLab" };
+            let previewLang = 'ja';
+            let currentProjectId = ""; // 現在入力中のプロジェクトID
+            
+            // --- 認証・初期化 ---
+            async function checkIdentity() {
+                const token = document.getElementById('tokenInput').value.trim() || arguments[0];
+                const status = document.getElementById('authStatus');
+                if (!token) { status.innerText = "⚠️ トークンを入力"; status.style.color = "orange"; return; }
+                status.innerText = "確認中..."; status.style.color = "black";
+                try {
+                    const res = await fetch("https://api.github.com/user", { headers: { Authorization: `token ${token}` } });
+                    if (!res.ok) throw new Error("無効なトークン");
+                    const user = await res.json();
+                    if (typeof allowedUsersData !== 'undefined' && allowedUsersData.includes(user.login)) {
+                        localStorage.setItem('gh_token', token);
+                        showDashboard();
+                    } else { status.innerText = "❌ 未許可ID: " + user.login; status.style.color = "red"; }
+                } catch (err) { status.innerText = "⚠️ " + err.message; status.style.color = "red"; }
+            }
+            
+            function showDashboard() {
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('mainWrapper').style.display = 'block';
+                updatePreview();
+                initProjectList(); // admin_master.js から履歴を生成
+                initImageSelector(); // 初回はデフォルト画像リスト
+            }
+            
+            function logout() { localStorage.removeItem('gh_token'); location.reload(); }
+            window.addEventListener('load', () => {
+                const t = localStorage.getItem('gh_token'); if(t) checkIdentity(t); renderUserList();
             });
-        }
-
-        function syncProjectSelect() {
-            const sel = document.getElementById('projectSelectHelper');
-            const pid = sel.value;
-            if(pid){ 
-                const item = adminMasterData.find(d => d.project_id === pid);
-                if(item) fillForm(item);
-                sel.selectedIndex=0; 
+            
+            // --- パネル切り替え ---
+            function switchPanel(id) {
+                document.querySelectorAll('.panel').forEach(e => e.classList.remove('active'));
+                document.querySelectorAll('.menu-btn').forEach(e => e.classList.remove('active'));
+                document.getElementById('panel-' + id).classList.add('active');
+                event.currentTarget.classList.add('active');
             }
-        }
-
-        function fillForm(data) {
-            const langs = ['ja', 'en', 'de', 'fr', 'es'];
-            langs.forEach(lang => {
-                const suffix = lang === 'ja' ? '' : lang.charAt(0).toUpperCase() + lang.slice(1);
-                document.getElementById('inProject' + suffix).value = data['project_' + lang] || "";
-                document.getElementById('inTitle' + suffix).value = data['title_' + lang] || ""; // お知らせ
-                document.getElementById('inBody' + suffix).value = data['body_' + lang] || ""; // 紹介文
+            
+            // --- CMSロジック: 初期化と入力補助 ---
+            const today = new Date();
+            document.getElementById('inDate').value = today.getFullYear() + '.' + (today.getMonth()+1).toString().padStart(2,'0') + '.' + today.getDate().toString().padStart(2,'0');
+            
+            function switchEditorLang(lang) {
+                document.querySelectorAll('.lang-input-group').forEach(e => e.classList.remove('active'));
+                document.getElementById('group-' + lang).classList.add('active');
+                document.querySelectorAll('.edit-tab').forEach(e => e.classList.remove('active'));
+                event.currentTarget.classList.add('active');
+                previewLang = lang; updatePreview();
+            }
+            
+            // プロジェクト履歴 (admin_master.js から生成)
+            function initProjectList() {
+                // admin_master.js が読み込まれている前提 (adminMasterData)
+                if (typeof adminMasterData === 'undefined') return;
+                const sel = document.getElementById('projectSelectHelper');
+                sel.innerHTML = '<option value="">▼ 履歴...</option>';
+                
+                // adminMasterData は [{projectId: "kei_rpg", data: {...}}, ...] の形式を想定
+                // または単純に履歴として保存された配列
+                adminMasterData.forEach(item => {
+                    const option = document.createElement('option');
+                    // 保存されているプロジェクト名(JP)を表示
+                    option.value = item.project_id; 
+                    option.textContent = item.project_ja || item.project_id;
+                    sel.appendChild(option);
+                });
+            }
+            
+            // 履歴選択時の自動入力
+            function syncProjectSelect() {
+                const sel = document.getElementById('projectSelectHelper');
+                const pid = sel.value;
+                if(pid){ 
+                    const item = adminMasterData.find(d => d.project_id === pid);
+                    if(item) fillForm(item);
+                    sel.selectedIndex=0; 
+                }
+            }
+            
+            function fillForm(data) {
+                // 各言語フィールドに値をセット
+                const langs = ['ja', 'en', 'de', 'fr', 'es'];
+                const fields = ['Project', 'Title', 'Body']; // Title=お知らせ, Body=アプリ紹介
+                
+                langs.forEach(lang => {
+                    const suffix = lang === 'ja' ? '' : lang.charAt(0).toUpperCase() + lang.slice(1);
+                    document.getElementById('inProject' + suffix).value = data['project_' + lang] || "";
+                    document.getElementById('inTitle' + suffix).value = data['title_' + lang] || "";
+                    document.getElementById('inBody' + suffix).value = data['body_' + lang] || "";
+                });
+                
+                setImageValue(data.image || "");
+                
+                // ステータスラジオボタン
+                if (data.status) {
+                    const radio = document.querySelector(`input[name="appStatus"][value="${data.status}"]`);
+                    if(radio) radio.checked = true;
+                }
+                
+                // IDセット
+                currentProjectId = data.project_id;
+                updatePreview();
+                checkProjectImages(data.project_id);
+                checkProjectUrl(data.project_id);
+            }
+            
+            // 入力同期: 英語プロジェクト名が変わったらIDを生成して画像/プレビューをチェック
+            document.getElementById('inProjectEn').addEventListener('input', async function() {
+                const enName = this.value.trim();
+                if (enName) {
+                    // ID生成: 小文字化、スペースをアンダースコアに
+                    currentProjectId = enName.replace(/\s+/g, '_').toLowerCase();
+                    await checkProjectImages(currentProjectId); // 画像フォルダチェック
+                    checkProjectUrl(currentProjectId); // iframeチェック
+                }
+                updatePreview();
             });
-            setImageValue(data.image || "");
-            if (data.status) {
-                const radio = document.querySelector(`input[name="appStatus"][value="${data.status}"]`);
-                if(radio) radio.checked = true;
+            
+            // --- 画像選択ロジック ---
+            let currentImageList = [];
+            
+            async function checkProjectImages(projectId) {
+                const token = localStorage.getItem('gh_token');
+                if (!token) return;
+            
+                // [project_id] フォルダの内容を確認
+                try {
+                    const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${projectId}`, {
+                        headers: { Authorization: `token ${token}` }
+                    });
+                    
+                    if (res.ok) {
+                        const files = await res.json();
+                        // pngファイルだけ抽出
+                        const pngs = files.filter(f => f.name.endsWith('.png')).map(f => f.name);
+                        if (pngs.length > 0) {
+                            // プロジェクト専用画像リストを使用
+                            renderImageSelector(pngs, projectId + "/");
+                            return;
+                        }
+                    }
+                } catch (e) { console.log("New project folder not found, using default."); }
+            
+                // フォルダがない、または画像がない場合はデフォルトを使用
+                const list = (typeof photoList !== 'undefined') ? photoList : ["no_image.png"];
+                renderImageSelector(list, "index_phot/");
             }
-            // IDセット
-            currentProjectId = data.project_id;
-            updatePreview();
-            checkProjectImages(data.project_id);
-            checkProjectUrl(data.project_id);
-        }
-
-        // 英語名入力でID生成
-        document.getElementById('inProjectEn').addEventListener('input', async function() {
-            const enName = this.value.trim();
-            if (enName) {
-                currentProjectId = enName.replace(/\s+/g, '_').toLowerCase();
-                await checkProjectImages(currentProjectId);
-                checkProjectUrl(currentProjectId);
+            
+            function initImageSelector() {
+                const list = (typeof photoList !== 'undefined') ? photoList : ["no_image.png"];
+                renderImageSelector(list, "index_phot/");
             }
-            updatePreview();
-        });
-
-        // --- 画像処理 ---
-        async function checkProjectImages(projectId) {
-            const token = localStorage.getItem('gh_token');
-            if (!token) return;
-            try {
-                const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${projectId}`, {
+            
+            function renderImageSelector(list, basePath) {
+                const c = document.getElementById('imageOptions'); c.innerHTML='';
+                list.forEach(n => {
+                    const d=document.createElement('div'); d.className='custom-option';
+                    // フルパスをセットする
+                    const fullPath = basePath + n;
+                    d.onclick=()=>{ selectImage(fullPath, n) }; 
+                    d.innerHTML=`<img src="${fullPath}" class="option-img"><span class="option-text">${n}</span>`;
+                    c.appendChild(d);
+                });
+            }
+            
+            function toggleImageSelect(){ document.querySelector('.custom-select').classList.toggle('open'); }
+            function selectImage(p, n){ 
+                document.getElementById('inImage').value = p; 
+                document.getElementById('selectedImageText').textContent = n; 
+                document.querySelector('.custom-select').classList.remove('open'); 
+                updatePreview(); 
+            }
+            function setImageValue(p){ 
+                document.getElementById('inImage').value=p; 
+                document.getElementById('selectedImageText').textContent=p.split('/').pop()||"画像を選択..."; 
+            }
+            window.onclick=e=>{ if(!e.target.closest('.custom-select')) document.querySelector('.custom-select').classList.remove('open'); }
+            
+            
+            // --- プレビューロジック ---
+            function checkProjectUrl(projectId) {
+                // 簡易ロジック: adminMasterDataにIDがあれば「既存」とみなしてiframe表示
+                const exists = typeof adminMasterData !== 'undefined' && adminMasterData.some(d => d.project_id === projectId);
+                const iframe = document.getElementById('prevIframe');
+                const realPreview = document.getElementById('realPagePreview');
+                const simPreview = document.getElementById('simulatedPagePreview');
+                
+                if (exists) {
+                    realPreview.style.display = 'block';
+                    simPreview.style.display = 'none';
+                    iframe.src = `https://${GITHUB_CONFIG.owner.toLowerCase()}.github.io/${GITHUB_CONFIG.repo}/${projectId}/index.html`;
+                } else {
+                    realPreview.style.display = 'none';
+                    simPreview.style.display = 'block';
+                }
+            }
+            
+            function updatePreview() {
+                const date = document.getElementById('inDate').value;
+                const cat = document.getElementById('inCategory').value;
+                const img = document.getElementById('inImage').value;
+                const s = previewLang==='ja'?'':previewLang.charAt(0).toUpperCase()+previewLang.slice(1);
+                
+                const proj = document.getElementById('inProject'+s).value || "Project";
+                const title = document.getElementById('inTitle'+s).value || "Title";
+                const body = document.getElementById('inBody'+s).value || "App Intro Body...";
+                const statusRadio = document.querySelector('input[name="appStatus"]:checked');
+                const isComingSoon = statusRadio && statusRadio.value === 'coming';
+            
+                // 1. お知らせリスト (Titleを表示)
+                document.getElementById('prevDate').textContent=date;
+                document.getElementById('prevTitle').textContent=title;
+                document.getElementById('prevProjectName').textContent=proj;
+                const tag = document.getElementById('prevTag');
+                tag.className='news-tag tag-'+cat;
+                // 多言語マッピング省略
+                tag.textContent = cat; 
+            
+                // 画像
+                const setImg = (id) => {
+                    const el = document.getElementById(id); el.src=img;
+                    el.style.display = img ? 'block' : 'none';
+                };
+                setImg('prevImg'); setImg('prevAppImg'); setImg('prevPageImg');
+            
+                // 2. 最新の活動 (Titleを表示)
+                const card1 = document.getElementById('prevHighlightCard');
+                // リリース枠以外は少し薄くするなどの処理があればここに
+                if(['release','start','steam'].includes(cat)) { card1.classList.remove('dimmed'); } else { card1.classList.add('dimmed'); }
+    
+                document.getElementById('prevCardTitle').textContent=title;
+                document.getElementById('prevCardProj').textContent=proj;
+                document.getElementById('prevCardDate').textContent=date;
+                const badge = document.getElementById('prevCardCatBadge');
+                badge.textContent=cat; badge.className='highlight-category-badge tag-'+cat;
+                
+                // 3. アプリ紹介 (Bodyを表示)
+                document.getElementById('prevAppProj').textContent = proj;
+                document.getElementById('prevAppDesc').textContent = body; // ここは紹介文
+                const appImg = document.getElementById('prevAppImg');
+                const overlay = document.getElementById('comingSoonOverlay');
+                if(isComingSoon) { appImg.classList.add('coming-soon-mode'); overlay.style.display = 'block'; } else { appImg.classList.remove('coming-soon-mode'); overlay.style.display = 'none'; }
+            
+                // 4. 詳細ページ (シミュレーション)
+                document.getElementById('prevPageTitle').textContent=title;
+                document.getElementById('prevPageDate').textContent=date;
+                document.getElementById('prevPageProject').textContent=proj;
+                document.getElementById('prevBody').innerHTML=title; // 詳細ページではニュース本文(＝お知らせ)を表示
+            }
+            
+            // --- ★核心：保存ロジック ---
+            async function saveToGitHub() {
+                const token = localStorage.getItem("gh_token");
+                if (!token) { alert("認証が必要です"); return; }
+            
+                // 1. プロジェクトIDチェック
+                const projectEn = document.getElementById('inProjectEn').value.trim();
+                if (!projectEn) { alert("⚠️ 英語のプロジェクト名を入力してください（ID生成に必要です）"); return; }
+                
+                const projectId = projectEn.replace(/\s+/g, '_').toLowerCase();
+                
+                if(!confirm(`以下のIDで保存処理を開始します。\nProject ID: ${projectId}\n\nよろしいですか？`)) return;
+            
+                // 入力データの収集
+                const inputData = getInputData(projectId);
+            
+                try {
+                    // --- A. admin_master.js (管理者用・上書き) ---
+                    let newMasterData = (typeof adminMasterData !== 'undefined') ? [...adminMasterData] : [];
+                    const idx = newMasterData.findIndex(d => d.project_id === projectId);
+                    if(idx >= 0) newMasterData[idx] = inputData.master; // 上書き
+                    else newMasterData.push(inputData.master); // 新規
+                    
+                    await writeJsFile('admin_master.js', newMasterData, "Update admin_master");
+            
+                    // --- B. index_news.js (トップ用・速報) ---
+                    let indexNews = (typeof indexNewsData !== 'undefined') ? [...indexNewsData] : [];
+                    indexNews.unshift(inputData.indexItem);
+                    
+                    // リリース枠(10)と更新枠(10)に分けて抽出
+                    const releaseCats = ['release', 'start', 'steam'];
+                    const updateCats = ['update', 'game'];
+                    
+                    const releases = indexNews.filter(i => releaseCats.includes(i.category)).slice(0, 10);
+                    const updates = indexNews.filter(i => updateCats.includes(i.category)).slice(0, 10);
+                    const newIndexNews = [...releases, ...updates];
+                    
+                    await writeJsFile('index_news.js', newIndexNews, "Update index_news");
+            
+                    // --- C. apps_catalog.js (一覧用・カタログ) ---
+                    let catalog = (typeof appsCatalogData !== 'undefined') ? [...appsCatalogData] : [];
+                    const catIdx = catalog.findIndex(d => d.project_id === projectId);
+                    if(catIdx >= 0) catalog[catIdx] = inputData.catalogItem;
+                    else catalog.push(inputData.catalogItem);
+                    
+                    await writeJsFile('apps_catalog.js', catalog, "Update apps_catalog");
+            
+                    // --- D. [id]/news.js (個別最新3件) ---
+                    const newsPath = `${projectId}/news.js`;
+                    let currentAppNews = await fetchExistingJs(newsPath) || [];
+                    currentAppNews.unshift(inputData.newsItem);
+                    const newAppNews = currentAppNews.slice(0, 3); // 最新3件
+                    
+                    await writeJsFile(newsPath, newAppNews, `Update ${projectId} news`);
+            
+                    // --- E. [id]/old_news.js (アーカイブ) ---
+                    const oldNewsPath = `${projectId}/old_news.js`;
+                    let currentOldNews = await fetchExistingJs(oldNewsPath) || [];
+                    currentOldNews.unshift(inputData.newsItem); // 全件保存（削除なし）
+                    
+                    await writeJsFile(oldNewsPath, currentOldNews, `Update ${projectId} archive`);
+            
+                    // --- F. 画像コピー & HTML生成 (新規プロジェクト時) ---
+                    // 画像パスが index_phot/ 始まりなら、それを [id]/index.png にコピー
+                    if (inputData.master.image.startsWith('index_phot/')) {
+                        await copyImageToProject(inputData.master.image, `${projectId}/index.png`);
+                    }
+            
+                    // HTML生成 ([id]/index.html がなければ作成)
+                    await createProjectHtml(projectId);
+            
+                    alert("✅ 全てのデータの保存が完了しました！");
+                    // データをリロード（簡易リロード）
+                    location.reload();
+            
+                } catch (err) {
+                    console.error(err);
+                    alert("❌ 保存中にエラーが発生しました:\n" + err.message);
+                }
+            }
+            
+            // データ収集ヘルパー
+            function getInputData(pid) {
+                const date = document.getElementById('inDate').value;
+                const cat = document.getElementById('inCategory').value;
+                const img = document.getElementById('inImage').value; // フルパス
+                const status = document.querySelector('input[name="appStatus"]:checked').value;
+                
+                // 多言語データの取得
+                const langs = ['ja', 'en', 'de', 'fr', 'es'];
+                let names={}, titles={}, bodies={};
+                langs.forEach(l => {
+                    const s = l==='ja'?'':l.charAt(0).toUpperCase()+l.slice(1);
+                    names['project_'+l] = document.getElementById('inProject'+s).value;
+                    titles['title_'+l] = document.getElementById('inTitle'+s).value; // お知らせ
+                    bodies['body_'+l] = document.getElementById('inBody'+s).value; // アプリ紹介
+                });
+            
+                // 1. Master用 (全部入り)
+                const master = { project_id: pid, date, category: cat, image: img, status, ...names, ...titles, ...bodies };
+            
+                // 2. Index用 (お知らせ重視・紹介文なし・画像は固定パス化)
+                const indexItem = {
+                    id: Date.now(), // 一意のID
+                    date, category: cat,
+                    image: `${pid}/index.png`, // 固定パス
+                    link: `${pid}/index.html`,
+                    ...names, ...titles // 紹介文なし
+                };
+            
+                // 3. Catalog用 (紹介文重視・お知らせなし)
+                const catalogItem = {
+                    project_id: pid,
+                    status,
+                    image: `${pid}/index.png`,
+                    ...names, ...bodies // お知らせなし
+                };
+            
+                // 4. AppNews用 (お知らせのみ)
+                const newsItem = {
+                    date, category: cat,
+                    ...titles // お知らせのみ
+                };
+            
+                return { master, indexItem, catalogItem, newsItem };
+            }
+            
+            // GitHub API ヘルパー: ファイル書き込み
+            async function writeJsFile(path, dataObj, msg) {
+                const token = localStorage.getItem("gh_token");
+                // 既存ファイルのSHAを取得して上書き
+                let sha = null;
+                try {
+                    const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
+                        headers: { Authorization: `token ${token}` }
+                    });
+                    if (res.ok) {
+                        const json = await res.json();
+                        sha = json.sha;
+                    }
+                } catch(e) {}
+            
+                // JSファイル形式に変換
+                // pathから変数名を推測 (簡易的)
+                let varName = "data";
+                if(path.includes("admin_master")) varName = "adminMasterData";
+                else if(path.includes("index_news")) varName = "indexNewsData";
+                else if(path.includes("apps_catalog")) varName = "appsCatalogData";
+                else if(path.includes("old_news")) varName = "oldNewsData"; // 先に判定
+                else if(path.includes("news")) varName = "newsData";
+            
+                const contentStr = `const ${varName} = ${JSON.stringify(dataObj, null, 4)};`;
+                const encoded = btoa(unescape(encodeURIComponent(contentStr)));
+            
+                const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
+                    method: "PUT",
+                    headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: msg, content: encoded, sha: sha })
+                });
+                if (!res.ok) throw new Error(`Failed to write ${path}`);
+            }
+            
+            // GitHub API ヘルパー: 既存JSの読み込み
+            async function fetchExistingJs(path) {
+                const token = localStorage.getItem("gh_token");
+                try {
+                    const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
+                        headers: { Authorization: `token ${token}` } // キャッシュ回避推奨
+                    });
+                    if (!res.ok) return null;
+                    const json = await res.json();
+                    const content = decodeURIComponent(escape(atob(json.content)));
+                    // JSON部分を抽出
+                    const match = content.match(/\[.*\]/s); // 配列を探す
+                    if (match) return JSON.parse(match[0]);
+                } catch (e) { console.log("File not found or parse error:", path); }
+                return null;
+            }
+            
+            // 画像コピー
+            async function copyImageToProject(srcPath, destPath) {
+                const token = localStorage.getItem("gh_token");
+                // 1. 元画像をバイナリ(Blob->Base64)で取得
+                const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${srcPath}`, {
                     headers: { Authorization: `token ${token}` }
                 });
-                if (res.ok) {
-                    const files = await res.json();
-                    const pngs = files.filter(f => f.name.endsWith('.png')).map(f => f.name);
-                    if (pngs.length > 0) { renderImageSelector(pngs, projectId + "/"); return; }
-                }
-            } catch (e) { }
-            initImageSelector(); // フォールバック
-        }
-
-        function initImageSelector() {
-            const list = (typeof photoList !== 'undefined') ? photoList : ["no_image.png"];
-            renderImageSelector(list, "index_phot/");
-        }
-
-        function renderImageSelector(list, basePath) {
-            const c = document.getElementById('imageOptions'); c.innerHTML='';
-            list.forEach(n => {
-                const d=document.createElement('div'); d.className='custom-option';
-                const fullPath = basePath + n;
-                d.onclick=()=>{ selectImage(fullPath, n) }; 
-                d.innerHTML=`<img src="${fullPath}" class="option-img"><span class="option-text">${n}</span>`;
-                c.appendChild(d);
-            });
-        }
-
-        function toggleImageSelect(){ document.querySelector('.custom-select').classList.toggle('open'); }
-        function selectImage(p, n){ document.getElementById('inImage').value = p; document.getElementById('selectedImageText').textContent = n; document.querySelector('.custom-select').classList.remove('open'); updatePreview(); }
-        function setImageValue(p){ document.getElementById('inImage').value=p; document.getElementById('selectedImageText').textContent=p.split('/').pop()||"画像を選択..."; }
-        window.onclick=e=>{ if(!e.target.closest('.custom-select')) document.querySelector('.custom-select').classList.remove('open'); }
-
-        // --- プレビュー ---
-        function checkProjectUrl(projectId) {
-            // adminMasterDataに存在するかで判断
-            const exists = typeof adminMasterData !== 'undefined' && adminMasterData.some(d => d.project_id === projectId);
-            const iframe = document.getElementById('prevIframe');
-            const real = document.getElementById('realPagePreview');
-            const sim = document.getElementById('simulatedPagePreview');
+                if(!res.ok) return; // 画像がない
+                const data = await res.json();
+                const content = data.content; // Base64のまま
             
-            if (exists) {
-                real.style.display = 'block'; sim.style.display = 'none';
-                iframe.src = `https://${GITHUB_CONFIG.owner.toLowerCase()}.github.io/${GITHUB_CONFIG.repo}/${projectId}/index.html`;
-            } else {
-                real.style.display = 'none'; sim.style.display = 'block';
+                // 2. 宛先に書き込み (存在チェックして上書きするか、常にするか。ここでは常に上書き)
+                let sha = null;
+                try {
+                    const check = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${destPath}`, {
+                         headers: { Authorization: `token ${token}` }
+                    });
+                    if(check.ok) sha = (await check.json()).sha;
+                } catch(e){}
+            
+                await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${destPath}`, {
+                    method: "PUT",
+                    headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        message: "Copy image to project folder",
+                        content: content,
+                        sha: sha
+                    })
+                });
             }
-        }
-
-        function updatePreview() {
-            const date = document.getElementById('inDate').value;
-            const cat = document.getElementById('inCategory').value;
-            const img = document.getElementById('inImage').value;
-            const s = previewLang==='ja'?'':previewLang.charAt(0).toUpperCase()+previewLang.slice(1);
             
-            const proj = document.getElementById('inProject'+s).value || "Project";
-            const title = document.getElementById('inTitle'+s).value || "Title";
-            const body = document.getElementById('inBody'+s).value || "App Intro...";
-            const isComing = document.querySelector('input[name="appStatus"]:checked').value === 'coming';
-
-            // お知らせ
-            document.getElementById('prevDate').textContent=date;
-            document.getElementById('prevTitle').textContent=title;
-            document.getElementById('prevProjectName').textContent=proj;
-            const tag = document.getElementById('prevTag');
-            tag.className='news-tag tag-'+cat; tag.textContent=cat;
-
-            // 画像
-            const setImg = (id) => { const el = document.getElementById(id); el.src=img; el.style.display=img?'block':'none'; };
-            setImg('prevImg'); setImg('prevAppImg'); setImg('prevPageImg');
-
-            // カード1
-            document.getElementById('prevCardTitle').textContent=title;
-            document.getElementById('prevCardProj').textContent=proj;
-            document.getElementById('prevCardDate').textContent=date;
-            const badge = document.getElementById('prevCardCatBadge');
-            badge.textContent=cat; badge.className='highlight-category-badge tag-'+cat;
-
-            // カード2
-            document.getElementById('prevAppProj').textContent=proj;
-            document.getElementById('prevAppDesc').textContent=body;
-            const appImg = document.getElementById('prevAppImg');
-            const ov = document.getElementById('comingSoonOverlay');
-            if(isComing){ appImg.classList.add('coming-soon-mode'); ov.style.display='block'; } else { appImg.classList.remove('coming-soon-mode'); ov.style.display='none'; }
-
-            // 詳細ページ
-            document.getElementById('prevPageTitle').textContent=title;
-            document.getElementById('prevPageDate').textContent=date;
-            document.getElementById('prevPageProject').textContent=proj;
-            document.getElementById('prevBody').innerHTML=title; // ニュース本文＝タイトル
-        }
-
-        // --- ★保存ロジック ---
-        async function saveToGitHub() {
-            const token = localStorage.getItem("gh_token");
-            if (!token) { alert("認証が必要です"); return; }
-
-            const projectEn = document.getElementById('inProjectEn').value.trim();
-            if (!projectEn) { alert("⚠️ 英語のプロジェクト名を入力してください（ID生成に必要です）"); return; }
-            const projectId = projectEn.replace(/\s+/g, '_').toLowerCase();
-            
-            if(!confirm(`ID: ${projectId}\nで保存します。よろしいですか？`)) return;
-
-            const inputData = getInputData(projectId);
-
-            try {
-                // 1. admin_master.js (上書き)
-                let newMaster = [...adminMasterData];
-                const idx = newMaster.findIndex(d => d.project_id === projectId);
-                if(idx >= 0) newMaster[idx] = inputData.master; else newMaster.push(inputData.master);
-                await writeJsFile('admin_master.js', newMaster, "Update admin_master");
-
-                // 2. index_news.js (追記＆フィルタ)
-                let indexNews = (typeof indexNewsData !== 'undefined') ? [...indexNewsData] : [];
-                indexNews.unshift(inputData.indexItem);
+            // HTMLテンプレート作成
+            async function createProjectHtml(projectId) {
+                const path = `${projectId}/index.html`;
+                const token = localStorage.getItem("gh_token");
                 
-                const releases = indexNews.filter(i => ['release','start','steam'].includes(i.category)).slice(0, 10);
-                const updates = indexNews.filter(i => ['update','game'].includes(i.category)).slice(0, 10);
-                await writeJsFile('index_news.js', [...releases, ...updates], "Update index_news");
-
-                // 3. apps_catalog.js (上書き)
-                let catalog = (typeof appsCatalogData !== 'undefined') ? [...appsCatalogData] : [];
-                const cIdx = catalog.findIndex(d => d.project_id === projectId);
-                if(cIdx >= 0) catalog[cIdx] = inputData.catalogItem; else catalog.push(inputData.catalogItem);
-                await writeJsFile('apps_catalog.js', catalog, "Update apps_catalog");
-
-                // 4. [id]/news.js (個別最新3件)
-                const newsPath = `${projectId}/news.js`;
-                let appNews = await fetchExistingJs(newsPath) || [];
-                appNews.unshift(inputData.newsItem);
-                await writeJsFile(newsPath, appNews.slice(0, 3), `Update ${projectId} news`);
-
-                // 5. [id]/old_news.js (アーカイブ)
-                const oldNewsPath = `${projectId}/old_news.js`;
-                let oldNews = await fetchExistingJs(oldNewsPath) || [];
-                oldNews.unshift(inputData.newsItem);
-                await writeJsFile(oldNewsPath, oldNews, `Update ${projectId} archive`);
-
-                // 6. 画像とHTML
-                if (inputData.master.image.startsWith('index_phot/')) {
-                    await copyImageToProject(inputData.master.image, `${projectId}/index.png`);
+                // 既に存在するかチェック
+                const check = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
+                     headers: { Authorization: `token ${token}` }
+                });
+                if(check.ok) return; // 既にあるなら何もしない
+            
+                // テンプレートHTML (scriptタグのエスケープ処理済み)
+                const htmlContent = `<!DOCTYPE html>
+            <html lang="ja">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>${projectId}</title>
+                <!-- 共通CSSやJSを読み込む -->
+                <script src="news.js"><\/script>
+            </head>
+            <body>
+                <h1>App Page: ${projectId}</h1>
+                <p>This page was automatically generated.</p>
+                <div id="news-container"></div>
+                <script>
+                    // newsDataを使って表示するロジック
+                    const container = document.getElementById('news-container');
+                    if(typeof newsData !== 'undefined'){
+                        newsData.forEach(item => {
+                            const div = document.createElement('div');
+                            div.className = 'news-box';
+                            div.style.marginBottom = '10px';
+                            div.innerHTML = '<b>' + item.date + '</b>: ' + (item.title_ja || item.title_en);
+                            container.appendChild(div);
+                        });
+                    }
+                <\/script>
+            </body>
+            </html>`;
+            
+                const encoded = btoa(unescape(encodeURIComponent(htmlContent)));
+                
+                await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
+                    method: "PUT",
+                    headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        message: "Create project homepage",
+                        content: encoded
+                    })
+                });
+            }
+            
+            // --- ユーザー管理・計算 (復元済み) ---
+            function renderUserList() {
+                const list = document.getElementById('userList');
+                if(!list) return;
+                list.innerHTML = '';
+                if (typeof allowedUsersData !== 'undefined') {
+                    allowedUsersData.forEach((user, index) => {
+                        const li = document.createElement('li');
+                        li.style = "display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid #444; color:#fff;";
+                        li.innerHTML = `<span>${user}</span><button style="background:#c0392b; width:auto; padding:2px 8px; font-size:0.8rem; margin:0;" onclick="removeUser(${index})">削除</button>`;
+                        list.appendChild(li);
+                    });
                 }
-                await createProjectHtml(projectId);
-
-                alert("✅ 全ての保存が完了しました！");
-                location.reload();
-
-            } catch (err) { alert("❌ エラー: " + err.message); console.error(err); }
-        }
-
-        function getInputData(pid) {
-            const date = document.getElementById('inDate').value;
-            const cat = document.getElementById('inCategory').value;
-            const img = document.getElementById('inImage').value;
-            const status = document.querySelector('input[name="appStatus"]:checked').value;
+            }
+            function addUser() {
+                const input = document.getElementById('newUserId');
+                const id = input.value.trim();
+                if(!id) return;
+                if(allowedUsersData.includes(id)) { alert("既に登録されています"); return; }
+                allowedUsersData.push(id);
+                input.value = '';
+                renderUserList();
+            }
+            function removeUser(index) {
+                if(confirm("削除しますか？")) { allowedUsersData.splice(index, 1); renderUserList(); }
+            }
+            async function saveUsersToGitHub() {
+                const token = localStorage.getItem("gh_token");
+                if (!token) { alert("認証が必要です"); return; }
+                if(!confirm("GitHub上の allowed_users.js を更新します。よろしいですか？")) return;
+                const jsonString = JSON.stringify(allowedUsersData, null, 4);
+                const content = `// 編集権限を持つユーザーリスト\nconst allowedUsersData = ${jsonString};`;
+                const encodedContent = btoa(unescape(encodeURIComponent(content)));
+                try {
+                    const getRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/allowed_users.js`, { headers: { Authorization: `token ${token}` } });
+                    const fileData = await getRes.json();
+                    const putRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/allowed_users.js`, {
+                        method: "PUT",
+                        headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                        body: JSON.stringify({ message: "Update allowed users list", content: encodedContent, sha: fileData.sha })
+                    });
+                    if (putRes.ok) alert("権限設定を更新しました！"); else alert("保存に失敗しました。");
+                } catch (err) { alert("エラー: " + err.message); }
+            }
+    
+            function calcSeconds() {
+                const adPrice = parseFloat(document.getElementById('adPrice').value);
+                const callCost = parseFloat(document.getElementById('callCost').value);
+                const margin = parseFloat(document.getElementById('margin').value);
+                const costPerSec = callCost / 60;
+                const profit = adPrice * (margin / 100);
+                const seconds = Math.floor((adPrice - profit) / costPerSec);
+                document.getElementById('calcOutput').innerText = seconds + " 秒";
+            }
             
-            const langs = ['ja', 'en', 'de', 'fr', 'es'];
-            let names={}, titles={}, bodies={};
-            langs.forEach(l => {
-                const s = l==='ja'?'':l.charAt(0).toUpperCase()+l.slice(1);
-                names['project_'+l] = document.getElementById('inProject'+s).value;
-                titles['title_'+l] = document.getElementById('inTitle'+s).value;
-                bodies['body_'+l] = document.getElementById('inBody'+s).value;
-            });
-
-            // マスタ(全部入り)
-            const master = { project_id: pid, date, category: cat, image: img, status, ...names, ...titles, ...bodies };
-            // Index(お知らせ重視)
-            const indexItem = { id: Date.now(), date, category: cat, image: `${pid}/index.png`, link: `${pid}/index.html`, ...names, ...titles };
-            // Catalog(紹介文重視)
-            const catalogItem = { project_id: pid, status, image: `${pid}/index.png`, ...names, ...bodies };
-            // News(お知らせのみ)
-            const newsItem = { date, category: cat, ...titles };
-
-            return { master, indexItem, catalogItem, newsItem };
-        }
-
-        async function writeJsFile(path, dataObj, msg) {
-            const token = localStorage.getItem("gh_token");
-            let sha = null;
-            try {
-                const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, { headers: { Authorization: `token ${token}` } });
-                if(res.ok) sha = (await res.json()).sha;
-            } catch(e){}
-
-            // 変数名判定（順番重要）
-            let varName = "data";
-            if(path.includes("admin_master")) varName = "adminMasterData";
-            else if(path.includes("index_news")) varName = "indexNewsData";
-            else if(path.includes("apps_catalog")) varName = "appsCatalogData";
-            else if(path.includes("old_news")) varName = "oldNewsData"; // 先に判定
-            else if(path.includes("news")) varName = "newsData";
-
-            const content = `const ${varName} = ${JSON.stringify(dataObj, null, 4)};`;
-            const encoded = btoa(unescape(encodeURIComponent(content)));
-
-            const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
-                method: "PUT",
-                headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
-                body: JSON.stringify({ message: msg, content: encoded, sha: sha })
-            });
-            if (!res.ok) throw new Error(`Failed to write ${path}`);
-        }
-
-        async function fetchExistingJs(path) {
-            const token = localStorage.getItem("gh_token");
-            try {
-                const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, { headers: { Authorization: `token ${token}` } });
-                if (!res.ok) return null;
-                const json = await res.json();
-                const content = decodeURIComponent(escape(atob(json.content)));
-                const match = content.match(/\[.*\]/s);
-                if (match) return JSON.parse(match[0]);
-            } catch (e) { }
-            return null;
-        }
-
-        async function copyImageToProject(src, dest) {
-            const token = localStorage.getItem("gh_token");
-            const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${src}`, { headers: { Authorization: `token ${token}` } });
-            if(!res.ok) return;
-            const data = await res.json();
-            
-            let sha = null;
-            try {
-                const check = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${dest}`, { headers: { Authorization: `token ${token}` } });
-                if(check.ok) sha = (await check.json()).sha;
-            } catch(e){}
-
-            await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${dest}`, {
-                method: "PUT",
-                headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
-                body: JSON.stringify({ message: "Copy image", content: data.content, sha: sha })
-            });
-        }
-
-        async function createProjectHtml(pid) {
-            const path = `${pid}/index.html`;
-            const token = localStorage.getItem("gh_token");
-            const check = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, { headers: { Authorization: `token ${token}` } });
-            if(check.ok) return;
-
-            // 自動生成HTML (テンプレート)
-            const html = `<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${pid}</title>
-    <!-- 個別ニュースデータ読み込み -->
-    <script src="news.js"></script>
-    <style>
-        body { font-family: sans-serif; padding: 20px; background: #f0f0f0; }
-        .news-box { background: white; padding: 15px; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .date { color: #888; font-size: 0.8rem; }
-    </style>
-</head>
-<body>
-    <h1>Project: ${pid}</h1>
-    <div id="news-container"></div>
-    <script>
-        // newsDataを表示する簡易スクリプト
-        const container = document.getElementById('news-container');
-        if(typeof newsData !== 'undefined'){
-            newsData.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'news-box';
-                div.innerHTML = \`<div class="date">\${item.date} [\${item.category}]</div><h3>\${item.title_ja || item.title_en}</h3>\`;
-                container.appendChild(div);
-            });
-        }
-    </script>
-</body>
-</html>`;
+            // addPostは一時保存用（メモリ内）
+            function addPost() { alert("一時保存しました（ページリロードで消えます）"); }
+        </script>
+    </body>
+    </html>
             const encoded = btoa(unescape(encodeURIComponent(html)));
             await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
                 method: "PUT",
