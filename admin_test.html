@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KEI Lab マスター・コックピット</title>
 
+    <!-- 必要なデータの読み込み -->
     <script src="admin_master.js"></script>
     <script src="allowed_users.js"></script>
     <script src="index_phot.js"></script>
@@ -12,247 +13,148 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700;900&family=Roboto:wght@400;500;900&display=swap');
 
-        /* --- 全体レイアウト --- */
+        /* --- 基本スタイル --- */
         body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Arial, sans-serif; background: #1e1e1e; color: #ddd; height: 100vh; overflow: hidden; }
         #mainWrapper { display: none; height: 100%; }
 
         /* --- ログイン画面 --- */
         #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #2c3e50; z-index: 9999; display: flex; justify-content: center; align-items: center; }
-        .login-container-split { display: flex; width: 850px; height: 550px; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-        .login-left { width: 40%; padding: 40px; display: flex; flex-direction: column; justify-content: center; background: #f9f9f9; border-right: 1px solid #eee; }
-        .login-left input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ccc; border-radius: 5px; }
-        .login-left button { width: 100%; padding: 12px; background: #0056b3; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .login-left button:hover { background: #003d82; }
-        .login-right { width: 60%; padding: 40px; overflow-y: auto; color: #333; line-height: 1.6; }
-        .login-right h3 { border-bottom: 2px solid #0056b3; padding-bottom: 10px; margin-top: 0; }
-        .login-right ol { padding-left: 20px; margin-bottom: 20px; }
-        .login-right li { margin-bottom: 8px; font-size: 0.9rem; }
-        .warning-box { background: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 10px; border-radius: 5px; font-size: 0.85rem; margin-top: 15px; }
+        .login-box { display: flex; width: 850px; height: 550px; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .login-left { width: 40%; padding: 40px; background: #f9f9f9; border-right: 1px solid #eee; display: flex; flex-direction: column; justify-content: center; }
+        .login-right { width: 60%; padding: 40px; color: #333; overflow-y: auto; }
+        input[type="password"] { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        button { padding: 12px 20px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s; width: 100%; }
+        .btn-login { background: #0056b3; color: white; } .btn-login:hover { background: #003d82; }
 
-        /* --- メイン画面 --- */
-        .dashboard { display: grid; grid-template-columns: 250px 1fr; height: 100%; }
-        .sidebar { background: #252526; border-right: 1px solid #333; display: flex; flex-direction: column; padding: 10px; box-sizing: border-box; }
+        /* --- メインレイアウト --- */
+        .dashboard { display: grid; grid-template-columns: 260px 1fr; height: 100%; }
+        .sidebar { background: #252526; border-right: 1px solid #333; padding: 10px; display: flex; flex-direction: column; }
         .sidebar h1 { font-size: 1.2rem; color: #fff; margin: 20px 10px; border-bottom: 2px solid #007acc; padding-bottom: 10px; }
-        .menu-btn { padding: 15px; margin-bottom: 5px; cursor: pointer; border-radius: 5px; color: #aaa; font-weight: bold; transition: 0.2s; display: flex; align-items: center; gap: 10px; }
+        .menu-btn { padding: 15px; margin-bottom: 5px; cursor: pointer; border-radius: 5px; color: #aaa; font-weight: bold; display: flex; align-items: center; gap: 10px; }
         .menu-btn:hover { background: #3c3c3c; color: #fff; }
         .menu-btn.active { background: #007acc; color: white; }
-        .spacer { flex-grow: 1; min-height: 20px; border-bottom: 1px solid #333; margin-bottom: 10px; }
+        .spacer { flex-grow: 1; border-bottom: 1px solid #444; margin: 10px 0; }
 
         .main-content { position: relative; overflow: hidden; height: 100%; }
-        .panel { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; overflow-y: auto; padding: 30px; box-sizing: border-box; }
+        .panel { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; overflow-y: auto; padding: 0; }
         .panel.active { display: block; }
 
-        /* --- CMSレイアウト (40:60) --- */
-        .cms-layout { display: flex; height: 100%; gap: 0; }
-        .editor-area { width: 40%; overflow-y: auto; padding-right: 20px; height: 100%; box-sizing: border-box; }
-        .preview-area { width: 60%; background: #e0e0e0; color: #333; overflow-y: auto; padding: 20px; height: 100%; box-sizing: border-box; }
+        /* --- CMSエリア --- */
+        .cms-container { display: flex; height: 100%; }
+        .editor-col { width: 40%; padding: 30px; overflow-y: auto; background: #1e1e1e; border-right: 1px solid #333; box-sizing: border-box; }
+        .preview-col { width: 60%; padding: 30px; overflow-y: auto; background: #e0e0e0; color: #333; box-sizing: border-box; }
 
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-top: 5px; margin-bottom: 5px; font-weight: bold; font-size: 0.9rem; color: #aaa; }
-        /* ラベル行のフレックス設定（ステータススイッチ配置用） */
-        .label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-        .label-row label { margin: 0; }
-
+        /* フォーム部品 */
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9rem; color: #aaa; }
         input, select, textarea { width: 100%; padding: 10px; border: 1px solid #555; border-radius: 4px; box-sizing: border-box; font-size: 1rem; }
-        .input-white { background-color: #ffffff !important; color: #333 !important; border: 1px solid #ccc !important; font-weight: bold; }
+        .input-white { background-color: #fff !important; color: #333 !important; border: 1px solid #ccc !important; }
+        .input-readonly { background-color: #333 !important; color: #fff !important; border: 1px solid #555 !important; font-family: monospace; }
         
-        .row-group { display: flex; gap: 10px; }
-        .row-group > div { flex: 1; }
+        /* 履歴プルダウン */
+        .history-group { display: flex; }
+        .history-group input { flex: 1; border-radius: 4px 0 0 4px; }
+        .history-group select { flex: 1; border-radius: 0 4px 4px 0; background: #ddd; color: #0056b3; cursor: pointer; }
 
-        .input-group { display: flex; width: 100%; }
-        .input-group input { flex: 1; border-top-right-radius: 0 !important; border-bottom-right-radius: 0 !important; border-right: 0 !important; }
-        .input-group select { flex: 1; border-top-left-radius: 0 !important; border-bottom-left-radius: 0 !important; background-color: #e6e6e6 !important; color: #0056b3 !important; cursor: pointer; }
-
-        .editor-lang-tabs { display: flex; gap: 5px; margin-bottom: 15px; border-bottom: 1px solid #555; padding-bottom: 10px; }
-        .edit-tab { padding: 8px 15px; background: #333; color: #aaa; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        .edit-tab:hover { background: #444; color: #fff; }
-        .edit-tab.active { background: #007acc; color: white; }
-        
-        .lang-input-group { display: none; animation: fadeIn 0.3s; }
-        .lang-input-group.active { display: block; }
+        /* 言語タブ */
+        .lang-tabs { display: flex; gap: 5px; margin-bottom: 10px; border-bottom: 1px solid #555; padding-bottom: 10px; }
+        .tab-btn { padding: 6px 12px; background: #333; color: #aaa; border: none; border-radius: 4px; cursor: pointer; width: auto; }
+        .tab-btn.active { background: #007acc; color: white; }
+        .lang-group { display: none; } .lang-group.active { display: block; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* ステータススイッチ */
-        .status-switch { display: flex; gap: 10px; background: #333; padding: 2px 8px; border-radius: 4px; }
-        .status-label { color: #fff; font-size: 0.8rem; display: flex; align-items: center; gap: 5px; cursor: pointer; font-weight: normal; margin: 0; }
-        .status-label input { width: auto; margin: 0; }
+        /* 画像選択グリッド */
+        .img-select-trigger { padding: 10px; background: #fff; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; color: #333; display: flex; justify-content: space-between; align-items: center; }
+        .img-grid-container { 
+            display: none; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; 
+            background: #fff; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin-top: 5px; max-height: 200px; overflow-y: auto; 
+        }
+        .img-grid-container.open { display: grid; }
+        .img-option { cursor: pointer; text-align: center; border: 2px solid transparent; padding: 5px; border-radius: 4px; transition: 0.2s; }
+        .img-option:hover { background: #f0f8ff; border-color: #007acc; }
+        .img-option img { width: 60px; height: 60px; object-fit: cover; border-radius: 4px; display: block; margin: 0 auto; }
+        .img-option span { font-size: 0.7rem; color: #333; display: block; margin-top: 4px; word-break: break-all; }
 
-        /* 画像選択 */
-        .custom-select-wrapper { position: relative; user-select: none; width: 100%; }
-        .custom-select { position: relative; display: flex; flex-direction: column; }
-        .custom-select__trigger { position: relative; display: flex; align-items: center; justify-content: space-between; padding: 10px; font-size: 1rem; font-weight: bold; color: #333; background: #ffffff; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; }
+        /* プレビュー */
+        .preview-header { font-size: 1.1rem; border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-bottom: 20px; font-weight: bold; }
+        .preview-label { font-size: 0.8rem; color: #666; font-weight: bold; margin-top: 20px; margin-bottom: 5px; display: block; border-bottom: 1px dashed #999; }
         
-        /* 修正: グリッド表示に変更 */
-        .custom-options { 
-            position: absolute; display: block; top: 100%; left: 0; right: 0; 
-            border: 1px solid #ccc; border-top: 0; background: #fff; 
-            transition: all 0.3s; opacity: 0; visibility: hidden; pointer-events: none; z-index: 100; 
-            max-height: 400px; overflow-y: auto; border-radius: 0 0 4px 4px;
-            /* Grid設定 */
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-            gap: 10px;
-            padding: 10px;
-        }
-        .custom-select.open .custom-options { opacity: 1; visibility: visible; pointer-events: all; }
-        
-        /* 修正: アイテムを縦並び(画像上、文字下)に変更 */
-        .custom-option { 
-            position: relative; display: flex; flex-direction: column; align-items: center; text-align: center;
-            padding: 5px; border: 1px solid #eee; border-radius: 4px;
-            cursor: pointer; transition: all 0.2s; color: #333; 
-        }
-        .custom-option:hover { background-color: #f2f9fc; border-color: #0056b3; color: #0056b3; }
-        
-        /* 修正: 画像サイズを1.5倍(75px)に */
-        .option-img { 
-            width: 75px; height: 75px; 
-            object-fit: cover; border-radius: 4px; 
-            margin-bottom: 5px; /* 文字との隙間 */
-            border: 1px solid #ddd; 
-        }
-        .option-text { 
-            font-size: 0.8rem; font-weight: bold; 
-            word-break: break-all; /* 長いファイル名の折り返し */
-        }
+        .news-item-prev { display: flex; align-items: center; padding: 10px; background: #fff; border-radius: 4px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .tag-badge { font-size: 0.75rem; color: white; padding: 2px 8px; border-radius: 4px; margin: 0 10px; }
+        .tag-release { background: #0056b3; } .tag-update { background: #e67e22; }
 
-        /* --- プレビューエリア --- */
-        .preview-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-bottom: 10px; }
-        .preview-label { font-size: 0.8rem; color: #666; font-weight: bold; border-bottom: 1px dashed #999; display: block; margin-bottom: 10px; }
-        
-        .news-item { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #ccc; }
-        .news-date { font-family: 'Roboto', sans-serif; color: #666; width: 100px; font-size: 0.9rem; }
-        .news-tag { font-size: 0.8rem; padding: 2px 8px; border-radius: 4px; margin-right: 15px; color: white; width: 110px; text-align: center; }
-        .tag-release { background: #0056b3; } .tag-update  { background: #e67e22; } .tag-start   { background: #8e44ad; } .tag-steam   { background: #2c3e50; } .tag-game    { background: #27ae60; }
-        .news-link { text-decoration: none; color: #333; font-weight: 500; font-family: 'Noto Serif JP', serif; }
+        /* プレビュー：カード比較 */
+        .card-compare-row { display: flex; gap: 20px; flex-wrap: wrap; }
+        .card-box { flex: 1; min-width: 200px; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .card-img-area { height: 140px; background: #ddd; position: relative; }
+        .card-img-area img { width: 100%; height: 100%; object-fit: cover; }
+        .card-badge { position: absolute; bottom: 0; left: 0; background: #333; color: white; font-size: 0.7rem; padding: 2px 8px; border-top-right-radius: 5px; }
+        .card-content { padding: 10px; }
+        .card-title { font-weight: bold; font-size: 0.95rem; margin-bottom: 5px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .card-desc { font-size: 0.85rem; color: #555; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
 
-        .preview-split-row { display: flex; border: 1px solid #ccc; border-radius: 8px; overflow: hidden; margin-bottom: 30px; }
-        .split-col { flex: 1; padding: 15px; display: flex; flex-direction: column; align-items: center; }
-        .split-col.left { background: #f0f0f0; border-right: 1px solid #ddd; }
-        .split-col.right { background: #e8e8e8; }
+        /* プレビュー：詳細ページ (Iframe) */
+        .iframe-container { width: 100%; height: 500px; border: 1px solid #ccc; background: white; border-radius: 8px; margin-top: 10px; }
+        .iframe-placeholder { width: 100%; height: 500px; background: #fff; display: flex; justify-content: center; align-items: center; border-radius: 8px; color: #888; border: 1px dashed #aaa; }
+        .url-bar { background: #fff; padding: 5px 10px; border-radius: 4px; border: 1px solid #ccc; font-family: monospace; font-size: 0.85rem; color: #007acc; margin-bottom: 5px; display: flex; align-items: center; gap: 5px; }
 
-        /* 共通カードスタイル */
-        .highlight-card { width: 100%; max-width: 300px; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 1px solid rgba(0,0,0,0.05); }
-        .highlight-img-area { width: 100%; height: 160px; overflow: hidden; background: #eee; position: relative; }
-        .highlight-img { width: 100%; height: 100%; object-fit: cover; object-position: center; transition: opacity 0.3s; }
-        .highlight-category-badge { position: absolute; bottom: 0; left: 0; color: white; font-size: 0.8rem; padding: 4px 12px; border-top-right-radius: 8px; font-weight: bold; z-index: 2; }
-        
-        /* 最新の活動用 */
-        .highlight-card.dimmed { opacity: 0.4; }
-        .highlight-content-tight { padding: 5px 0 0 0; text-align: left; }
-        /* 修正: 18文字×3列 */
-        .highlight-title-tight { 
-            font-family: 'Noto Serif JP', serif; font-size: 1rem; font-weight: 900; color: #333; line-height: 1.5; margin: 0; 
-            width: 18em; /* 18文字幅 */
-            white-space: normal; /* 折り返し有効 */
-            display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
-            height: 4.5em; /* 1.5 * 3行 */
-        }
-        .highlight-meta { font-size: 0.75rem; color: #666; margin-bottom: 2px; font-family: 'Roboto', sans-serif; }
-
-        /* アプリ紹介用 */
-        .coming-soon-overlay { 
-            display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-10deg); 
-            font-size: 1.8rem; font-weight: 900; color: #fff; text-shadow: 2px 2px 0 #000, -1px -1px 0 #000; 
-            border: 3px solid #fff; padding: 5px 20px; box-shadow: 3px 3px 0 rgba(0,0,0,0.5); z-index: 10; pointer-events: none;
-        }
-        .highlight-img.coming-soon-mode { opacity: 0.5; filter: grayscale(50%); }
-
-        /* 修正: 左下一杯に配置・色付き枠 */
-        .project-name-badge {
-            position: absolute; bottom: 0; left: 0; z-index: 5;
-            background: #0056b3; /* 色付き枠 (青) */
-            color: #fff;
-            font-family: 'Roboto', sans-serif; font-weight: 900; font-size: 0.9rem;
-            padding: 5px 12px; 
-            border-top-right-radius: 8px; /* 右上だけ丸くして左下は直角 */
-            box-shadow: 2px -2px 5px rgba(0,0,0,0.3);
-            max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-
-        /* 修正: 余白削減・20文字×4列 */
-        .app-desc-content { padding: 8px 10px; text-align: left; } /* 余白削減 */
-        .app-desc-text {
-            font-family: 'Noto Serif JP', serif; font-size: 0.9rem; color: #444; line-height: 1.5;
-            width: 20em; /* 20文字幅 */
-            height: 6em; /* 1.5 * 4行 */
-            display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
-        }
-
-        .page-preview { font-family: 'Noto Serif JP', serif; line-height: 1.8; margin-top: 20px; background: white; padding: 20px; border-radius: 8px; }
-        .page-preview h1 { border-bottom: 3px solid #0056b3; display: inline-block; padding-bottom: 5px; margin-bottom: 20px; font-size: 1.5rem; }
-        .page-preview img { max-width: 100%; border-radius: 10px; margin: 20px 0; }
-        #prevBody, .news-link { white-space: pre-wrap; }
-
-        button { padding: 12px 20px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 10px; width: 100%; }
-        .btn-save { background: #27ae60; color: white; }
+        .btn-save { background: #27ae60; color: white; margin-top: 20px; }
         .btn-copy { background: #e67e22; color: white; margin-top: 20px; }
     </style>
 </head>
 <body>
+
+    <!-- ログイン -->
     <div id="loginOverlay">
-        <div class="login-container-split">
+        <div class="login-box">
             <div class="login-left">
                 <h2>🚀 KEI Lab Admin</h2>
                 <input type="password" id="tokenInput" placeholder="GitHub Token (ghp_...)">
-                <button onclick="checkIdentity()">ログイン</button>
-                <div id="authStatus"></div>
+                <button class="btn-login" onclick="checkIdentity()">ログイン</button>
+                <div id="authStatus" style="margin-top:10px; font-weight:bold;"></div>
             </div>
             <div class="login-right">
-                <h3>🔑 トークンの発行手順</h3>
-                <ol>
-                    <li><a href="https://github.com/settings/tokens" target="_blank" style="color:#007acc; font-weight:bold;">GitHub Token設定ページへ移動 ↗</a></li>
-                    <li>[Generate new token (classic)] を選択</li>
-                    <li>Expiration（期限）を設定（90 days推奨）</li>
-                    <li><strong>[repo]</strong> にチェックを入れる（必須）</li>
-                    <li>一番下の [Generate token] を押してコピー</li>
-                </ol>
-                <div class="warning-box">
-                    <strong>⚠️ 警告：</strong><br>
-                    トークンが漏洩した場合は、直ちにGitHub設定ページで該当トークンを削除（Revoke）してください。トークンがあれば誰でもサイトを書き換えられてしまいます。
-                </div>
+                <h3>🔑 初回設定と注意</h3>
+                <p>以下のファイルがリポジトリ直下に存在することを確認してください。</p>
+                <ul>
+                    <li><code>admin_master.js</code> (const adminMasterData = [];)</li>
+                    <li><code>index_news.js</code> (const indexNewsData = [];)</li>
+                    <li><code>apps_catalog.js</code> (const appsCatalogData = [];)</li>
+                    <li><code>allowed_users.js</code> (ユーザーIDリスト)</li>
+                </ul>
             </div>
         </div>
     </div>
 
+    <!-- メイン画面 -->
     <div id="mainWrapper">
         <div class="dashboard">
             <div class="sidebar">
                 <h1>🚀 KEI Lab Admin</h1>
-                <div class="menu-btn active" onclick="switchPanel('calc')">💰 収益・秒数計算</div>
-                <div class="menu-btn" onclick="switchPanel('cms')">📝 コンテンツ編集</div>
-                <div class="menu-btn" onclick="switchPanel('projects')">📂 全プロジェクト情報</div>
+                <div class="menu-btn active" onclick="switchPanel('cms')">📝 コンテンツ編集</div>
+                <div class="menu-btn" onclick="switchPanel('projects')">📂 プロジェクト一覧</div>
+                <div class="menu-btn" onclick="switchPanel('calc')">💰 収益計算</div>
                 <div class="spacer"></div>
                 <div class="menu-btn" onclick="switchPanel('users')">👥 権限管理</div>
                 <div class="menu-btn" onclick="logout()" style="margin-top:auto; background:#c0392b; color:white;">🔒 ログアウト</div>
             </div>
 
             <div class="main-content">
-                <!-- 計算パネル -->
-                <div id="panel-calc" class="panel active">
-                    <div class="calc-container">
-                        <h2>💰 シミュレーター</h2>
-                        <div class="calc-grid">
-                            <div><label>動画広告単価</label><input type="number" id="adPrice" value="1.5" step="0.1"></div>
-                            <div><label>通話原価 (1分)</label><input type="number" id="callCost" value="3.0" step="0.1"></div>
-                        </div>
-                        <label>利益率 <span id="marginDisplay">20%</span></label>
-                        <input type="range" id="margin" min="0" max="50" value="20" oninput="document.getElementById('marginDisplay').innerText = this.value + '%'">
-                        <button class="btn-calc" onclick="calcSeconds()">計算する</button>
-                        <div class="calc-result-box"><div id="calcOutput" class="calc-number">--- 秒</div></div>
-                    </div>
-                </div>
-
+                
                 <!-- CMSパネル -->
-                <div id="panel-cms" class="panel">
-                    <div class="cms-layout">
-                        <!-- エディタ (40%) -->
-                        <div class="editor-area">
-                            <h2>📝 記事・プロジェクト作成</h2>
+                <div id="panel-cms" class="panel active">
+                    <div class="cms-container">
+                        <!-- エディタエリア -->
+                        <div class="editor-col">
+                            <h2>記事・プロジェクト編集</h2>
                             
-                            <div class="row-group">
-                                <div class="form-group"><label>日付</label><input type="text" id="inDate" class="input-white"></div>
-                                <div class="form-group">
+                            <!-- 日付とカテゴリ -->
+                            <div style="display:flex; gap:10px;">
+                                <div class="form-group" style="flex:1;">
+                                    <label>日付</label>
+                                    <input type="text" id="inDate" class="input-white">
+                                </div>
+                                <div class="form-group" style="flex:1;">
                                     <label>カテゴリ</label>
                                     <select id="inCategory" class="input-white" onchange="updatePreview()">
                                         <option value="update">更新情報</option>
@@ -264,869 +166,668 @@
                                 </div>
                             </div>
 
+                            <!-- 画像選択 -->
                             <div class="form-group">
-                                <label>画像ファイル (index_photフォルダ)</label>
+                                <label>画像ファイル <span id="imgSourceLabel" style="font-weight:normal; font-size:0.8rem;">(ソース: 未定)</span></label>
                                 <input type="hidden" id="inImage" onchange="updatePreview()">
-                                <div class="custom-select-wrapper">
-                                    <div class="custom-select">
-                                        <div class="custom-select__trigger" onclick="toggleImageSelect()"><span id="selectedImageText">画像を選択...</span><span>▼</span></div>
-                                        <div class="custom-options" id="imageOptions"></div>
-                                    </div>
+                                <div class="img-select-trigger" onclick="toggleImageGrid()">
+                                    <span id="selectedImageText">画像を選択してください...</span>
+                                    <span>▼</span>
                                 </div>
+                                <div class="img-grid-container" id="imageGrid"></div>
                             </div>
 
                             <hr style="border:0; border-top:1px dashed #555; margin: 20px 0;">
 
-                            <div class="editor-lang-tabs">
-                                <button class="edit-tab active" onclick="switchEditorLang('ja')">🇯🇵 JP</button>
-                                <button class="edit-tab" onclick="switchEditorLang('en')">🇺🇸 EN</button>
-                                <button class="edit-tab" onclick="switchEditorLang('de')">🇩🇪 DE</button>
-                                <button class="edit-tab" onclick="switchEditorLang('fr')">🇫🇷 FR</button>
-                                <button class="edit-tab" onclick="switchEditorLang('es')">🇪🇸 ES</button>
+                            <!-- 言語タブ -->
+                            <div class="lang-tabs">
+                                <button class="tab-btn active" onclick="switchLang('ja')">🇯🇵 JP</button>
+                                <button class="tab-btn" onclick="switchLang('en')">🇺🇸 EN</button>
+                                <button class="tab-btn" onclick="switchLang('de')">🇩🇪 DE</button>
+                                <button class="tab-btn" onclick="switchLang('fr')">🇫🇷 FR</button>
+                                <button class="tab-btn" onclick="switchLang('es')">🇪🇸 ES</button>
                             </div>
 
-                            <!-- 日本語 -->
-                            <div id="group-ja" class="lang-input-group active">
+                            <!-- 英語入力 (ID生成のマスター) -->
+                            <div id="group-en" class="lang-group">
                                 <div class="form-group">
-                                    <label>プロジェクト名 (JP)　admin_master.js</label>
-                                    <div class="input-group">
-                                        <input type="text" id="inProject" class="input-white" oninput="autoFillProject()">
-                                        <select id="projectSelectHelper" class="input-white" onchange="syncProjectSelect()"><option value="">▼ 履歴...</option></select>
+                                    <label style="color:#e67e22;">Project Name (EN) ※必須・ID生成元</label>
+                                    <input type="text" id="inProjectEn" class="input-white" oninput="generateIdFromEn(); updatePreview();">
+                                </div>
+                                <div class="form-group"><label>News/Catchphrase (EN)</label><textarea id="inTitleEn" class="input-white" rows="2" oninput="updatePreview()"></textarea></div>
+                                <div class="form-group"><label>App Description (EN)</label><textarea id="inBodyEn" class="input-white" rows="3" oninput="updatePreview()"></textarea></div>
+                            </div>
+
+                            <!-- 日本語入力 -->
+                            <div id="group-ja" class="lang-group active">
+                                <div class="form-group">
+                                    <label>プロジェクト名 (JP)</label>
+                                    <div class="history-group">
+                                        <input type="text" id="inProject" class="input-white" oninput="updatePreview()">
+                                        <select id="projectHistory" onchange="loadHistory(this.value)"><option value="">履歴...</option></select>
                                     </div>
                                 </div>
                                 <div class="form-group"><label>お知らせ・キャッチコピー (JP)</label><textarea id="inTitle" class="input-white" rows="2" oninput="updatePreview()"></textarea></div>
-                                
-                                <!-- 修正: ラベルの横にステータススイッチを配置 -->
                                 <div class="form-group">
-                                    <div class="label-row">
-                                        <label>アプリ紹介本文 (JP)</label>
-                                        <div class="status-switch">
-                                            <label class="status-label"><input type="radio" name="appStatus" value="released" checked onchange="updatePreview()"> リリース済み</label>
-                                            <label class="status-label"><input type="radio" name="appStatus" value="coming" onchange="updatePreview()"> Coming Soon</label>
-                                        </div>
+                                    <label>アプリ紹介本文 (JP)</label>
+                                    <div style="margin-bottom:5px;">
+                                        <label style="display:inline; margin-right:10px; cursor:pointer;"><input type="radio" name="appStatus" value="released" checked onchange="updatePreview()"> リリース済</label>
+                                        <label style="display:inline; cursor:pointer;"><input type="radio" name="appStatus" value="coming" onchange="updatePreview()"> Coming Soon</label>
                                     </div>
                                     <textarea id="inBody" class="input-white" rows="3" oninput="updatePreview()"></textarea>
                                 </div>
                             </div>
 
-                            <!-- 多言語 -->
-                            <!-- 英語入力グループ内にID確認欄を追加 -->
-                            <div id="group-en" class="lang-input-group">
-                                <div class="form-group">
-                                    <label>Project Name (EN) <span style="color:red; font-size:0.8rem;">※必須: これがフォルダ名(ID)になります</span></label>
-                                    <input type="text" id="inProjectEn" class="input-white" oninput="generateProjectId(); updatePreview();">
-                                    <!-- 自動生成されるIDの表示エリア -->
-                                    <div style="margin-top:5px; font-size:0.9rem; color:#aaa;">
-                                        生成ID: <span id="generatedIdDisplay" style="font-family:monospace; font-weight:bold; color:#007acc;">---</span>
-                                        <span id="idWarning" style="color:red; display:none; margin-left:10px;">⚠️ 必須項目です</span>
-                                    </div>
-                                </div>
-                                <div class="form-group"><label>Title (EN)</label><textarea id="inTitleEn" class="input-white" rows="2" oninput="updatePreview()"></textarea></div>
-                                <div class="form-group"><label>App Intro (EN)</label><textarea id="inBodyEn" class="input-white" rows="3" oninput="updatePreview()"></textarea></div>
-                            </div>
-                            <!-- (他言語省略せず記述) -->
-                            <div id="group-de" class="lang-input-group"><div class="form-group"><label>Project (DE)</label><input type="text" id="inProjectDe" class="input-white" oninput="updatePreview()"></div><div class="form-group"><label>Title (DE)</label><textarea id="inTitleDe" class="input-white" rows="2" oninput="updatePreview()"></textarea></div><div class="form-group"><label>App Intro (DE)</label><textarea id="inBodyDe" class="input-white" rows="3" oninput="updatePreview()"></textarea></div></div>
-                            <div id="group-fr" class="lang-input-group"><div class="form-group"><label>Project (FR)</label><input type="text" id="inProjectFr" class="input-white" oninput="updatePreview()"></div><div class="form-group"><label>Title (FR)</label><textarea id="inTitleFr" class="input-white" rows="2" oninput="updatePreview()"></textarea></div><div class="form-group"><label>App Intro (FR)</label><textarea id="inBodyFr" class="input-white" rows="3" oninput="updatePreview()"></textarea></div></div>
-                            <div id="group-es" class="lang-input-group"><div class="form-group"><label>Project (ES)</label><input type="text" id="inProjectEs" class="input-white" oninput="updatePreview()"></div><div class="form-group"><label>Title (ES)</label><textarea id="inTitleEs" class="input-white" rows="2" oninput="updatePreview()"></textarea></div><div class="form-group"><label>App Intro (ES)</label><textarea id="inBodyEs" class="input-white" rows="3" oninput="updatePreview()"></textarea></div></div>
+                            <!-- 他言語 (簡略化のため構造同じ) -->
+                            <div id="group-de" class="lang-group"><div class="form-group"><label>Projekt (DE)</label><input type="text" id="inProjectDe" class="input-white" oninput="updatePreview()"></div><div class="form-group"><label>Nachrichten (DE)</label><textarea id="inTitleDe" class="input-white" rows="2" oninput="updatePreview()"></textarea></div><div class="form-group"><label>Beschreibung (DE)</label><textarea id="inBodyDe" class="input-white" rows="3" oninput="updatePreview()"></textarea></div></div>
+                            <div id="group-fr" class="lang-group"><div class="form-group"><label>Projet (FR)</label><input type="text" id="inProjectFr" class="input-white" oninput="updatePreview()"></div><div class="form-group"><label>Nouvelles (FR)</label><textarea id="inTitleFr" class="input-white" rows="2" oninput="updatePreview()"></textarea></div><div class="form-group"><label>Description (FR)</label><textarea id="inBodyFr" class="input-white" rows="3" oninput="updatePreview()"></textarea></div></div>
+                            <div id="group-es" class="lang-group"><div class="form-group"><label>Proyecto (ES)</label><input type="text" id="inProjectEs" class="input-white" oninput="updatePreview()"></div><div class="form-group"><label>Noticias (ES)</label><textarea id="inTitleEs" class="input-white" rows="2" oninput="updatePreview()"></textarea></div><div class="form-group"><label>Descripción (ES)</label><textarea id="inBodyEs" class="input-white" rows="3" oninput="updatePreview()"></textarea></div></div>
 
-                            <button class="btn-save" onclick="addPost()">リストに追加 (一時保存)</button>
-                            <button class="btn-copy" onclick="saveToGitHub()">🚀 GitHubへ直接保存</button>
+                            <hr style="border:0; border-top:1px dashed #555; margin: 20px 0;">
+
+                            <div class="form-group">
+                                <label>生成されるプロジェクトID (自動)</label>
+                                <input type="text" id="projectId" class="input-readonly" readonly>
+                                <p style="font-size:0.8rem; color:#f39c12; margin-top:5px;" id="idWarning"></p>
+                            </div>
+
+                            <button class="btn-save" onclick="saveAll()">💾 全ファイルを保存 (Save All)</button>
                         </div>
 
-                        <!-- プレビュー (60%) -->
-                        <div class="preview-area">
-                            <div class="preview-header">
-                                <h2 style="border:none; margin:0; font-size:1.1rem; color:#333;">👁️ リアルタイムプレビュー</h2>
-                            </div>
-                            
-                            <div style="margin-bottom:30px;">
-                                <span class="preview-label">▼ お知らせ (News List)</span>
-                                <div class="news-item">
-                                    <span class="news-date" id="prevDate">2026.03.15</span>
-                                    <span class="news-tag tag-update" id="prevTag">更新情報</span>
-                                    <div style="flex:1;">
-                                        <span style="font-weight:bold; margin-right:10px; color:#333;" id="prevProjectName">プロジェクト名</span>
-                                        <span class="news-link" id="prevTitle">タイトル</span>
-                                    </div>
+                        <!-- プレビューエリア -->
+                        <div class="preview-col">
+                            <div class="preview-header">👁️ リアルタイムプレビュー (JP)</div>
+
+                            <!-- 1. ニュースリスト -->
+                            <span class="preview-label">▼ お知らせ (News List @ Top Page)</span>
+                            <div class="news-item-prev">
+                                <span class="news-date" id="prevDate">--.--.--</span>
+                                <span class="tag-badge tag-release" id="prevTag">Category</span>
+                                <div style="flex:1;">
+                                    <strong id="prevProjName" style="margin-right:10px;">Project</strong>
+                                    <span id="prevNewsTitle">News Title...</span>
                                 </div>
                             </div>
 
-                            <div class="preview-split-row">
+                            <!-- 2. カード比較 -->
+                            <div class="card-compare-row" style="margin-top:20px;">
                                 <!-- 左: 最新の活動 -->
-                                <div class="split-col left">
-                                    <span class="preview-label" style="margin-bottom:10px;">▼ 最新の活動 (Highlights)</span>
-                                    <div class="highlight-card" id="prevHighlightCard">
-                                        <div class="highlight-img-area">
-                                            <img src="" alt="No Image" id="prevImg" class="highlight-img">
-                                            <span class="highlight-category-badge tag-update" id="prevCardCatBadge">更新情報</span>
-                                        </div>
-                                        <div class="highlight-content-tight">
-                                            <div class="highlight-meta" style="padding:0 10px;">
-                                                <span class="meta-date" id="prevCardDate">2026.03.15</span> | 
-                                                <span class="meta-proj" id="prevCardProj">プロジェクト名</span>
-                                            </div>
-                                            <!-- 修正: 18文字×3行 -->
-                                            <div class="highlight-title-tight" id="prevCardTitle" style="padding:0 10px 10px 10px;">お知らせ・キャッチコピー</div>
-                                        </div>
+                                <div class="card-box">
+                                    <span class="preview-label" style="margin:10px;">▼ 最新の活動 (Highlights)</span>
+                                    <div class="card-img-area">
+                                        <img id="prevCardImg" src="">
+                                        <span class="card-badge tag-release" id="prevCardBadge">Category</span>
+                                    </div>
+                                    <div class="card-content">
+                                        <div class="highlight-meta"><span id="prevCardProj">Project</span> | <span id="prevCardDate">Date</span></div>
+                                        <div class="card-title" id="prevCardTitle">News Title...</div>
                                     </div>
                                 </div>
-
-                                <!-- 右: アプリ紹介 -->
-                                <div class="split-col right">
-                                    <span class="preview-label" style="margin-bottom:10px;">▼ アプリ紹介 (App List)</span>
-                                    <div class="highlight-card">
-                                        <div class="highlight-img-area">
-                                            <img src="" alt="No Image" id="prevAppImg" class="highlight-img">
-                                            <div id="comingSoonOverlay" class="coming-soon-overlay">Coming Soon</div>
-                                            <!-- 修正: 左下隅に色付き枠 -->
-                                            <div class="project-name-badge" id="prevAppProj">プロジェクト名</div>
-                                        </div>
-                                        <!-- 修正: 余白削減 -->
-                                        <div class="app-desc-content">
-                                            <!-- 修正: 20文字×4行 -->
-                                            <div class="app-desc-text" id="prevAppDesc">
-                                                アプリ紹介本文がここに入ります...
-                                            </div>
-                                        </div>
+                                <!-- 右: アプリカタログ -->
+                                <div class="card-box">
+                                    <span class="preview-label" style="margin:10px;">▼ アプリ紹介 (Catalog)</span>
+                                    <div class="card-img-area">
+                                        <img id="prevAppImg" src="">
+                                        <span class="card-badge" style="background:#0056b3; font-size:0.8rem;" id="prevAppProj">Project</span>
+                                    </div>
+                                    <div class="card-content">
+                                        <div class="card-desc" id="prevAppDesc">App Description...</div>
                                     </div>
                                 </div>
                             </div>
 
-                            <span class="preview-label">▼ 詳細ページ (Project Page)</span>
-                            <!-- 実際のページがある場合はiframe、なければシミュレーション -->
-                            <div id="livePreviewContainer" style="display:none; margin-top:10px;">
-                                <p style="font-size:0.8rem; color:#0056b3;">🌐 公開中のページを表示しています (<a id="liveLink" href="#" target="_blank">別窓で開く</a>)</p>
-                                <iframe id="livePreviewFrame" style="width:100%; height:400px; border:1px solid #ccc; border-radius:8px; background:white;"></iframe>
+                            <!-- 3. 詳細ページ -->
+                            <span class="preview-label" style="margin-top:30px;">▼ 詳細ページ (HP Preview)</span>
+                            <div class="url-bar">
+                                🌐 <span id="previewUrl">...</span>
+                                <span id="urlStatus" style="margin-left:auto; font-size:0.75rem;">CHECKING...</span>
                             </div>
-                            
-                            <div id="simulatedPreviewContainer" class="page-preview">
-                                <h1 id="prevPageTitle">タイトル</h1>
-                                <div style="color:#666; font-size:0.9rem; margin-bottom:20px;">
-                                    <span id="prevPageDate">---</span> | <span id="prevPageProject">---</span>
-                                </div>
-                                <img src="" id="prevPageImg" style="display:none;">
-                                <div id="prevBody">本文...</div> <!-- ここはアプリ紹介本文ではなく、固定コンテンツの想定ですがプレビュー用に表示 -->
+                            <div id="iframeContainer" class="iframe-container" style="display:none;">
+                                <iframe id="hpIframe" style="width:100%; height:100%; border:none;"></iframe>
+                            </div>
+                            <div id="iframePlaceholder" class="iframe-placeholder">
+                                ページ未作成のため、簡易プレビューのみ表示中
                             </div>
                         </div>
                     </div>
                 </div>
 
-<div id="panel-projects" class="panel">
-                    <div class="calc-container">
-                        <h2>📂 全プロジェクト情報</h2>
-                        <p>ここで登録されたアプリ一覧（apps_list.js）を管理します（実装準備中）</p>
-                    </div>
-                </div>
-                
-                <!-- ユーザー管理パネル -->
-                <div id="panel-users" class="panel">
-                    <div class="calc-container">
-                        <h2>👥 編集権限者の管理</h2>
-                        <p style="margin-bottom:20px; color:#aaa; font-size:0.9rem;">
-                            ここで登録されたGitHubユーザーIDのみが、この管理画面にログインできます。<br>
-                            現在のリスト: <strong>allowed_users.js</strong>
-                        </p>
-                        
-                        <!-- 入力エリア -->
-                        <div style="display:flex; gap:10px; margin-bottom:20px;">
-                            <input type="text" id="newUserId" placeholder="GitHubユーザーID" class="input-white" style="flex:1;">
-                            <button class="btn-save" style="width:auto; margin-top:0;" onclick="addUser()">追加</button>
-                        </div>
-
-                        <!-- リスト表示エリア -->
-                        <ul id="userList" style="background:#1e1e1e; padding:20px; border-radius:8px; list-style:none; max-height:300px; overflow-y:auto; border:1px solid #444;">
-                            <!-- JSでここにリストが生成されます -->
-                        </ul>
-
-                        <button class="btn-copy" onclick="saveUsersToGitHub()">💾 権限設定をGitHubに保存</button>
-                    </div>
-                </div>
+                <!-- その他パネル (省略) -->
+                <div id="panel-projects" class="panel"><h2>📂 プロジェクト一覧</h2><p>apps_catalog.jsの内容を表示予定</p></div>
+                <div id="panel-calc" class="panel"><h2>💰 収益計算</h2><p>計算機能</p></div>
+                <div id="panel-users" class="panel"><h2>👥 権限管理</h2></div>
             </div>
         </div>
     </div>
 
     <script>
-    // ▼▼▼ 設定 ▼▼▼
+        // --- 設定 ---
         const GITHUB_CONFIG = { owner: "KeiAppLab", repo: "KeiAppLab" };
-        const MASTER_FILE = "admin_master.js";
-    
-        let previewLang = 'ja';
-        let currentProjectId = ""; 
-        let isProjectExisting = false;
-    
-        // --- 1. 認証系（修正：引数を最優先するように修正） ---
-        async function checkIdentity(optToken) {
-            // optTokenがあればそれを使う、なければ入力欄、どちらもなければ中断
-            const tokenInput = document.getElementById('tokenInput');
-            const token = (typeof optToken === 'string' && optToken) ? optToken : tokenInput.value.trim();
-            const status = document.getElementById('authStatus');
-            
-            if (!token) { 
-                if(status) status.innerText = "⚠️ トークンを入力してください"; 
-                return; 
-            }
-            if(status) { status.innerText = "確認中..."; status.style.color = "black"; }
-    
-            try {
-                const res = await fetch("https://api.github.com/user", { headers: { Authorization: `token ${token}` } });
-                if (!res.ok) throw new Error("トークンが無効です");
-                const user = await res.json();
-                
-                // 権限チェック
-                if (typeof allowedUsersData !== 'undefined' && Array.isArray(allowedUsersData) && allowedUsersData.includes(user.login)) {
-                    localStorage.setItem('gh_token', token);
-                    showDashboard();
-                } else { 
-                    if(status) {
-                        status.innerText = "❌ 未許可ユーザー: " + user.login;
-                        status.style.color = "red";
-                    }
-                }
-            } catch (err) { 
-                if(status) {
-                    status.innerText = "⚠️ 認証エラー: " + err.message;
-                    status.style.color = "red";
-                }
-            }
-        }
-    
-        function showDashboard() {
-            document.getElementById('loginOverlay').style.display = 'none';
-            document.getElementById('mainWrapper').style.display = 'block';
-            initImageSelector();
-            initProjectList(); // 履歴リストを生成
-        }
-        function logout() { localStorage.removeItem('gh_token'); location.reload(); }
-        
-        window.addEventListener('load', () => {
-            const t = localStorage.getItem('gh_token'); 
-            if(t) {
-                checkIdentity(t); // 保存済みトークンで認証
-            }
-            renderUserList();
-        });
-    
-        // --- 2. ファイル取得ロジック（修正：SyntaxErrorを防ぐ堅牢なパース） ---
-        async function getFileContent(filename) {
-            const token = localStorage.getItem("gh_token");
-            try {
-                const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${filename}`, {
-                    headers: { Authorization: `token ${token}`, "Cache-Control": "no-cache" }
-                });
-                if (!res.ok) return null; // 404などの場合はnullを返す
-                
-                const data = await res.json();
-                const content = decodeURIComponent(escape(atob(data.content)));
-                
-                // 正規表現で JSON 部分を抽出
-                const match = content.match(/=\s*(\[[\s\S]*\]|\{[\s\S]*\});/);
-                if (match) {
-                    try {
-                        return { sha: data.sha, data: JSON.parse(match[1]) };
-                    } catch (e) {
-                        console.error("JSONパース失敗:", filename, e);
-                        return { sha: data.sha, data: [] }; // 壊れている場合は空配列
-                    }
-                }
-                return { sha: data.sha, data: [] };
-            } catch (e) { 
-                console.warn("ファイル取得エラー (新規プロジェクト等の場合):", filename);
-                return null; 
-            }
-        }
-    
-        // --- 3. 自動入力機能（修正：admin_master.js 読み込み対応） ---
-        function autoFillProject() {
-            const val = document.getElementById('inProject').value.trim();
-            const keys = {
-                ja: ['inProject', 'inTitle', 'inBody'],
-                en: ['inProjectEn', 'inTitleEn', 'inBodyEn'],
-                de: ['inProjectDe', 'inTitleDe', 'inBodyDe'],
-                fr: ['inProjectFr', 'inTitleFr', 'inBodyFr'],
-                es: ['inProjectEs', 'inTitleEs', 'inBodyEs']
-            };
-    
-            if (!val) {
-                Object.values(keys).flat().forEach(id => {
-                    const el = document.getElementById(id);
-                    if(el) el.value = "";
-                });
-                document.getElementById('inProjectEn').value = "";
-                generateProjectId();
-                return;
-            }
-    
-            // データの読み込み元を確認 (admin_master.js の変数は adminMasterData)
-            let source = [];
-            if (typeof adminMasterData !== 'undefined') source = adminMasterData;
-            else if (typeof newsData !== 'undefined') source = newsData;
-    
-            const post = source.find(p => (p.ja && p.ja.proj === val) || (p.project === val));
-    
-            if (post) {
-                if (post.ja) { // 新形式
-                    ['ja', 'en', 'de', 'fr', 'es'].forEach(l => {
-                        if(post[l]) {
-                            document.getElementById(keys[l][0]).value = post[l].proj || "";
-                            document.getElementById(keys[l][1]).value = post[l].title || "";
-                            document.getElementById(keys[l][2]).value = post[l].body || "";
-                        }
-                    });
-                    const radios = document.getElementsByName('appStatus');
-                    for (const r of radios) if (r.value === post.status) r.checked = true;
-                } else { // 旧形式
-                    document.getElementById('inProject').value = post.project || "";
-                    document.getElementById('inTitle').value = post.title || "";
-                    document.getElementById('inBody').value = post.body || "";
-                    document.getElementById('inProjectEn').value = post.project_en || "";
-                }
-                
-                const imgPath = post.image || "";
-                document.getElementById('inImage').value = imgPath;
-                document.getElementById('selectedImageText').textContent = imgPath.split('/').pop() || "画像を選択...";
-                
-                generateProjectId();
-                updatePreview();
-            }
-        }
-    
-        // --- ID生成と存在チェック ---
-        function generateProjectId() {
-            const enName = document.getElementById('inProjectEn').value;
-            const display = document.getElementById('generatedIdDisplay');
-            const warning = document.getElementById('idWarning');
-            
-            if (!enName) {
-                currentProjectId = "";
-                display.innerText = "---";
-                warning.style.display = "inline";
-                return;
-            }
-    
-            // 英語名からID生成 (小文字化、スペースをアンダースコアに、英数字以外削除)
-            currentProjectId = enName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
-            display.innerText = currentProjectId;
-            warning.style.display = "none";
-    
-            // IDが確定したら、存在チェックと画像リスト更新を行う（デバウンス推奨だが今回は直呼び出し）
-            checkProjectStatus();
-        }
-    
-        // GitHub上のフォルダ存在チェックと画像リスト取得
-        async function checkProjectStatus() {
-            if(!currentProjectId) return;
-            const token = localStorage.getItem("gh_token");
-            if(!token) return;
-    
-            // 1. フォルダ確認 (画像リスト取得を兼ねる)
-            try {
-                const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${currentProjectId}`, {
-                    headers: { Authorization: `token ${token}` }
-                });
-                
-                if (res.ok) {
-                    isProjectExisting = true;
-                    const files = await res.json();
-                    // 画像ファイル(.png, .jpg)だけ抽出
-                    const images = files.filter(f => f.name.match(/\.(png|jpg|jpeg)$/i)).map(f => f.name);
-                    updateImageSelector(images, true); // true = 専用フォルダ
-                } else {
-                    isProjectExisting = false;
-                    // 存在しない場合は index_phot.js のストック画像を表示
-                    const stockImages = (typeof photoList !== 'undefined') ? photoList : ["no_image.png"];
-                    updateImageSelector(stockImages, false); // false = ストック
-                }
-            } catch(e) { console.error(e); }
-    
-            // 2. HTML存在確認 (プレビュー用)
-            try {
-                const resHtml = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${currentProjectId}/index.html`, {
-                    method: "HEAD", headers: { Authorization: `token ${token}` }
-                });
-                
-                const liveContainer = document.getElementById('livePreviewContainer');
-                const simContainer = document.getElementById('simulatedPreviewContainer');
-                const iframe = document.getElementById('livePreviewFrame');
-                const liveLink = document.getElementById('liveLink');
-    
-                if (resHtml.ok) {
-                    // ページが存在する -> iframe表示
-                    const liveUrl = `https://${GITHUB_CONFIG.owner.toLowerCase()}.github.io/${GITHUB_CONFIG.repo}/${currentProjectId}/index.html`;
-                    liveContainer.style.display = 'block';
-                    simContainer.style.display = 'none';
-                    iframe.src = liveUrl;
-                    liveLink.href = liveUrl;
-                } else {
-                    // ページが存在しない -> シミュレーション表示
-                    iframe.src = "about:blank"; 
-                    liveContainer.style.display = 'none';
-                    simContainer.style.display = 'block';
-                }
-            } catch(e) { console.error(e); }
-        }
-    
-        // --- 画像選択UI ---
-        function initImageSelector() {
-            // 初期はストック画像
-            const stockImages = (typeof photoList !== 'undefined') ? photoList : ["no_image.png"];
-            updateImageSelector(stockImages, false);
-        }
-    
-        function updateImageSelector(list, isCustomFolder) {
-            const container = document.getElementById('imageOptions');
-            container.innerHTML = '';
-            const pathPrefix = isCustomFolder ? `${currentProjectId}/` : "index_phot/";
-    
-            list.forEach(name => {
-                const div = document.createElement('div');
-                div.className = 'custom-option';
-                div.onclick = () => { selectImage(pathPrefix + name, name); };
-                // GitHub API経由だとraw_urlが確実だが、ここでは簡易的に構築
-                const imgUrl = isCustomFolder 
-                    ? `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/main/${currentProjectId}/${name}`
-                    : `index_phot/${name}`;
-                
-                div.innerHTML = `<img src="${imgUrl}" class="option-img" onerror="this.src='https://via.placeholder.com/75'"><span class="option-text">${name}</span>`;
-                container.appendChild(div);
-            });
-        }
-    
-        function toggleImageSelect() { document.querySelector('.custom-select').classList.toggle('open'); }
-        function selectImage(fullPath, fileName) {
-            document.getElementById('inImage').value = fullPath;
-            document.getElementById('selectedImageText').textContent = fileName;
-            document.querySelector('.custom-select').classList.remove('open');
-            updatePreview();
-        }
-        window.onclick = e => { if(!e.target.closest('.custom-select')) document.querySelector('.custom-select').classList.remove('open'); }
-    
-        // --- エディタ・プレビュー関連 ---
+        let currentLang = 'ja';
+        let isNewProject = true; // 新規プロジェクトか既存か
+
+        // --- 初期化 ---
         const today = new Date();
         document.getElementById('inDate').value = today.getFullYear() + '.' + (today.getMonth()+1).toString().padStart(2,'0') + '.' + today.getDate().toString().padStart(2,'0');
-    
-        function switchEditorLang(lang) {
-            document.querySelectorAll('.lang-input-group').forEach(e => e.classList.remove('active'));
-            document.getElementById('group-' + lang).classList.add('active');
-            document.querySelectorAll('.edit-tab').forEach(e => e.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-            previewLang = lang; updatePreview();
-        }
-    
-        function updatePreview() {
-            const date = document.getElementById('inDate').value;
-            const cat = document.getElementById('inCategory').value;
-            const imgPath = document.getElementById('inImage').value;
+
+        window.addEventListener('load', () => {
+            const t = localStorage.getItem('gh_token');
+            if(t) checkIdentity(t);
+        });
+
+        async function checkIdentity(token) {
+            token = token || document.getElementById('tokenInput').value.trim();
+            const status = document.getElementById('authStatus');
+            if (!token) { status.innerText = "⚠️ トークンを入力"; return; }
+            status.innerText = "認証中...";
             
-            // 言語サフィックス
-            const s = previewLang === 'ja' ? '' : previewLang.charAt(0).toUpperCase() + previewLang.slice(1);
-            
-            const proj = document.getElementById('inProject' + s).value || "Project";
-            const title = document.getElementById('inTitle' + s).value || "News/Catchcopy";
-            const body = document.getElementById('inBody' + s).value || "App Introduction..."; // 紹介文
-            
-            const statusRadio = document.querySelector('input[name="appStatus"]:checked');
-            const isComing = statusRadio && statusRadio.value === 'coming';
-    
-            // ニュースリスト
-            document.getElementById('prevDate').textContent = date;
-            document.getElementById('prevTitle').textContent = title; // お知らせを表示
-            document.getElementById('prevProjectName').textContent = proj;
-            const tag = document.getElementById('prevTag');
-            tag.className = 'news-tag tag-' + cat;
-            // 簡易翻訳マップ
-            const catMap = {ja:{'update':'更新情報','release':'プレスリリース'}, en:{'update':'Update','release':'Release'}}; // 省略
-            tag.textContent = (catMap[previewLang] && catMap[previewLang][cat]) ? catMap[previewLang][cat] : cat;
-    
-            // 画像表示 (パスが http で始まらない場合は相対パスとして処理)
-            const displayImg = imgPath.startsWith('http') ? imgPath : (imgPath || "");
-            const setImg = (id) => {
-                const el = document.getElementById(id); 
-                // プレビュー用にraw content等を表示するのは難しいので、相対パスの場合は一旦非表示かプレースホルダー
-                // 実装簡略化のため、そのままsrcに入れる
-                el.src = displayImg;
-                el.style.display = displayImg ? 'block' : 'none';
-            };
-            setImg('prevImg'); setImg('prevAppImg'); setImg('prevPageImg');
-    
-            // カード
-            document.getElementById('prevCardTitle').textContent = title; // お知らせ
-            document.getElementById('prevCardProj').textContent = proj;
-            document.getElementById('prevCardDate').textContent = date;
-            const badge = document.getElementById('prevCardCatBadge');
-            badge.textContent = tag.textContent; badge.className = 'highlight-category-badge tag-' + cat;
-    
-            // アプリ紹介
-            document.getElementById('prevAppProj').textContent = proj;
-            document.getElementById('prevAppDesc').textContent = body; // 紹介文
-            const overlay = document.getElementById('comingSoonOverlay');
-            const appImgEl = document.getElementById('prevAppImg');
-            if(isComing) { appImgEl.classList.add('coming-soon-mode'); overlay.style.display='block'; }
-            else { appImgEl.classList.remove('coming-soon-mode'); overlay.style.display='none'; }
-    
-            // 詳細ページシミュレーション
-            document.getElementById('prevPageTitle').textContent = proj; // プロジェクト名
-            document.getElementById('prevPageDate').textContent = date;
-            document.getElementById('prevPageProject').textContent = proj;
-            document.getElementById('prevBody').innerHTML = body; // 紹介文
-        }
-    
-        // --- 自動入力 (admin_master.js から) ---
-        function autoFillProject() {
-            const val = document.getElementById('inProject').value.trim();
-            
-            // 全入力欄のIDリスト
-            const keys = {
-                ja: ['inProject', 'inTitle', 'inBody'],
-                en: ['inProjectEn', 'inTitleEn', 'inBodyEn'],
-                de: ['inProjectDe', 'inTitleDe', 'inBodyDe'],
-                fr: ['inProjectFr', 'inTitleFr', 'inBodyFr'],
-                es: ['inProjectEs', 'inTitleEs', 'inBodyEs']
-            };
-    
-            // 1. 空欄になったら全てクリア
-            if (!val) {
-                Object.values(keys).flat().forEach(id => document.getElementById(id).value = "");
-                document.getElementById('inImage').value = "";
-                document.getElementById('selectedImageText').textContent = "画像を選択...";
+            try {
+                const res = await fetch("https://api.github.com/user", { headers: { Authorization: `token ${token}` } });
+                if (!res.ok) throw new Error("無効なトークン");
+                const user = await res.json();
                 
-                // ID生成もリセット
-                document.getElementById('inProjectEn').value = "";
-                generateProjectId(); // ID表示をクリア
-                updatePreview();
+                if (typeof allowedUsersData !== 'undefined' && allowedUsersData.includes(user.login)) {
+                    localStorage.setItem('gh_token', token);
+                    document.getElementById('loginOverlay').style.display = 'none';
+                    document.getElementById('mainWrapper').style.display = 'block';
+                    initHistory(); // 履歴ロード
+                    loadImages('global'); // 初期画像ロード
+                } else {
+                    status.innerText = "❌ 未許可ID: " + user.login;
+                }
+            } catch (err) { status.innerText = "⚠️ エラー: " + err.message; }
+        }
+
+        function logout() { localStorage.removeItem('gh_token'); location.reload(); }
+
+        function switchPanel(id) {
+            document.querySelectorAll('.panel').forEach(e => e.classList.remove('active'));
+            document.querySelectorAll('.menu-btn').forEach(e => e.classList.remove('active'));
+            document.getElementById('panel-' + id).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        // --- 言語切り替え ---
+        function switchLang(lang) {
+            document.querySelectorAll('.lang-group').forEach(e => e.classList.remove('active'));
+            document.getElementById('group-' + lang).classList.add('active');
+            document.querySelectorAll('.tab-btn').forEach(e => e.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            currentLang = lang;
+            updatePreview();
+        }
+
+        // --- プロジェクトID生成 & 存在チェック ---
+        function generateIdFromEn() {
+            const enName = document.getElementById('inProjectEn').value;
+            const warning = document.getElementById('idWarning');
+            const idField = document.getElementById('projectId');
+
+            if (!enName) {
+                idField.value = "";
+                warning.innerText = "⚠️ 英語プロジェクト名を入力してください（ID生成に必要です）";
+                loadImages('global');
                 return;
             }
-    
-            // 2. admin_master.js (adminMasterData) からデータを探す
-            let sourceData = [];
-            if (typeof adminMasterData !== 'undefined') {
-                sourceData = adminMasterData;
-            } 
-    
-            if (sourceData.length > 0) {
-                // 日本語のプロジェクト名が一致するものを探す
-                // (新データ構造: p.ja.proj / 旧データ構造: p.project)
-                const post = sourceData.find(p => {
-                    if (p.ja && p.ja.proj) return p.ja.proj === val; // 新構造
-                    if (p.project) return p.project === val;         // 旧構造
-                    return false;
+
+            // ID生成: 小文字化、スペースをアンダースコアに、英数字以外削除
+            const id = enName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+            idField.value = id;
+            warning.innerText = "";
+            
+            checkProjectExistence(id);
+        }
+
+        // プロジェクトフォルダがあるかチェック
+        async function checkProjectExistence(id) {
+            const token = localStorage.getItem('gh_token');
+            const urlStatus = document.getElementById('urlStatus');
+            const previewUrl = document.getElementById('previewUrl');
+            const iframe = document.getElementById('hpIframe');
+            const iframeContainer = document.getElementById('iframeContainer');
+            const placeholder = document.getElementById('iframePlaceholder');
+
+            previewUrl.innerText = `https://${GITHUB_CONFIG.owner}.github.io/${GITHUB_CONFIG.repo}/${id}/index.html`;
+            urlStatus.innerText = "CHECKING...";
+
+            try {
+                // コンテンツAPIでフォルダチェック
+                const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${id}`, {
+                    headers: { Authorization: `token ${token}` }
                 });
-    
-                if (post) {
-                    // --- データが見つかった場合の反映処理 ---
-    
-                    // A. 新しいデータ構造 (admin_master.js形式) の場合
-                    if (post.ja) {
-                        // 各言語のデータをセット
-                        ['ja', 'en', 'de', 'fr', 'es'].forEach(lang => {
-                            document.getElementById(keys[lang][0]).value = post[lang].proj || "";
-                            document.getElementById(keys[lang][1]).value = post[lang].title || "";
-                            document.getElementById(keys[lang][2]).value = post[lang].body || "";
-                        });
-                        
-                        // ステータス (released / coming)
-                        if (post.status) {
-                            const radios = document.getElementsByName('appStatus');
-                            for (const radio of radios) {
-                                if (radio.value === post.status) radio.checked = true;
-                            }
-                        }
-                    } 
-                        
-                    // 画像パスのセット
-                    const imgPath = post.image || "";
-                    document.getElementById('inImage').value = imgPath;
-                    document.getElementById('selectedImageText').textContent = imgPath.split('/').pop() || "画像を選択...";
-    
-                    // ★重要: 英語名が入ったので、IDを再生成してフォルダチェックを走らせる
-                    generateProjectId();
+
+                if (res.ok) {
+                    // 存在する場合
+                    isNewProject = false;
+                    urlStatus.innerText = "✅ EXIST (既存)";
+                    urlStatus.style.color = "green";
+                    document.getElementById('imgSourceLabel').innerText = `(ソース: ${id}/)`;
+                    loadImages('local', id); // そのフォルダの画像をロード
                     
-                    // プレビュー更新
-                    updatePreview();
+                    // Iframe表示
+                    iframe.src = previewUrl.innerText;
+                    iframeContainer.style.display = 'block';
+                    placeholder.style.display = 'none';
+
+                } else {
+                    // 存在しない場合
+                    isNewProject = true;
+                    urlStatus.innerText = "🆕 NEW (新規)";
+                    urlStatus.style.color = "orange";
+                    document.getElementById('imgSourceLabel').innerText = `(ソース: index_phot/)`;
+                    loadImages('global'); // 共通画像をロード
+
+                    // Iframe非表示
+                    iframe.src = "";
+                    iframeContainer.style.display = 'none';
+                    placeholder.style.display = 'flex';
                 }
-            }
-        }
-    
-    
-        // ▼▼▼ 保存ロジック (最重要) ▼▼▼
-        
-        // ヘルパー: GitHub API (GET)
-        async function getFileContent(filename) {
-            const token = localStorage.getItem("gh_token");
-            try {
-                const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${filename}`, {
-                    headers: { Authorization: `token ${token}`, "Cache-Control": "no-cache" }
-                });
-                if (!res.ok) return null;
-                const data = await res.json();
-                const content = decodeURIComponent(escape(atob(data.content)));
-                // JSファイルからJSON部分を抜き出す簡易パーサ
-                const match = content.match(/const\s+\w+\s*=\s*(\[.*\])/s) || content.match(/const\s+\w+\s*=\s*(\{.*\})/s);
-                if (match) return { sha: data.sha, data: JSON.parse(match[1]) };
-                return { sha: data.sha, data: [] };
-            } catch (e) { return null; }
-        }
-    
-        // ヘルパー: GitHub API (PUT)
-        async function saveFileContent(filename, varName, jsonData, sha, message) {
-            const token = localStorage.getItem("gh_token");
-            const contentStr = `// Generated by Admin\nconst ${varName} = ${JSON.stringify(jsonData, null, 4)};`;
-            const encoded = btoa(unescape(encodeURIComponent(contentStr)));
-            
-            await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${filename}`, {
-                method: "PUT",
-                headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
-                body: JSON.stringify({ message: message, content: encoded, sha: sha })
-            });
-        }
-    
-        // メイン保存関数
-        async function saveToGitHub() {
-            const token = localStorage.getItem("gh_token");
-            if (!token) { alert("認証が必要です"); return; }
-            if (!currentProjectId) { alert("英語プロジェクト名(ID)が必須です"); return; }
-            if (!confirm(`5つのファイルとプロジェクト情報を更新します。\nID: ${currentProjectId}\nよろしいですか？`)) return;
-    
-            // 入力データの収集
-            const statusVal = document.querySelector('input[name="appStatus"]:checked').value;
-            const date = document.getElementById('inDate').value;
-            const cat = document.getElementById('inCategory').value;
-            const imgPath = document.getElementById('inImage').value; // 例: index_phot/hero.jpg または kei_rpg/hero.png
-            
-            // 多言語データ収集
-            const langs = ['ja', 'en', 'de', 'fr', 'es'];
-            const data = {};
-            langs.forEach(l => {
-                const s = l === 'ja' ? '' : l.charAt(0).toUpperCase() + l.slice(1);
-                data[l] = {
-                    proj: document.getElementById('inProject' + s).value,
-                    title: document.getElementById('inTitle' + s).value, // お知らせ
-                    body: document.getElementById('inBody' + s).value    // 紹介文
-                };
-            });
-    
-            // 画像ファイル名の決定
-            let finalImageName = "index.png"; // 統一
-            const finalImagePath = `${currentProjectId}/${finalImageName}`;
-    
-            try {
-                // ---------------------------------------------------------
-                // 1. admin_master.js (管理者用・全入力データ最新1件)
-                // ---------------------------------------------------------
-                const masterRes = await getFileContent(MASTER_FILE);
-                let masterData = masterRes ? masterRes.data : [];
-                // IDで検索し、あれば削除して先頭に追加（上書き）
-                masterData = masterData.filter(d => d.id !== currentProjectId);
-                masterData.unshift({
-                    id: currentProjectId,
-                    status: statusVal,
-                    image: finalImagePath,
-                    ...data // 全言語の proj, title, body
-                });
-                await saveFileContent(MASTER_FILE, "adminMasterData", masterData, masterRes ? masterRes.sha : null, `Update Master: ${currentProjectId}`);
-    
-    
-                // ---------------------------------------------------------
-                // 2. index_news.js (トップ用・最新20件・本文なし)
-                // ---------------------------------------------------------
-                const indexNewsRes = await getFileContent("index_news.js");
-                let indexNews = indexNewsRes ? indexNewsRes.data : [];
-                
-                // 新規ニュースオブジェクト作成
-                const newNewsItem = {
-                    date: date,
-                    category: cat,
-                    id: currentProjectId,
-                    image: finalImagePath,
-                    link: `${currentProjectId}/index.html`,
-                    project: {}, title: {}
-                };
-                langs.forEach(l => {
-                    newNewsItem.project[l] = data[l].proj;
-                    newNewsItem.title[l] = data[l].title; // お知らせのみ
-                });
-    
-                indexNews.unshift(newNewsItem);
-                
-                // リリース枠(release, start, steam) 最新10件
-                const releaseTypes = ['release', 'start', 'steam'];
-                const releaseItems = indexNews.filter(n => releaseTypes.includes(n.category)).slice(0, 10);
-                
-                // 更新枠(update, game) 最新10件
-                const updateTypes = ['update', 'game'];
-                const updateItems = indexNews.filter(n => updateTypes.includes(n.category)).slice(0, 10);
-                
-                // 合体して日付順ソート（念のため）
-                const finalIndexNews = [...releaseItems, ...updateItems].sort((a,b) => b.date.localeCompare(a.date));
-                
-                await saveFileContent("index_news.js", "indexNewsData", finalIndexNews, indexNewsRes ? indexNewsRes.sha : null, `Update Index News: ${currentProjectId}`);
-    
-    
-                // ---------------------------------------------------------
-                // 3. apps_catalog.js (一覧用・紹介文のみ)
-                // ---------------------------------------------------------
-                const catalogRes = await getFileContent("apps_catalog.js");
-                let catalogData = catalogRes ? catalogRes.data : [];
-                // IDで検索し上書き
-                catalogData = catalogData.filter(d => d.id !== currentProjectId);
-                
-                const newCatalogItem = {
-                    id: currentProjectId,
-                    status: statusVal,
-                    image: finalImagePath,
-                    project: {}, body: {}
-                };
-                langs.forEach(l => {
-                    newCatalogItem.project[l] = data[l].proj;
-                    newCatalogItem.body[l] = data[l].body; // 紹介文のみ
-                });
-                
-                catalogData.unshift(newCatalogItem); // 先頭に追加
-                await saveFileContent("apps_catalog.js", "appsCatalogData", catalogData, catalogRes ? catalogRes.sha : null, `Update Catalog: ${currentProjectId}`);
-    
-    
-                // ---------------------------------------------------------
-                // 4. [id]/news.js (個別最新・3件)
-                // ---------------------------------------------------------
-                const projectNewsPath = `${currentProjectId}/news.js`;
-                const projNewsRes = await getFileContent(projectNewsPath); // なければnull
-                let projNews = projNewsRes ? projNewsRes.data : [];
-    
-                const newProjNewsItem = {
-                    date: date,
-                    category: cat,
-                    title: {} // お知らせのみ
-                };
-                langs.forEach(l => newProjNewsItem.title[l] = data[l].title);
-    
-                projNews.unshift(newProjNewsItem);
-                projNews = projNews.slice(0, 3); // 最新3件
-    
-                // フォルダがない場合は再帰的に作られるわけではないが、ファイル作成時にフォルダも作られる(GitHub仕様)
-                await saveFileContent(projectNewsPath, "projectNewsData", projNews, projNewsRes ? projNewsRes.sha : null, `Update Project News: ${currentProjectId}`);
-    
-    
-                // ---------------------------------------------------------
-                // 5. [id]/old_news.js (アーカイブ・全件)
-                // ---------------------------------------------------------
-                const oldNewsPath = `${currentProjectId}/old_news.js`;
-                const oldNewsRes = await getFileContent(oldNewsPath);
-                let oldNews = oldNewsRes ? oldNewsRes.data : [];
-                oldNews.unshift(newProjNewsItem); // 追加のみ、削除なし
-                await saveFileContent(oldNewsPath, "oldNewsData", oldNews, oldNewsRes ? oldNewsRes.sha : null, `Update Archive: ${currentProjectId}`);
-    
-    
-                // ---------------------------------------------------------
-                // 6. 新規プロジェクト時の処理 (画像コピー・HTML生成)
-                // ---------------------------------------------------------
-                if (!isProjectExisting) {
-                    // A. 画像コピー (index_phot/[file] -> [id]/index.png)
-                    // imgPath が "index_phot/..." の場合のみ
-                    if (imgPath.startsWith("index_phot/")) {
-                        const imgName = imgPath.split('/').pop();
-                        const imgRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/index_phot/${imgName}`, {
-                             headers: { Authorization: `token ${token}` }
-                        });
-                        if (imgRes.ok) {
-                            const imgData = await imgRes.json();
-                            // contentはbase64なのでそのまま書き込めばコピーになる
-                            await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${finalImagePath}`, {
-                                method: "PUT",
-                                headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
-                                body: JSON.stringify({
-                                    message: `Create Image: ${currentProjectId}`,
-                                    content: imgData.content // Base64そのまま
-                                })
-                            });
-                        }
-                    }
-    
-                    // B. HTML生成
-                    // テンプレートHTMLを作成して保存
-                    const htmlContent = `<!DOCTYPE html>
-                        <html lang="ja">
-                        <head>
-                            <meta charset="UTF-8">
-                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                            <title>${data.ja.proj} | KEI App Lab</title>
-                            <!-- 共通スタイル等の読み込み -->
-                            <link rel="stylesheet" href="../style.css">
-                            <!-- データ読み込み -->
-                            <script src="news.js"></script>
-                            <script src="old_news.js"></script>
-                        </head>
-                        <body>
-                            <h1>${data.ja.proj}</h1>
-                            <div id="app-content">
-                                <!-- JSでnews.jsの内容などを表示するロジックをここに書く -->
-                                <p>Loading...</p>
-                            </div>
-                        </body>
-                        </html>`;
-                    const encodedHtml = btoa(unescape(encodeURIComponent(htmlContent)));
-                    await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${currentProjectId}/index.html`, {
-                        method: "PUT",
-                        headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            message: `Create HTML: ${currentProjectId}`,
-                            content: encodedHtml
-                        })
-                    });
-                }
-    
-                alert("✅ 全ての保存処理が完了しました！");
-                // 状態更新
-                checkProjectStatus();
-    
             } catch (e) {
                 console.error(e);
-                alert("❌ エラーが発生しました:\n" + e.message);
             }
         }
-    
-        // ユーザー管理系（省略なし）
-        function renderUserList() {
-            const list = document.getElementById('userList');
-            if(!list) return;
-            list.innerHTML = '';
-            if (typeof allowedUsersData !== 'undefined' && Array.isArray(allowedUsersData)) {
-                allowedUsersData.forEach((user, index) => {
-                    const li = document.createElement('li');
-                    li.style = "display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333; color:#fff;";
-                    li.innerHTML = `<span style="font-weight:bold;">${user}</span><button style="background:#c0392b; width:auto; padding:5px 10px; font-size:0.8rem; margin:0;" onclick="removeUser(${index})">削除</button>`;
-                    list.appendChild(li);
+
+        // --- 画像ロード ---
+        async function loadImages(mode, projectId) {
+            const grid = document.getElementById('imageGrid');
+            grid.innerHTML = '<p style="padding:10px; text-align:center;">Loading...</p>';
+            let images = [];
+
+            if (mode === 'global') {
+                // index_phot.js から読み込み
+                images = (typeof photoList !== 'undefined') ? photoList : [];
+                renderImageGrid(images, 'index_phot');
+            } else {
+                // GitHub APIでフォルダ内検索
+                const token = localStorage.getItem('gh_token');
+                try {
+                    const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${projectId}`, {
+                        headers: { Authorization: `token ${token}` }
+                    });
+                    const data = await res.json();
+                    // png, jpgのみ抽出
+                    images = data.filter(f => f.name.match(/\.(png|jpg|jpeg)$/i)).map(f => f.name);
+                    renderImageGrid(images, projectId);
+                } catch (e) {
+                    grid.innerHTML = '<p>画像取得エラー</p>';
+                }
+            }
+        }
+
+        function renderImageGrid(list, folder) {
+            const grid = document.getElementById('imageGrid');
+            grid.innerHTML = '';
+            if(list.length === 0) { grid.innerHTML = '<p>画像なし</p>'; return; }
+
+            list.forEach(img => {
+                const div = document.createElement('div');
+                div.className = 'img-option';
+                div.innerHTML = `<img src="${folder}/${img}"><span class="option-text">${img}</span>`;
+                div.onclick = () => {
+                    // 保存用パス: ID + ファイル名 (保存時に調整するが、プレビュー用にフルパスを入れる)
+                    document.getElementById('inImage').value = `${folder}/${img}`;
+                    document.getElementById('selectedImageText').innerText = img;
+                    toggleImageGrid();
+                    updatePreview();
+                };
+                grid.appendChild(div);
+            });
+        }
+
+        function toggleImageGrid() { document.getElementById('imageGrid').classList.toggle('open'); }
+
+        // --- 履歴ロード (admin_master.js) ---
+        function initHistory() {
+            if (typeof adminMasterData === 'undefined') return;
+            const sel = document.getElementById('projectHistory');
+            // ユニークなプロジェクトIDを抽出
+            const ids = [...new Set(adminMasterData.map(d => d.id))];
+            ids.forEach(id => {
+                const item = adminMasterData.find(d => d.id === id);
+                const opt = document.createElement('option');
+                opt.value = id;
+                opt.innerText = item.project_ja || id;
+                sel.appendChild(opt);
+            });
+        }
+
+        function loadHistory(id) {
+            if (!id) return;
+            const data = adminMasterData.find(d => d.id === id);
+            if (data) {
+                // 全フィールドに値をセット
+                const langs = ['ja','en','de','fr','es'];
+                const fields = ['Project','Title','Body']; // Title=News, Body=Desc
+                
+                langs.forEach(lang => {
+                    const suffix = lang === 'ja' ? '' : lang.charAt(0).toUpperCase() + lang.slice(1);
+                    document.getElementById(`inProject${suffix}`).value = data[`project_${lang}`] || "";
+                    document.getElementById(`inTitle${suffix}`).value = data[`news_${lang}`] || ""; // News
+                    document.getElementById(`inBody${suffix}`).value = data[`desc_${lang}`] || ""; // Desc
                 });
+
+                // ID再セット＆チェック
+                document.getElementById('inProjectEn').dispatchEvent(new Event('input'));
+                
+                // 画像セット
+                if(data.image) {
+                    const imgName = data.image.split('/').pop();
+                    document.getElementById('selectedImageText').innerText = imgName;
+                    document.getElementById('inImage').value = data.image; // 一旦そのまま入れる
+                }
             }
         }
-        function addUser() {
-            const input = document.getElementById('newUserId');
-            const id = input.value.trim();
-            if(!id) return;
-            if(allowedUsersData.includes(id)) { alert("既に登録されています"); return; }
-            allowedUsersData.push(id); input.value = ''; renderUserList();
+
+        // --- プレビュー更新 ---
+        function updatePreview() {
+            const s = currentLang==='ja'?'':currentLang.charAt(0).toUpperCase()+currentLang.slice(1);
+            
+            const proj = document.getElementById('inProject'+s).value || "Project Name";
+            const title = document.getElementById('inTitle'+s).value || "News Title";
+            const desc = document.getElementById('inBody'+s).value || "App Description";
+            const date = document.getElementById('inDate').value;
+            const cat = document.getElementById('inCategory').value;
+            let img = document.getElementById('inImage').value;
+
+            // プレビュー表示
+            document.getElementById('prevDate').innerText = date;
+            document.getElementById('prevTag').innerText = cat;
+            document.getElementById('prevTag').className = `tag-badge tag-${cat}`;
+            document.getElementById('prevProjName').innerText = proj;
+            document.getElementById('prevNewsTitle').innerText = title;
+
+            document.getElementById('prevCardProj').innerText = proj;
+            document.getElementById('prevCardDate').innerText = date;
+            document.getElementById('prevCardTitle').innerText = title;
+            document.getElementById('prevCardBadge').className = `card-badge tag-${cat}`;
+            document.getElementById('prevCardBadge').innerText = cat;
+
+            document.getElementById('prevAppProj').innerText = proj;
+            document.getElementById('prevAppDesc').innerText = desc;
+            
+            // 画像プレビュー
+            const setImg = (id) => {
+                const el = document.getElementById(id);
+                el.src = img; 
+                el.style.display = img ? 'block' : 'none';
+            };
+            setImg('prevCardImg'); setImg('prevAppImg');
         }
-        function removeUser(index) { if(confirm("削除しますか？")) { allowedUsersData.splice(index, 1); renderUserList(); } }
-        async function saveUsersToGitHub() {
-            const token = localStorage.getItem("gh_token");
-            if (!token) return;
-            const jsonString = JSON.stringify(allowedUsersData, null, 4);
-            const content = `// 編集権限を持つユーザーリスト\nconst allowedUsersData = ${jsonString};`;
-            const encodedContent = btoa(unescape(encodeURIComponent(content)));
-            const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/allowed_users.js`, { headers: { Authorization: `token ${token}` } });
-            const data = await res.json();
-            await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/allowed_users.js`, {
+
+
+        // --- ★★★ 保存処理 (核心部分) ★★★ ---
+        async function saveAll() {
+            const token = localStorage.getItem('gh_token');
+            const projectId = document.getElementById('projectId').value;
+            
+            if (!token) { alert("ログインしてください"); return; }
+            if (!projectId) { alert("プロジェクトIDが生成されていません（英語名を入力してください）"); return; }
+            if (!confirm("全ファイルを更新・保存します。よろしいですか？")) return;
+
+            // 1. 入力データの収集
+            const inputData = {
+                id: projectId,
+                date: document.getElementById('inDate').value,
+                category: document.getElementById('inCategory').value,
+                status: document.querySelector('input[name="appStatus"]:checked').value,
+                // 画像パスは "id/filename" に統一する
+                imageName: document.getElementById('selectedImageText').innerText,
+                imagePath: `${projectId}/${document.getElementById('selectedImageText').innerText}`,
+                langs: {}
+            };
+            ['ja','en','de','fr','es'].forEach(lang => {
+                const s = lang==='ja'?'':lang.charAt(0).toUpperCase()+lang.slice(1);
+                inputData.langs[lang] = {
+                    project: document.getElementById(`inProject${s}`).value,
+                    news: document.getElementById(`inTitle${s}`).value,
+                    desc: document.getElementById(`inBody${s}`).value
+                };
+            });
+
+            try {
+                // --- A. 画像のコピー (新規/変更時) ---
+                // index_photにある画像を、projectフォルダにコピーする
+                const sourcePath = document.getElementById('inImage').value;
+                if (sourcePath.startsWith('index_phot/')) {
+                    await copyImageToProject(token, sourcePath, inputData.imagePath);
+                }
+
+                // --- B. HTMLの作成 (新規時のみ) ---
+                if (isNewProject) {
+                    await createProjectHtml(token, projectId);
+                }
+
+                // --- C. 5つのデータファイル更新 ---
+                
+                // 1. admin_master.js (全入力保存・最新1件)
+                await updateAdminMaster(token, inputData);
+
+                // 2. index_news.js (トップ速報・20件)
+                await updateIndexNews(token, inputData);
+
+                // 3. apps_catalog.js (一覧カタログ・紹介文)
+                await updateAppsCatalog(token, inputData);
+
+                // 4. [id]/news.js (個別最新・3件)
+                await updateProjectNews(token, inputData, 3);
+
+                // 5. [id]/old_news.js (アーカイブ・全件)
+                await updateProjectOldNews(token, inputData);
+
+                alert("✅ 全ての保存が完了しました！");
+                location.reload(); // リロードして反映
+
+            } catch (e) {
+                alert("❌ エラーが発生しました:\n" + e.message);
+                console.error(e);
+            }
+        }
+
+        // --- Helper: ファイル読み書き ---
+        async function fetchFile(token, path) {
+            const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
+                headers: { Authorization: `token ${token}` }
+            });
+            if (!res.ok) return null;
+            const json = await res.json();
+            const content = decodeURIComponent(escape(atob(json.content)));
+            // JSファイルからJSON部分を抽出 (const x = [...]; の [...] 部分)
+            const match = content.match(/\[.*\]/s) || content.match(/\{.*\}/s); 
+            return { sha: json.sha, data: match ? JSON.parse(match[0]) : [] };
+        }
+
+        async function uploadFile(token, path, content, message, sha=null) {
+            const body = { message: message, content: btoa(unescape(encodeURIComponent(content))) };
+            if (sha) body.sha = sha;
+            await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
                 method: "PUT",
                 headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
-                body: JSON.stringify({ message: "Update users", content: encodedContent, sha: data.sha })
+                body: JSON.stringify(body)
             });
-            alert("権限設定を更新しました");
         }
-        function calcSeconds() { /* 計算機ロジック(変更なし) */ 
-            const adPrice = parseFloat(document.getElementById('adPrice').value);
-            const callCost = parseFloat(document.getElementById('callCost').value);
-            const margin = parseFloat(document.getElementById('margin').value);
-            const seconds = Math.floor((adPrice - (adPrice * (margin / 100))) / (callCost / 60));
-            document.getElementById('calcOutput').innerText = seconds + " 秒";
+
+        // --- C-1. Admin Master Update ---
+        async function updateAdminMaster(token, input) {
+            const file = await fetchFile(token, 'admin_master.js') || { sha: null, data: [] };
+            let data = file.data;
+            // IDで検索し、あれば削除して先頭に追加（常に最新1件）
+            data = data.filter(d => d.id !== input.id);
+            
+            const entry = {
+                id: input.id,
+                image: input.imagePath,
+                status: input.status,
+                // フラットに保存
+                project_ja: input.langs.ja.project, news_ja: input.langs.ja.news, desc_ja: input.langs.ja.desc,
+                project_en: input.langs.en.project, news_en: input.langs.en.news, desc_en: input.langs.en.desc,
+                // ...他言語も同様に保存
+                // (省略せず書くのが望ましいが、ここでは構造のみ示す)
+            };
+            // ※実際の実装では全言語ループでセット
+            ['ja','en','de','fr','es'].forEach(l => {
+                entry[`project_${l}`] = input.langs[l].project;
+                entry[`news_${l}`] = input.langs[l].news;
+                entry[`desc_${l}`] = input.langs[l].desc;
+            });
+
+            data.unshift(entry);
+            const content = `const adminMasterData = ${JSON.stringify(data, null, 2)};`;
+            await uploadFile(token, 'admin_master.js', content, 'Update Admin Master', file.sha);
         }
+
+        // --- C-2. Index News Update ---
+        async function updateIndexNews(token, input) {
+            const file = await fetchFile(token, 'index_news.js') || { sha: null, data: [] };
+            let data = file.data;
+            
+            const entry = {
+                date: input.date,
+                category: input.category,
+                image: input.imagePath,
+                link: `${input.id}/index.html`,
+                // プロジェクト名とニュースタイトルのみ
+                names: {}, titles: {}
+            };
+            ['ja','en','de','fr','es'].forEach(l => {
+                entry.names[l] = input.langs[l].project;
+                entry.titles[l] = input.langs[l].news;
+            });
+
+            data.unshift(entry);
+            
+            // フィルタリング (Release10 + Update10)
+            const releaseCats = ['release','start','steam'];
+            const releases = data.filter(d => releaseCats.includes(d.category)).slice(0, 10);
+            const updates = data.filter(d => !releaseCats.includes(d.category)).slice(0, 10);
+            const merged = [...releases, ...updates];
+            // 日付順ソートなどが必要ならここで
+
+            const content = `const indexNewsData = ${JSON.stringify(merged, null, 2)};`;
+            await uploadFile(token, 'index_news.js', content, 'Update Index News', file.sha);
+        }
+
+        // --- C-3. Apps Catalog Update ---
+        async function updateAppsCatalog(token, input) {
+            const file = await fetchFile(token, 'apps_catalog.js') || { sha: null, data: [] };
+            let data = file.data;
+            data = data.filter(d => d.id !== input.id); // 既存削除
+
+            const entry = {
+                id: input.id,
+                status: input.status,
+                image: input.imagePath,
+                names: {}, descs: {} // プロジェクト名と紹介文のみ
+            };
+            ['ja','en','de','fr','es'].forEach(l => {
+                entry.names[l] = input.langs[l].project;
+                entry.descs[l] = input.langs[l].desc;
+            });
+
+            data.unshift(entry); // 最新を上に
+            const content = `const appsCatalogData = ${JSON.stringify(data, null, 2)};`;
+            await uploadFile(token, 'apps_catalog.js', content, 'Update Apps Catalog', file.sha);
+        }
+
+        // --- C-4/5. Project News Update ---
+        async function updateProjectNews(token, input, limit) {
+            const path = `${input.id}/news.js`;
+            const file = await fetchFile(token, path) || { sha: null, data: [] };
+            let data = file.data;
+
+            const entry = {
+                date: input.date,
+                category: input.category,
+                titles: {}, bodies: {} // タイトル(=ニュース)のみ。詳細本文なし
+            };
+            ['ja','en','de','fr','es'].forEach(l => {
+                entry.titles[l] = input.langs[l].news;
+                entry.bodies[l] = input.langs[l].news; // 本文もニュースと同じ
+            });
+
+            data.unshift(entry);
+            if (limit) data = data.slice(0, limit);
+
+            const content = `const projectNewsData = ${JSON.stringify(data, null, 2)};`;
+            await uploadFile(token, path, `Update ${input.id} news`, file.sha);
+        }
+
+        async function updateProjectOldNews(token, input) {
+            const path = `${input.id}/old_news.js`;
+            const file = await fetchFile(token, path) || { sha: null, data: [] };
+            let data = file.data;
+            // 構造は news.js と同じ。制限なし
+            const entry = {
+                date: input.date,
+                category: input.category,
+                titles: {}, bodies: {}
+            };
+            ['ja','en','de','fr','es'].forEach(l => {
+                entry.titles[l] = input.langs[l].news;
+                entry.bodies[l] = input.langs[l].news;
+            });
+            data.unshift(entry);
+            const content = `const projectOldNewsData = ${JSON.stringify(data, null, 2)};`;
+            await uploadFile(token, path, `Archive ${input.id} news`, file.sha);
+        }
+
+        // --- A. 画像コピー ---
+        async function copyImageToProject(token, srcPath, destPath) {
+            // バイナリ取得
+            const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${srcPath}`, {
+                headers: { Authorization: `token ${token}` }
+            });
+            const json = await res.json();
+            
+            // 宛先チェック
+            const check = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${destPath}`, {
+                headers: { Authorization: `token ${token}` }
+            });
+            
+            // アップロード (shaがあれば上書き)
+            const body = { 
+                message: "Copy image", 
+                content: json.content, // base64のまま転送
+                sha: check.ok ? (await check.json()).sha : undefined
+            };
+            
+            await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${destPath}`, {
+                method: "PUT",
+                headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                body: JSON.stringify(body)
+            });
+        }
+
+        // --- B. HTML生成 ---
+        async function createProjectHtml(token, id) {
+            const path = `${id}/index.html`;
+            // 簡易テンプレート
+            const htmlContent = `<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App Page</title>
+    <script src="news.js"></script>
+    <style>body{font-family:sans-serif; padding:20px; color:#333;}</style>
+</head>
+<body>
+    <h1>${id} (Auto Generated)</h1>
+    <p>This page was generated by KEI Lab Admin.</p>
+    <div id="news-container"></div>
+    <script>
+        // Sample loader
+        if(typeof projectNewsData !== 'undefined') {
+            document.getElementById('news-container').innerHTML = projectNewsData.map(n => 
+                \`<p><strong>\${n.date}</strong>: \${n.titles.ja || n.titles.en}</p>\`
+            ).join('');
+        }
+    <\/script>
+</body>
+</html>`;
+            
+            await uploadFile(token, path, htmlContent, "Create Project Page");
+        }
+
     </script>
 </body>
 </html>
