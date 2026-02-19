@@ -448,51 +448,43 @@
     <script>
     // ▼▼▼ 設定 ▼▼▼
         const GITHUB_CONFIG = { owner: "KeiAppLab", repo: "KeiAppLab" };
-        
-        // admin_master.js は管理者用データとして使用
         const MASTER_FILE = "admin_master.js";
     
         let previewLang = 'ja';
-        let currentProjectId = ""; // 計算された現在のID
-        let isProjectExisting = false; // フォルダが存在するか
+        let currentProjectId = ""; 
+        let isProjectExisting = false;
     
-        // --- 認証系 ---
+        // --- 1. 認証系（修正：引数を最優先するように修正） ---
         async function checkIdentity(optToken) {
-            // 修正: 引数(optToken)がある場合はそれを最優先し、なければ入力欄を見る
-            // これにより、localStorageからの自動ログインが確実になります
-            const tokenInputVal = document.getElementById('tokenInput').value.trim();
-            const token = (typeof optToken === 'string' && optToken) ? optToken : tokenInputVal;
-            
+            // optTokenがあればそれを使う、なければ入力欄、どちらもなければ中断
+            const tokenInput = document.getElementById('tokenInput');
+            const token = (typeof optToken === 'string' && optToken) ? optToken : tokenInput.value.trim();
             const status = document.getElementById('authStatus');
             
             if (!token) { 
-                if(status) {
-                    status.innerText = "⚠️ トークンを入力"; 
-                    status.style.color = "orange";
-                }
+                if(status) status.innerText = "⚠️ トークンを入力してください"; 
                 return; 
             }
-            
             if(status) { status.innerText = "確認中..."; status.style.color = "black"; }
-            
+    
             try {
                 const res = await fetch("https://api.github.com/user", { headers: { Authorization: `token ${token}` } });
-                if (!res.ok) throw new Error("無効なトークン");
+                if (!res.ok) throw new Error("トークンが無効です");
                 const user = await res.json();
                 
-                // allowedUsersData の存在チェックを厳密化
+                // 権限チェック
                 if (typeof allowedUsersData !== 'undefined' && Array.isArray(allowedUsersData) && allowedUsersData.includes(user.login)) {
                     localStorage.setItem('gh_token', token);
                     showDashboard();
                 } else { 
                     if(status) {
-                        status.innerText = "❌ 未許可ID: " + user.login; 
+                        status.innerText = "❌ 未許可ユーザー: " + user.login;
                         status.style.color = "red";
                     }
                 }
             } catch (err) { 
                 if(status) {
-                    status.innerText = "⚠️ " + err.message; 
+                    status.innerText = "⚠️ 認証エラー: " + err.message;
                     status.style.color = "red";
                 }
             }
@@ -501,20 +493,101 @@
         function showDashboard() {
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('mainWrapper').style.display = 'block';
-            initImageSelector(); 
-            // 初期状態ではadmin_masterがあればそれを読み込む等の処理を入れても良い
+            initImageSelector();
+            initProjectList(); // 履歴リストを生成
         }
         function logout() { localStorage.removeItem('gh_token'); location.reload(); }
+        
         window.addEventListener('load', () => {
-            const t = localStorage.getItem('gh_token'); if(t) checkIdentity(); renderUserList();
+            const t = localStorage.getItem('gh_token'); 
+            if(t) {
+                checkIdentity(t); // 保存済みトークンで認証
+            }
+            renderUserList();
         });
     
-        // --- パネル切り替え ---
-        function switchPanel(id) {
-            document.querySelectorAll('.panel').forEach(e => e.classList.remove('active'));
-            document.querySelectorAll('.menu-btn').forEach(e => e.classList.remove('active'));
-            document.getElementById('panel-' + id).classList.add('active');
-            event.currentTarget.classList.add('active');
+        // --- 2. ファイル取得ロジック（修正：SyntaxErrorを防ぐ堅牢なパース） ---
+        async function getFileContent(filename) {
+            const token = localStorage.getItem("gh_token");
+            try {
+                const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${filename}`, {
+                    headers: { Authorization: `token ${token}`, "Cache-Control": "no-cache" }
+                });
+                if (!res.ok) return null; // 404などの場合はnullを返す
+                
+                const data = await res.json();
+                const content = decodeURIComponent(escape(atob(data.content)));
+                
+                // 正規表現で JSON 部分を抽出
+                const match = content.match(/=\s*(\[[\s\S]*\]|\{[\s\S]*\});/);
+                if (match) {
+                    try {
+                        return { sha: data.sha, data: JSON.parse(match[1]) };
+                    } catch (e) {
+                        console.error("JSONパース失敗:", filename, e);
+                        return { sha: data.sha, data: [] }; // 壊れている場合は空配列
+                    }
+                }
+                return { sha: data.sha, data: [] };
+            } catch (e) { 
+                console.warn("ファイル取得エラー (新規プロジェクト等の場合):", filename);
+                return null; 
+            }
+        }
+    
+        // --- 3. 自動入力機能（修正：admin_master.js 読み込み対応） ---
+        function autoFillProject() {
+            const val = document.getElementById('inProject').value.trim();
+            const keys = {
+                ja: ['inProject', 'inTitle', 'inBody'],
+                en: ['inProjectEn', 'inTitleEn', 'inBodyEn'],
+                de: ['inProjectDe', 'inTitleDe', 'inBodyDe'],
+                fr: ['inProjectFr', 'inTitleFr', 'inBodyFr'],
+                es: ['inProjectEs', 'inTitleEs', 'inBodyEs']
+            };
+    
+            if (!val) {
+                Object.values(keys).flat().forEach(id => {
+                    const el = document.getElementById(id);
+                    if(el) el.value = "";
+                });
+                document.getElementById('inProjectEn').value = "";
+                generateProjectId();
+                return;
+            }
+    
+            // データの読み込み元を確認 (admin_master.js の変数は adminMasterData)
+            let source = [];
+            if (typeof adminMasterData !== 'undefined') source = adminMasterData;
+            else if (typeof newsData !== 'undefined') source = newsData;
+    
+            const post = source.find(p => (p.ja && p.ja.proj === val) || (p.project === val));
+    
+            if (post) {
+                if (post.ja) { // 新形式
+                    ['ja', 'en', 'de', 'fr', 'es'].forEach(l => {
+                        if(post[l]) {
+                            document.getElementById(keys[l][0]).value = post[l].proj || "";
+                            document.getElementById(keys[l][1]).value = post[l].title || "";
+                            document.getElementById(keys[l][2]).value = post[l].body || "";
+                        }
+                    });
+                    const radios = document.getElementsByName('appStatus');
+                    for (const r of radios) if (r.value === post.status) r.checked = true;
+                } else { // 旧形式
+                    document.getElementById('inProject').value = post.project || "";
+                    document.getElementById('inTitle').value = post.title || "";
+                    document.getElementById('inBody').value = post.body || "";
+                    document.getElementById('inProjectEn').value = post.project_en || "";
+                }
+                
+                const imgPath = post.image || "";
+                document.getElementById('inImage').value = imgPath;
+                document.getElementById('selectedImageText').textContent = imgPath.split('/').pop() || "画像を選択...";
+                
+                generateProjectId();
+                updatePreview();
+            }
         }
     
         // --- ID生成と存在チェック ---
@@ -585,6 +658,7 @@
                     liveLink.href = liveUrl;
                 } else {
                     // ページが存在しない -> シミュレーション表示
+                    iframe.src = "about:blank"; 
                     liveContainer.style.display = 'none';
                     simContainer.style.display = 'block';
                 }
