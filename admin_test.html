@@ -6,12 +6,9 @@
     <title>KEI Lab マスター・コックピット</title>
 
     <!-- 3つの主要データファイル読み込み -->
-    <!-- 管理者用マスターデータ -->
-    <!-- <script src="admin_master.js"></script>
-    <!-- トップページ用データ -->
-    <!-- <script src="index_news.js"></script>
-    <!-- カタログページ用データ -->
-    <!-- <script src="apps_catalog.js"></script> -->
+    <script src="admin_master.js"></script>
+    <script src="index_news.js"></script>
+    <script src="apps_catalog.js"></script>
     
     <script src="allowed_users.js"></script>
     <script src="index_phot.js"></script>
@@ -408,17 +405,12 @@
     </div>
 
     <script>
-        // ▼▼▼ 設定 ▼▼▼
+            // ▼▼▼ 設定 ▼▼▼
             const GITHUB_CONFIG = { owner: "KeiAppLab", repo: "KeiAppLab" };
             let previewLang = 'ja';
-            let currentProjectId = "";
-        
-            // ★追加: データを格納するグローバル変数を空で定義
-            let adminMasterData = [];
-            let indexNewsData = [];
-            let appsCatalogData = [];
-        
-            // --- 認証 ---
+            let currentProjectId = ""; // 現在入力中のプロジェクトID
+            
+            // --- 認証・初期化 ---
             async function checkIdentity() {
                 const token = document.getElementById('tokenInput').value.trim() || arguments[0];
                 const status = document.getElementById('authStatus');
@@ -430,45 +422,19 @@
                     const user = await res.json();
                     if (typeof allowedUsersData !== 'undefined' && allowedUsersData.includes(user.login)) {
                         localStorage.setItem('gh_token', token);
-                        // 認証成功時にダッシュボードへ
                         showDashboard();
                     } else { status.innerText = "❌ 未許可ID: " + user.login; status.style.color = "red"; }
                 } catch (err) { status.innerText = "⚠️ " + err.message; status.style.color = "red"; }
             }
-        
-            // ★変更: async にして、データ読み込みを待機する
-            async function showDashboard() {
-                const status = document.getElementById('authStatus');
-                if(status) { status.innerText = "データ読み込み中..."; status.style.color = "blue"; }
-        
-                // 1. GitHubから最新データを強制取得 (キャッシュ回避)
-                await loadAllRemoteData();
-        
+            
+            function showDashboard() {
                 document.getElementById('loginOverlay').style.display = 'none';
                 document.getElementById('mainWrapper').style.display = 'block';
-                
                 updatePreview();
-                initProjectList(); // 取得した adminMasterData を元にリスト生成
-                initImageSelector();
+                initProjectList(); // admin_master.js から履歴を生成
+                initImageSelector(); // 初回はデフォルト画像リスト
             }
-        
-            // ★追加: 3つの主要データを読み込む関数
-            async function loadAllRemoteData() {
-                // 並行して読み込むので高速です
-                const [master, index, catalog] = await Promise.all([
-                    fetchExistingJs('admin_master.js'),
-                    fetchExistingJs('index_news.js'),
-                    fetchExistingJs('apps_catalog.js')
-                ]);
-        
-                // 取得できたら変数に入れる（なければ空配列）
-                adminMasterData = master || [];
-                indexNewsData = index || [];
-                appsCatalogData = catalog || [];
-                
-                console.log("Data Loaded:", {adminMasterData, indexNewsData, appsCatalogData});
-            }
-        
+            
             function logout() { localStorage.removeItem('gh_token'); location.reload(); }
             window.addEventListener('load', () => {
                 const t = localStorage.getItem('gh_token'); if(t) checkIdentity(t); renderUserList();
@@ -712,7 +678,7 @@
             
                 try {
                     // --- A. admin_master.js (管理者用・上書き) ---
-                    let newMasterData = [...adminMasterData]; // グローバル変数からコピー
+                    let newMasterData = (typeof adminMasterData !== 'undefined') ? [...adminMasterData] : [];
                     const idx = newMasterData.findIndex(d => d.project_id === projectId);
                     if(idx >= 0) newMasterData[idx] = inputData.master; // 上書き
                     else newMasterData.push(inputData.master); // 新規
@@ -720,7 +686,7 @@
                     await writeJsFile('admin_master.js', newMasterData, "Update admin_master");
             
                     // --- B. index_news.js (トップ用・速報) ---
-                    let indexNews = [...indexNewsData]; // グローバル変数からコピー
+                    let indexNews = (typeof indexNewsData !== 'undefined') ? [...indexNewsData] : [];
                     indexNews.unshift(inputData.indexItem);
                     
                     // リリース枠(10)と更新枠(10)に分けて抽出
@@ -734,7 +700,7 @@
                     await writeJsFile('index_news.js', newIndexNews, "Update index_news");
             
                     // --- C. apps_catalog.js (一覧用・カタログ) ---
-                    let catalog = [...appsCatalogData]; // グローバル変数からコピー
+                    let catalog = (typeof appsCatalogData !== 'undefined') ? [...appsCatalogData] : [];
                     const catIdx = catalog.findIndex(d => d.project_id === projectId);
                     if(catIdx >= 0) catalog[catIdx] = inputData.catalogItem;
                     else catalog.push(inputData.catalogItem);
