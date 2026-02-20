@@ -215,6 +215,9 @@
                 <div class="menu-btn active" onclick="switchPanel('calc')">💰 収益・秒数計算</div>
                 <div class="menu-btn" onclick="switchPanel('cms')">📝 コンテンツ編集</div>
                 <div class="menu-btn" onclick="switchPanel('projects')">📂 全プロジェクト情報</div>
+                <div class="menu-btn" style="font-size:0.8rem; padding:10px 15px;" onclick="switchPanel('data-master')">📄 admin_master.js</div>
+                <div class="menu-btn" style="font-size:0.8rem; padding:10px 15px;" onclick="switchPanel('data-index')">📄 index_news.js</div>
+                <div class="menu-btn" style="font-size:0.8rem; padding:10px 15px;" onclick="switchPanel('data-catalog')">📄 apps_catalog.js</div>
                 <div class="spacer"></div>
                 <div class="menu-btn" onclick="switchPanel('users')">👥 権限管理</div>
                 <div class="menu-btn" onclick="logout()" style="margin-top:auto; background:#c0392b; color:white;">🔒 ログアウト</div>
@@ -293,8 +296,8 @@
                                     <div class="label-row">
                                         <label>アプリ紹介本文 (JP)</label>
                                         <div class="status-switch">
-                                            <label class="status-label"><input type="radio" name="appStatus" value="released" checked onchange="updatePreview()"> リリース済み</label>
-                                            <label class="status-label"><input type="radio" name="appStatus" value="coming" onchange="updatePreview()"> Coming Soon</label>
+                                            <label class="status-label"><input type="radio" name="appStatus" value="released" onchange="updatePreview()"> リリース済み</label>
+                                            <label class="status-label"><input type="radio" name="appStatus" value="coming" checked onchange="updatePreview()"> Coming Soon</label>
                                         </div>
                                     </div>
                                     <textarea id="inBody" class="input-white" rows="3" oninput="updatePreview()"></textarea>
@@ -311,8 +314,7 @@
                             <div id="group-fr" class="lang-input-group"><div class="form-group"><label>Project (FR)</label><input type="text" id="inProjectFr" class="input-white" oninput="updatePreview()"></div><div class="form-group"><label>Title (FR)</label><textarea id="inTitleFr" class="input-white" rows="2" oninput="updatePreview()"></textarea></div><div class="form-group"><label>App Intro (FR)</label><textarea id="inBodyFr" class="input-white" rows="3" oninput="updatePreview()"></textarea></div></div>
                             <div id="group-es" class="lang-input-group"><div class="form-group"><label>Project (ES)</label><input type="text" id="inProjectEs" class="input-white" oninput="updatePreview()"></div><div class="form-group"><label>Title (ES)</label><textarea id="inTitleEs" class="input-white" rows="2" oninput="updatePreview()"></textarea></div><div class="form-group"><label>App Intro (ES)</label><textarea id="inBodyEs" class="input-white" rows="3" oninput="updatePreview()"></textarea></div></div>
 
-                            <button class="btn-save" onclick="addPost()">リストに追加 (一時保存)</button>
-                            <button class="btn-copy" onclick="saveToGitHub()">🚀 GitHubへ直接保存</button>
+                            <button class="btn-save" style="margin-top:20px;" onclick="saveToGitHub()">🚀 GitHubへ更新保存</button>
                         </div>
 
                         <!-- プレビュー (60%) -->
@@ -388,7 +390,27 @@
                         <p>ここで登録されたアプリ一覧（apps_catalog.js）を管理します（実装準備中）</p>
                     </div>
                 </div>
-                
+                 <div id="panel-data-master" class="panel">
+                    <div class="calc-container" style="max-width:100%;">
+                        <h2>📄 admin_master.js (直接編集)</h2>
+                        <textarea id="raw-admin-master" style="width:100%; height:50vh; background:#1e1e1e; color:#0f0; font-family:monospace; padding:10px;"></textarea>
+                        <button class="btn-save" onclick="saveRawData('admin_master.js', 'raw-admin-master')">💾 上書き保存</button>
+                    </div>
+                </div>
+                <div id="panel-data-index" class="panel">
+                    <div class="calc-container" style="max-width:100%;">
+                        <h2>📄 index_news.js (直接編集)</h2>
+                        <textarea id="raw-index-news" style="width:100%; height:50vh; background:#1e1e1e; color:#0f0; font-family:monospace; padding:10px;"></textarea>
+                        <button class="btn-save" onclick="saveRawData('index_news.js', 'raw-index-news')">💾 上書き保存</button>
+                    </div>
+                </div>
+                <div id="panel-data-catalog" class="panel">
+                    <div class="calc-container" style="max-width:100%;">
+                        <h2>📄 apps_catalog.js (直接編集)</h2>
+                        <textarea id="raw-apps-catalog" style="width:100%; height:50vh; background:#1e1e1e; color:#0f0; font-family:monospace; padding:10px;"></textarea>
+                        <button class="btn-save" onclick="saveRawData('apps_catalog.js', 'raw-apps-catalog')">💾 上書き保存</button>
+                    </div>
+                </div>
                 <div id="panel-users" class="panel">
                     <div class="calc-container">
                         <h2>👥 編集権限者の管理</h2>
@@ -446,6 +468,15 @@
                 document.querySelectorAll('.menu-btn').forEach(e => e.classList.remove('active'));
                 document.getElementById('panel-' + id).classList.add('active');
                 event.currentTarget.classList.add('active');
+    
+                // パネルが開かれたらデータをJSON文字列にして表示
+                if (id === 'data-master') {
+                    document.getElementById('raw-admin-master').value = JSON.stringify(typeof adminMasterData !== 'undefined' ? adminMasterData :[], null, 4);
+                } else if (id === 'data-index') {
+                    document.getElementById('raw-index-news').value = JSON.stringify(typeof indexNewsData !== 'undefined' ? indexNewsData :[], null, 4);
+                } else if (id === 'data-catalog') {
+                    document.getElementById('raw-apps-catalog').value = JSON.stringify(typeof appsCatalogData !== 'undefined' ? appsCatalogData :[], null, 4);
+                }
             }
             
             // --- CMSロジック: 初期化と入力補助 ---
@@ -672,10 +703,26 @@
                 if(isComingSoon) { appImg.classList.add('coming-soon-mode'); overlay.style.display = 'block'; } else { appImg.classList.remove('coming-soon-mode'); overlay.style.display = 'none'; }
             
                 // 4. 詳細ページ (シミュレーション)
-                document.getElementById('prevPageTitle').textContent=title;
-                document.getElementById('prevPageDate').textContent=date;
-                document.getElementById('prevPageProject').textContent=proj;
-                document.getElementById('prevBody').innerHTML=title; // 詳細ページではニュース本文(＝お知らせ)を表示
+                document.getElementById('prevPageTitle').textContent=proj;
+                // prevPageDate と prevPageProject は非表示(空白)にする
+                document.getElementById('prevPageDate').textContent="";
+                document.getElementById('prevPageProject').textContent="";
+                
+                // アプリ紹介本文 ＋ ニュース予定 ＋ 全履歴リンク を組み立てて流し込む
+                let simHtml = `
+                    <div style="margin-bottom: 20px; line-height:1.6;">${body}</div>
+                    
+                    <h3 style="border-bottom:2px solid #ccc; padding-bottom:5px;">最新のニュース</h3>
+                    <div style="margin-top:10px; padding:15px; background:#f9f9f9; border-left:4px solid #0056b3; border-radius:4px;">
+                        <div style="color:#666; font-size:0.8rem; margin-bottom:5px;">${date}</div>
+                        <div style="font-weight:bold;">${title}</div>
+                    </div>
+                    
+                    <div style="margin-top:15px; text-align:right;">
+                        <a href="#" style="color:#0056b3; text-decoration:none;">▶ すべての更新履歴を見る。</a>
+                    </div>
+                `;
+                document.getElementById('prevBody').innerHTML = simHtml;
             }
             
             // --- ★核心：保存ロジック ---
@@ -756,6 +803,21 @@
                 } catch (err) {
                     console.error(err);
                     alert("❌ 保存中にエラーが発生しました:\n" + err.message);
+                }
+            }
+
+            // 直接編集データの保存
+            async function saveRawData(filename, textareaId) {
+                try {
+                    const rawVal = document.getElementById(textareaId).value;
+                    const parsedData = JSON.parse(rawVal); // 構文エラーがないかチェック
+                    if(!confirm(`${filename} を手動で上書き保存します。よろしいですか？`)) return;
+                    
+                    await writeJsFile(filename, parsedData, `Manual edit ${filename}`);
+                    alert("✅ 保存しました！");
+                    location.reload();
+                } catch (e) {
+                    alert("❌ JSONの形式（記号やカンマ等）が正しくありません。\n" + e.message);
                 }
             }
             
@@ -901,33 +963,61 @@
             
                 // テンプレートHTML (scriptタグのエスケープ処理済み)
                 const htmlContent = `<!DOCTYPE html>
-            <html lang="ja">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>${projectId}</title>
-                <!-- 共通CSSやJSを読み込む -->
-                <script src="news.js"><\/script>
-            </head>
-            <body>
-                <h1>App Page: ${projectId}</h1>
-                <p>This page was automatically generated.</p>
-                <div id="news-container"></div>
-                <script>
-                    // newsDataを使って表示するロジック
-                    const container = document.getElementById('news-container');
-                    if(typeof newsData !== 'undefined'){
-                        newsData.forEach(item => {
-                            const div = document.createElement('div');
-                            div.className = 'news-box';
-                            div.style.marginBottom = '10px';
-                            div.innerHTML = '<b>' + item.date + '</b>: ' + (item.title_ja || item.title_en);
-                            container.appendChild(div);
-                        });
-                    }
-                <\/script>
-            </body>
-            </html>`;
+                <html lang="ja">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>${projectId}</title>
+                    <style>
+                        body { font-family: 'Noto Serif JP', sans-serif; background: #fff; color: #333; padding: 20px; max-width: 800px; margin: 0 auto; line-height: 1.8; }
+                        h1 { border-bottom: 3px solid #0056b3; display: inline-block; padding-bottom: 5px; margin-bottom: 20px; font-size: 1.5rem; }
+                        img { max-width: 100%; border-radius: 10px; margin: 20px 0; }
+                        .news-box { margin-top: 15px; padding: 15px; background: #f9f9f9; border-left: 4px solid #0056b3; border-radius:4px; }
+                        .date { color: #666; font-size: 0.8rem; margin-bottom: 5px; }
+                        .history-link { display: block; margin-top: 15px; text-align: right; color: #0056b3; text-decoration: none; font-weight:bold; }
+                        .history-link:hover { text-decoration: underline; }
+                    </style>
+                </head>
+                <body>
+                    <h1 id="app-title">${projectId}</h1>
+                    <img src="index.png" alt="App Image" id="app-img">
+                    
+                    <div id="app-desc" style="margin-bottom: 30px;"></div>
+                    
+                    <h3 style="border-bottom:2px solid #ccc; padding-bottom:5px;">最新のニュース</h3>
+                    <div id="news-container"></div>
+                    
+                    <a href="old_news.js" class="history-link" onclick="alert('アーカイブページへ移動します'); return false;">▶ すべての更新履歴を見る。</a>
+                
+                    <!-- データファイルの読み込み (階層に注意: 一つ上の階層のカタログを読む) -->
+                    <script src="../apps_catalog.js"><\/script>
+                    <script src="news.js"><\/script>
+                    <script>
+                        // 1. カタログから自身の紹介文を取得して表示
+                        if (typeof appsCatalogData !== 'undefined') {
+                            const myApp = appsCatalogData.find(app => app.project_id === '${projectId}');
+                            if (myApp) {
+                                document.getElementById('app-title').innerText = myApp.project_ja || '${projectId}';
+                                document.getElementById('app-desc').innerText = myApp.body_ja || '';
+                            }
+                        }
+                        
+                        // 2. ニュースを表示
+                        const container = document.getElementById('news-container');
+                        if(typeof newsData !== 'undefined' && newsData.length > 0){
+                            newsData.forEach(item => {
+                                const div = document.createElement('div');
+                                div.className = 'news-box';
+                                // 日本語タイトルがあればそれを、なければ英語を表示
+                                div.innerHTML = '<div class="date">' + item.date + '</div><div style="font-weight:bold;">' + (item.title_ja || item.title_en) + '</div>';
+                                container.appendChild(div);
+                            });
+                        } else {
+                            container.innerHTML = '<p>現在お知らせはありません。</p>';
+                        }
+                    <\/script>
+                </body>
+                </html>`;
             
                 const encoded = btoa(unescape(encodeURIComponent(htmlContent)));
                 
@@ -996,8 +1086,6 @@
                 document.getElementById('calcOutput').innerText = seconds + " 秒";
             }
             
-            // addPostは一時保存用（メモリ内）
-            function addPost() { alert("一時保存しました（ページリロードで消えます）"); }
         </script>
     </body>
     </html>
