@@ -20,5 +20,27 @@ const adminMasterData = [
         "body_de": "Verwalten Sie Ihr verbleibendes Freiminuten-Kontingent clever – mit präziser 30-Sekunden-Taktung und praktischer Anzeige direkt auf Ihrem Home-Bildschirm.",
         "body_fr": "Gérez intelligemment le solde de votre forfait d'appels gratuits grâce à un calcul précis par paliers de 30 secondes et un affichage direct sur votre écran d'accueil.",
         "body_es": "Gestione de forma inteligente el saldo restante de su plan gratuito con cálculos precisos en intervalos de 30 segundos y visualización mediante un widget en su pantalla de inicio."
+    },
+    {
+        "project_id": "kei_applab",
+        "date": "2026.02.12",
+        "category": "start",
+        "image": "index_phot/KEI_App_Lab.png",
+        "status": "coming",
+        "project_ja": "啓(KEI)AppLab",
+        "project_en": "KEI AppLab",
+        "project_de": "",
+        "project_fr": "",
+        "project_es": "",
+        "title_ja": " この度、屋号として新たな一歩を踏み出し、起業することを決意いたしました。",
+        "title_en": " I have officially decided to launch my own business under the trade name KEI AppLab.",
+        "title_de": "",
+        "title_fr": "",
+        "title_es": "",
+        "body_ja": "なぜ起業するのか？それは、私たちが掲げるアプリ構想に十分な採算性と、社会的な価値が認められると判断したからです。\nメッセージ： 挑戦の始まりに、心からの祝福を。",
+        "body_en": " Why start a company? Because I have determined that my app concepts have clear commercial viability and significant market potential.\nMessage: Congratulations on this new beginning!",
+        "body_de": "",
+        "body_fr": "",
+        "body_es": ""
     }
 ];
