@@ -430,11 +430,31 @@
             // ▼▼▼ 設定 ▼▼▼
             const GITHUB_CONFIG = { owner: "KeiAppLab", repo: "KeiAppLab" };
             let previewLang = 'ja';
-            let currentProjectId = ""; // 現在入力中のプロジェクトID
+            let currentProjectId = "";
             
-            // --- 認証・初期化 ---
+            // 日付の初期化用関数
+            function getTodayString() {
+                const d = new Date();
+                return d.getFullYear() + '.' + (d.getMonth()+1).toString().padStart(2,'0') + '.' + d.getDate().toString().padStart(2,'0');
+            }
+            
+            // 簡易通知（トースト）を表示する関数
+            function showToast(message) {
+                let toast = document.getElementById('custom-toast');
+                if (!toast) {
+                    toast = document.createElement('div');
+                    toast.id = 'custom-toast';
+                    toast.style.cssText = "position:fixed; bottom:20px; right:20px; background:#0056b3; color:#fff; padding:10px 20px; border-radius:5px; z-index:9999; transition:opacity 0.3s;";
+                    document.body.appendChild(toast);
+                }
+                toast.textContent = message;
+                toast.style.opacity = '1';
+                setTimeout(() => { toast.style.opacity = '0'; }, 2000);
+            }
+            
+            // --- 認証 ---
             async function checkIdentity() {
-                const token = document.getElementById('tokenInput').value.trim() || arguments[0];
+                const token = document.getElementById('tokenInput').value.trim() || arguments;
                 const status = document.getElementById('authStatus');
                 if (!token) { status.innerText = "⚠️ トークンを入力"; status.style.color = "orange"; return; }
                 status.innerText = "確認中..."; status.style.color = "black";
@@ -452,9 +472,12 @@
             function showDashboard() {
                 document.getElementById('loginOverlay').style.display = 'none';
                 document.getElementById('mainWrapper').style.display = 'block';
+                
+                document.getElementById('inDate').value = getTodayString();
+                
                 updatePreview();
-                initProjectList(); // admin_master.js から履歴を生成
-                initImageSelector(); // 初回はデフォルト画像リスト
+                initProjectList();
+                initImageSelector();
             }
             
             function logout() { localStorage.removeItem('gh_token'); location.reload(); }
@@ -462,14 +485,14 @@
                 const t = localStorage.getItem('gh_token'); if(t) checkIdentity(t); renderUserList();
             });
             
-            // --- パネル切り替え ---
+            // --- パネル ---
             function switchPanel(id) {
                 document.querySelectorAll('.panel').forEach(e => e.classList.remove('active'));
                 document.querySelectorAll('.menu-btn').forEach(e => e.classList.remove('active'));
                 document.getElementById('panel-' + id).classList.add('active');
                 event.currentTarget.classList.add('active');
-    
-                // パネルが開かれたらデータをJSON文字列にして表示
+            
+                // 直接編集パネルが開かれたらデータを表示
                 if (id === 'data-master') {
                     document.getElementById('raw-admin-master').value = JSON.stringify(typeof adminMasterData !== 'undefined' ? adminMasterData :[], null, 4);
                 } else if (id === 'data-index') {
@@ -479,18 +502,21 @@
                 }
             }
             
-            // --- CMS基本 ---
-            let allPosts =[];
-            
-            // 日付の初期化用関数（今日の日付を返す）
-            function getTodayString() {
-                const d = new Date();
-                return d.getFullYear() + '.' + (d.getMonth()+1).toString().padStart(2,'0') + '.' + d.getDate().toString().padStart(2,'0');
+            // 直接編集データの保存
+            async function saveRawData(filename, textareaId) {
+                try {
+                    const rawVal = document.getElementById(textareaId).value;
+                    const parsedData = JSON.parse(rawVal);
+                    if(!confirm(`${filename} を手動で上書き保存します。よろしいですか？`)) return;
+                    
+                    await writeJsFile(filename, parsedData, `Manual edit ${filename}`);
+                    alert("✅ 保存しました！");
+                    location.reload();
+                } catch (e) {
+                    alert("❌ JSONの形式が正しくありません。\n" + e.message);
+                }
             }
             
-            // 初回ロード時に今日の日付をセット
-            document.getElementById('inDate').value = getTodayString();
-    
             function switchEditorLang(lang) {
                 document.querySelectorAll('.lang-input-group').forEach(e => e.classList.remove('active'));
                 document.getElementById('group-' + lang).classList.add('active');
@@ -498,7 +524,7 @@
                 event.currentTarget.classList.add('active');
                 previewLang = lang; updatePreview();
             }
-    
+            
             // --- プロジェクト入力 ---
             function initProjectList() {
                 if (typeof adminMasterData === 'undefined') return;
@@ -511,7 +537,7 @@
                     sel.appendChild(option);
                 });
             }
-    
+            
             function syncProjectSelect() {
                 const sel = document.getElementById('projectSelectHelper');
                 const pid = sel.value;
@@ -521,21 +547,7 @@
                     sel.selectedIndex=0; 
                 }
             }
-    
-            // 簡易通知（トースト）を表示する関数
-            function showToast(message) {
-                let toast = document.getElementById('custom-toast');
-                if (!toast) {
-                    toast = document.createElement('div');
-                    toast.id = 'custom-toast';
-                    toast.style.cssText = "position:fixed; bottom:20px; right:20px; background:#0056b3; color:#fff; padding:10px 20px; border-radius:5px; z-index:9999; transition:opacity 0.3s;";
-                    document.body.appendChild(toast);
-                }
-                toast.textContent = message;
-                toast.style.opacity = '1';
-                setTimeout(() => { toast.style.opacity = '0'; }, 2000);
-            }
-    
+            
             function fillForm(data) {
                 const langs =;
                 langs.forEach(lang => {
@@ -544,27 +556,24 @@
                     document.getElementById('inTitle' + suffix).value = data || "";
                     document.getElementById('inBody' + suffix).value = data || "";
                 });
+                
                 setImageValue(data.image || "");
                 
-                // ステータスのセット
                 if (data.status) {
                     const radio = document.querySelector(`input`);
                     if(radio) radio.checked = true;
                 }
                 
-                // ★追加: 履歴の日付をセットする
                 if (data.date) {
                     document.getElementById('inDate').value = data.date;
-                    showToast(`履歴の日付(${data.date})を読み込みました`); // ポップアップ通知
+                    showToast(`履歴の日付(${data.date})を読み込みました`);
                 }
-    
+            
                 currentProjectId = data.project_id;
                 updatePreview();
-                // checkProjectImages(data.project_id); は削除されたので呼ばない
                 checkProjectUrl(data.project_id);
             }
-    
-            // フォームを完全に真っ白（新規プロジェクト状態）にする関数
+            
             function clearForm() {
                 const langs =;
                 langs.forEach(lang => {
@@ -574,28 +583,19 @@
                     document.getElementById('inBody' + suffix).value = "";
                 });
                 
-                // 日付を「今日」に戻す
                 document.getElementById('inDate').value = getTodayString();
-                
-                // IDリセット
                 currentProjectId = "";
                 setImageValue("");
                 
-                // プレビュー表示をリセット
                 updatePreview();
-                checkProjectUrl(""); // 存在しないのでシミュレーション画面に戻る
-                
+                checkProjectUrl("");
                 showToast("新規作成用にフォームをクリアしました");
             }
-    
-            // 日本語プロジェクト名が手動で消去されたときの監視（完全クリア）
+            
             document.getElementById('inProject').addEventListener('input', function() {
-                if (this.value.trim() === "") {
-                    clearForm();
-                }
+                if (this.value.trim() === "") clearForm();
             });
-    
-            // 英語名入力でID生成
+            
             document.getElementById('inProjectEn').addEventListener('input', function() {
                 const enName = this.value.trim();
                 if (enName) {
@@ -607,15 +607,13 @@
                 }
                 updatePreview();
             });
-    
+            
             // --- 画像処理 ---
-            // ※checkProjectImages関数は削除され、常に index_phot/ フォルダの画像を参照します。
-    
             function initImageSelector() {
                 const list = (typeof photoList !== 'undefined') ? photoList :;
                 renderImageSelector(list, "index_phot/");
             }
-    
+            
             function renderImageSelector(list, basePath) {
                 const c = document.getElementById('imageOptions'); c.innerHTML='';
                 list.forEach(n => {
@@ -626,27 +624,25 @@
                     c.appendChild(d);
                 });
             }
-    
+            
             function toggleImageSelect(){ document.querySelector('.custom-select').classList.toggle('open'); }
             function selectImage(p, n){ document.getElementById('inImage').value = p; document.getElementById('selectedImageText').textContent = n; document.querySelector('.custom-select').classList.remove('open'); updatePreview(); }
             function setImageValue(p){ document.getElementById('inImage').value=p; document.getElementById('selectedImageText').textContent=p.split('/').pop()||"画像を選択..."; }
             window.onclick=e=>{ if(!e.target.closest('.custom-select')) document.querySelector('.custom-select').classList.remove('open'); }
-           
-            // --- プレビューロジック ---
+            
+            
+            // --- プレビュー ---
             function checkProjectUrl(projectId) {
-                // 簡易ロジック: adminMasterDataにIDがあれば「既存」とみなしてiframe表示
                 const exists = typeof adminMasterData !== 'undefined' && adminMasterData.some(d => d.project_id === projectId);
                 const iframe = document.getElementById('prevIframe');
-                const realPreview = document.getElementById('realPagePreview');
-                const simPreview = document.getElementById('simulatedPagePreview');
+                const real = document.getElementById('realPagePreview');
+                const sim = document.getElementById('simulatedPagePreview');
                 
-                if (exists) {
-                    realPreview.style.display = 'block';
-                    simPreview.style.display = 'none';
+                if (exists && projectId !== "") {
+                    real.style.display = 'block'; sim.style.display = 'none';
                     iframe.src = `https://${GITHUB_CONFIG.owner.toLowerCase()}.github.io/${GITHUB_CONFIG.repo}/${projectId}/index.html`;
                 } else {
-                    realPreview.style.display = 'none';
-                    simPreview.style.display = 'block';
+                    real.style.display = 'none'; sim.style.display = 'block';
                 }
             }
             
@@ -658,60 +654,51 @@
                 
                 const proj = document.getElementById('inProject'+s).value || "Project";
                 const title = document.getElementById('inTitle'+s).value || "Title";
-                const body = document.getElementById('inBody'+s).value || "App Intro Body...";
-                const statusRadio = document.querySelector('input[name="appStatus"]:checked');
-                const isComingSoon = statusRadio && statusRadio.value === 'coming';
+                const body = document.getElementById('inBody'+s).value || "App Intro...";
+                
+                const statusEl = document.querySelector('input:checked');
+                const isComing = statusEl ? (statusEl.value === 'coming') : true;
             
-                // 1. お知らせリスト (Titleを表示)
+                // お知らせ
                 document.getElementById('prevDate').textContent=date;
                 document.getElementById('prevTitle').textContent=title;
                 document.getElementById('prevProjectName').textContent=proj;
                 const tag = document.getElementById('prevTag');
-                tag.className='news-tag tag-'+cat;
-                // 多言語マッピング省略
-                tag.textContent = cat; 
+                tag.className='news-tag tag-'+cat; tag.textContent=cat;
             
                 // 画像
-                const setImg = (id) => {
-                    const el = document.getElementById(id); el.src=img;
-                    el.style.display = img ? 'block' : 'none';
-                };
+                const setImg = (id) => { const el = document.getElementById(id); el.src=img; el.style.display=img?'block':'none'; };
                 setImg('prevImg'); setImg('prevAppImg'); setImg('prevPageImg');
             
-                // 2. 最新の活動 (Titleを表示)
-                const card1 = document.getElementById('prevHighlightCard');
-                // リリース枠以外は少し薄くするなどの処理があればここに
-                if(['release','start','steam'].includes(cat)) { card1.classList.remove('dimmed'); } else { card1.classList.add('dimmed'); }
-    
+                // カード1
                 document.getElementById('prevCardTitle').textContent=title;
                 document.getElementById('prevCardProj').textContent=proj;
                 document.getElementById('prevCardDate').textContent=date;
                 const badge = document.getElementById('prevCardCatBadge');
                 badge.textContent=cat; badge.className='highlight-category-badge tag-'+cat;
                 
-                // 3. アプリ紹介 (Bodyを表示)
-                document.getElementById('prevAppProj').textContent = proj;
-                document.getElementById('prevAppDesc').textContent = body; // ここは紹介文
-                const appImg = document.getElementById('prevAppImg');
-                const overlay = document.getElementById('comingSoonOverlay');
-                if(isComingSoon) { appImg.classList.add('coming-soon-mode'); overlay.style.display = 'block'; } else { appImg.classList.remove('coming-soon-mode'); overlay.style.display = 'none'; }
+                const card1 = document.getElementById('prevHighlightCard');
+                if(.includes(cat)) { card1.classList.remove('dimmed'); } else { card1.classList.add('dimmed'); }
             
-                // 4. 詳細ページ (シミュレーション)
+                // カード2
+                document.getElementById('prevAppProj').textContent=proj;
+                document.getElementById('prevAppDesc').textContent=body;
+                const appImg = document.getElementById('prevAppImg');
+                const ov = document.getElementById('comingSoonOverlay');
+                if(isComing){ appImg.classList.add('coming-soon-mode'); ov.style.display='block'; } else { appImg.classList.remove('coming-soon-mode'); ov.style.display='none'; }
+            
+                // 詳細ページシミュレーション
                 document.getElementById('prevPageTitle').textContent=proj;
-                // prevPageDate と prevPageProject は非表示(空白)にする
                 document.getElementById('prevPageDate').textContent="";
                 document.getElementById('prevPageProject').textContent="";
                 
-                // アプリ紹介本文 ＋ ニュース予定 ＋ 全履歴リンク を組み立てて流し込む
                 let simHtml = `
-                    <div style="margin-bottom: 20px; line-height:1.6;">${body}</div>
-                    
+                    <div style="margin-bottom: 20px; line-height:1.6;">${body.replace(/\n/g, '<br>')}</div>
                     <h3 style="border-bottom:2px solid #ccc; padding-bottom:5px;">最新のニュース</h3>
                     <div style="margin-top:10px; padding:15px; background:#f9f9f9; border-left:4px solid #0056b3; border-radius:4px;">
                         <div style="color:#666; font-size:0.8rem; margin-bottom:5px;">${date}</div>
                         <div style="font-weight:bold;">${title}</div>
                     </div>
-                    
                     <div style="margin-top:15px; text-align:right;">
                         <a href="#" style="color:#0056b3; text-decoration:none;">▶ すべての更新履歴を見る。</a>
                     </div>
@@ -719,174 +706,104 @@
                 document.getElementById('prevBody').innerHTML = simHtml;
             }
             
-            // --- ★核心：保存ロジック ---
+            // --- ★保存ロジック ---
             async function saveToGitHub() {
                 const token = localStorage.getItem("gh_token");
                 if (!token) { alert("認証が必要です"); return; }
             
-                // 1. プロジェクトIDチェック
                 const projectEn = document.getElementById('inProjectEn').value.trim();
                 if (!projectEn) { alert("⚠️ 英語のプロジェクト名を入力してください（ID生成に必要です）"); return; }
-                
                 const projectId = projectEn.replace(/\s+/g, '_').toLowerCase();
                 
-                if(!confirm(`以下のIDで保存処理を開始します。\nProject ID: ${projectId}\n\nよろしいですか？`)) return;
+                if(!confirm(`ID: ${projectId}\nで保存します。よろしいですか？`)) return;
             
-                // 入力データの収集
                 const inputData = getInputData(projectId);
             
                 try {
-                    // --- A. admin_master.js (管理者用・上書き) ---
-                    let newMasterData = (typeof adminMasterData !== 'undefined') ? [...adminMasterData] : [];
-                    const idx = newMasterData.findIndex(d => d.project_id === projectId);
-                    if(idx >= 0) newMasterData[idx] = inputData.master; // 上書き
-                    else newMasterData.push(inputData.master); // 新規
-                    
-                    await writeJsFile('admin_master.js', newMasterData, "Update admin_master");
+                    // 1. admin_master.js (上書き)
+                    let newMaster = (typeof adminMasterData !== 'undefined') ? :[];
+                    const idx = newMaster.findIndex(d => d.project_id === projectId);
+                    if(idx >= 0) newMaster = inputData.master; else newMaster.push(inputData.master);
+                    await writeJsFile('admin_master.js', newMaster, "Update admin_master");
             
-                    // --- B. index_news.js (トップ用・速報) ---
-                    let indexNews = (typeof indexNewsData !== 'undefined') ? [...indexNewsData] : [];
+                    // 2. index_news.js (追記＆フィルタ)
+                    let indexNews = (typeof indexNewsData !== 'undefined') ? :[];
                     indexNews.unshift(inputData.indexItem);
                     
-                    // リリース枠(10)と更新枠(10)に分けて抽出
-                    const releaseCats = ['release', 'start', 'steam'];
-                    const updateCats = ['update', 'game'];
-                    
-                    const releases = indexNews.filter(i => releaseCats.includes(i.category)).slice(0, 10);
-                    const updates = indexNews.filter(i => updateCats.includes(i.category)).slice(0, 10);
-                    const newIndexNews = [...releases, ...updates];
-                    
-                    await writeJsFile('index_news.js', newIndexNews, "Update index_news");
+                    const releases = indexNews.filter(i =>.includes(i.category)).slice(0, 10);
+                    const updates = indexNews.filter(i =>.includes(i.category)).slice(0, 10);
+                    await writeJsFile('index_news.js',, "Update index_news");
             
-                    // --- C. apps_catalog.js (一覧用・カタログ) ---
-                    let catalog = (typeof appsCatalogData !== 'undefined') ? [...appsCatalogData] : [];
-                    const catIdx = catalog.findIndex(d => d.project_id === projectId);
-                    if(catIdx >= 0) catalog[catIdx] = inputData.catalogItem;
-                    else catalog.push(inputData.catalogItem);
-                    
+                    // 3. apps_catalog.js (上書き)
+                    let catalog = (typeof appsCatalogData !== 'undefined') ? :[];
+                    const cIdx = catalog.findIndex(d => d.project_id === projectId);
+                    if(cIdx >= 0) catalog = inputData.catalogItem; else catalog.push(inputData.catalogItem);
                     await writeJsFile('apps_catalog.js', catalog, "Update apps_catalog");
             
-                    // --- D. [id]/news.js (個別最新3件) ---
+                    // 4./news.js (個別最新3件)
                     const newsPath = `${projectId}/news.js`;
-                    let currentAppNews = await fetchExistingJs(newsPath) || [];
-                    currentAppNews.unshift(inputData.newsItem);
-                    const newAppNews = currentAppNews.slice(0, 3); // 最新3件
-                    
-                    await writeJsFile(newsPath, newAppNews, `Update ${projectId} news`);
+                    let appNews = await fetchExistingJs(newsPath) ||[];
+                    appNews.unshift(inputData.newsItem);
+                    await writeJsFile(newsPath, appNews.slice(0, 3), `Update ${projectId} news`);
             
-                    // --- E. [id]/old_news.js (アーカイブ) ---
+                    // 5./old_news.js (アーカイブ)
                     const oldNewsPath = `${projectId}/old_news.js`;
-                    let currentOldNews = await fetchExistingJs(oldNewsPath) || [];
-                    currentOldNews.unshift(inputData.newsItem); // 全件保存（削除なし）
-                    
-                    await writeJsFile(oldNewsPath, currentOldNews, `Update ${projectId} archive`);
+                    let oldNews = await fetchExistingJs(oldNewsPath) ||[];
+                    oldNews.unshift(inputData.newsItem);
+                    await writeJsFile(oldNewsPath, oldNews, `Update ${projectId} archive`);
             
-                    // --- F. 画像コピー & HTML生成 (新規プロジェクト時) ---
-                    // 画像パスが index_phot/ 始まりなら、それを [id]/index.png にコピー
+                    // 6. 画像とHTML
                     if (inputData.master.image.startsWith('index_phot/')) {
                         await copyImageToProject(inputData.master.image, `${projectId}/index.png`);
                     }
-            
-                    // HTML生成 ([id]/index.html がなければ作成)
                     await createProjectHtml(projectId);
             
-                    alert("✅ 全てのデータの保存が完了しました！");
-                    // データをリロード（簡易リロード）
+                    alert("✅ 全ての保存が完了しました！");
                     location.reload();
             
-                } catch (err) {
-                    console.error(err);
-                    alert("❌ 保存中にエラーが発生しました:\n" + err.message);
-                }
-            }
-
-            // 直接編集データの保存
-            async function saveRawData(filename, textareaId) {
-                try {
-                    const rawVal = document.getElementById(textareaId).value;
-                    const parsedData = JSON.parse(rawVal); // 構文エラーがないかチェック
-                    if(!confirm(`${filename} を手動で上書き保存します。よろしいですか？`)) return;
-                    
-                    await writeJsFile(filename, parsedData, `Manual edit ${filename}`);
-                    alert("✅ 保存しました！");
-                    location.reload();
-                } catch (e) {
-                    alert("❌ JSONの形式（記号やカンマ等）が正しくありません。\n" + e.message);
-                }
+                } catch (err) { alert("❌ エラー: " + err.message); console.error(err); }
             }
             
-            // データ収集ヘルパー
             function getInputData(pid) {
                 const date = document.getElementById('inDate').value;
                 const cat = document.getElementById('inCategory').value;
-                const img = document.getElementById('inImage').value; // フルパス
-                const status = document.querySelector('input[name="appStatus"]:checked').value;
+                const img = document.getElementById('inImage').value;
+                const status = document.querySelector('input:checked').value;
                 
-                // 多言語データの取得
-                const langs = ['ja', 'en', 'de', 'fr', 'es'];
+                const langs =;
                 let names={}, titles={}, bodies={};
                 langs.forEach(l => {
                     const s = l==='ja'?'':l.charAt(0).toUpperCase()+l.slice(1);
-                    names['project_'+l] = document.getElementById('inProject'+s).value;
-                    titles['title_'+l] = document.getElementById('inTitle'+s).value; // お知らせ
-                    bodies['body_'+l] = document.getElementById('inBody'+s).value; // アプリ紹介
+                    names = document.getElementById('inProject'+s).value;
+                    titles = document.getElementById('inTitle'+s).value;
+                    bodies = document.getElementById('inBody'+s).value;
                 });
             
-                // 1. Master用 (全部入り)
                 const master = { project_id: pid, date, category: cat, image: img, status, ...names, ...titles, ...bodies };
-            
-                // 2. Index用 (お知らせ重視・紹介文なし・画像は固定パス化)
-                const indexItem = {
-                    id: Date.now(), // 一意のID
-                    date, category: cat,
-                    image: `${pid}/index.png`, // 固定パス
-                    link: `${pid}/index.html`,
-                    ...names, ...titles // 紹介文なし
-                };
-            
-                // 3. Catalog用 (紹介文重視・お知らせなし)
-                const catalogItem = {
-                    project_id: pid,
-                    status,
-                    image: `${pid}/index.png`,
-                    ...names, ...bodies // お知らせなし
-                };
-            
-                // 4. AppNews用 (お知らせのみ)
-                const newsItem = {
-                    date, category: cat,
-                    ...titles // お知らせのみ
-                };
+                const indexItem = { id: Date.now(), date, category: cat, image: `${pid}/index.png`, link: `${pid}/index.html`, ...names, ...titles };
+                const catalogItem = { project_id: pid, status, image: `${pid}/index.png`, ...names, ...bodies };
+                const newsItem = { date, category: cat, ...titles };
             
                 return { master, indexItem, catalogItem, newsItem };
             }
             
-            // GitHub API ヘルパー: ファイル書き込み
             async function writeJsFile(path, dataObj, msg) {
                 const token = localStorage.getItem("gh_token");
-                // 既存ファイルのSHAを取得して上書き
                 let sha = null;
                 try {
-                    const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
-                        headers: { Authorization: `token ${token}` }
-                    });
-                    if (res.ok) {
-                        const json = await res.json();
-                        sha = json.sha;
-                    }
-                } catch(e) {}
+                    const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, { headers: { Authorization: `token ${token}` } });
+                    if(res.ok) sha = (await res.json()).sha;
+                } catch(e){}
             
-                // JSファイル形式に変換
-                // pathから変数名を推測 (簡易的)
                 let varName = "data";
                 if(path.includes("admin_master")) varName = "adminMasterData";
                 else if(path.includes("index_news")) varName = "indexNewsData";
                 else if(path.includes("apps_catalog")) varName = "appsCatalogData";
-                else if(path.includes("old_news")) varName = "oldNewsData"; // 先に判定
+                else if(path.includes("old_news")) varName = "oldNewsData";
                 else if(path.includes("news")) varName = "newsData";
             
-                const contentStr = `const ${varName} = ${JSON.stringify(dataObj, null, 4)};`;
-                const encoded = btoa(unescape(encodeURIComponent(contentStr)));
+                const content = `const ${varName} = ${JSON.stringify(dataObj, null, 4)};`;
+                const encoded = btoa(unescape(encodeURIComponent(content)));
             
                 const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
                     method: "PUT",
@@ -896,71 +813,47 @@
                 if (!res.ok) throw new Error(`Failed to write ${path}`);
             }
             
-            // GitHub API ヘルパー: 既存JSの読み込み
             async function fetchExistingJs(path) {
                 const token = localStorage.getItem("gh_token");
                 try {
-                    const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
-                        headers: { Authorization: `token ${token}` } // キャッシュ回避推奨
-                    });
+                    const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, { headers: { Authorization: `token ${token}` } });
                     if (!res.ok) return null;
                     const json = await res.json();
                     const content = decodeURIComponent(escape(atob(json.content)));
-                    // JSON部分を抽出
-                    const match = content.match(/\[.*\]/s); // 配列を探す
-                    if (match) return JSON.parse(match[0]);
-                } catch (e) { console.log("File not found or parse error:", path); }
+                    const match = content.match(/\/s);
+                    if (match) return JSON.parse(match);
+                } catch (e) { }
                 return null;
             }
             
-            // 画像コピー
-            async function copyImageToProject(srcPath, destPath) {
+            async function copyImageToProject(src, dest) {
                 const token = localStorage.getItem("gh_token");
-                // 1. 元画像をバイナリ(Blob->Base64)で取得
-                const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${srcPath}`, {
-                    headers: { Authorization: `token ${token}` }
-                });
-                if(!res.ok) return; // 画像がない
+                const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${src}`, { headers: { Authorization: `token ${token}` } });
+                if(!res.ok) return;
                 const data = await res.json();
-                const content = data.content; // Base64のまま
-            
-                // 2. 宛先に書き込み (存在チェックして上書きするか、常にするか。ここでは常に上書き)
+                
                 let sha = null;
                 try {
-                    const check = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${destPath}`, {
-                         headers: { Authorization: `token ${token}` }
-                    });
+                    const check = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${dest}`, { headers: { Authorization: `token ${token}` } });
                     if(check.ok) sha = (await check.json()).sha;
                 } catch(e){}
             
-                await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${destPath}`, {
+                await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${dest}`, {
                     method: "PUT",
                     headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        message: "Copy image to project folder",
-                        content: content,
-                        sha: sha
-                    })
+                    body: JSON.stringify({ message: "Copy image", content: data.content, sha: sha })
                 });
             }
             
-            // --- HTMLテンプレート作成 (完全独立版) ---
             async function createProjectHtml(projectId) {
                 const path = `${projectId}/index.html`;
                 const token = localStorage.getItem("gh_token");
-                
-                // 既に存在するかチェック (あれば何もしない)
-                const check = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
-                     headers: { Authorization: `token ${token}` }
-                });
+                const check = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, { headers: { Authorization: `token ${token}` } });
                 if(check.ok) return;
             
-                // 現在入力されているデータを取得 (プレビュー画面と同じ内容を埋め込む)
                 const title = document.getElementById('inTitle').value || projectId;
-                const body = document.getElementById('inBody').value || ""; // アプリ紹介本文
+                const body = document.getElementById('inBody').value || "";
             
-                // 完全独立した静的HTMLを生成
-                // ※今後、このファイルは手動で自由に編集可能
                 const htmlContent = `<!DOCTYPE html>
             <html lang="ja">
             <head>
@@ -977,20 +870,12 @@
             </head>
             <body>
                 <h1>${projectId}</h1>
-                
-                <!-- アイコン/サムネイル画像 -->
                 <img src="index.png" alt="App Image">
-                
-                <!-- 初回作成時のアプリ紹介本文を直接埋め込み -->
                 <div style="margin-bottom: 30px;">
                     ${body.replace(/\n/g, '<br>')}
                 </div>
-                
-                <!-- 更新情報の表示予定地 -->
                 <h3 style="border-bottom:2px solid #ccc; padding-bottom:5px;">最新のニュース</h3>
                 <div id="news-container">
-                    <!-- ニュース用のjsを読み込んで表示する場合はここにスクリプトを追加、
-                         または手動でHTMLを書き換えて運用します -->
                     <script src="news.js"><\/script>
                     <script>
                         if(typeof newsData !== 'undefined' && newsData.length > 0){
@@ -1000,28 +885,21 @@
                         }
                     <\/script>
                 </div>
-                
                 <a href="old_news.js" class="history-link" target="_blank">▶ すべての更新履歴を見る。</a>
             </body>
             </html>`;
             
                 const encoded = btoa(unescape(encodeURIComponent(htmlContent)));
-                
                 await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
                     method: "PUT",
                     headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        message: "Create standalone project HTML",
-                        content: encoded
-                    })
+                    body: JSON.stringify({ message: "Create HP", content: encoded })
                 });
             }
             
-            // --- ユーザー管理・計算 (復元済み) ---
+            // --- ユーザー管理・計算 ---
             function renderUserList() {
-                const list = document.getElementById('userList');
-                if(!list) return;
-                list.innerHTML = '';
+                const list = document.getElementById('userList'); if(!list) return; list.innerHTML = '';
                 if (typeof allowedUsersData !== 'undefined') {
                     allowedUsersData.forEach((user, index) => {
                         const li = document.createElement('li');
@@ -1032,94 +910,30 @@
                 }
             }
             function addUser() {
-                const input = document.getElementById('newUserId');
-                const id = input.value.trim();
-                if(!id) return;
-                if(allowedUsersData.includes(id)) { alert("既に登録されています"); return; }
-                allowedUsersData.push(id);
-                input.value = '';
-                renderUserList();
+                const id = document.getElementById('newUserId').value.trim();
+                if(!id || allowedUsersData.includes(id)) return;
+                allowedUsersData.push(id); document.getElementById('newUserId').value=''; renderUserList();
             }
-            function removeUser(index) {
-                if(confirm("削除しますか？")) { allowedUsersData.splice(index, 1); renderUserList(); }
-            }
+            function removeUser(i) { if(confirm("削除?")) { allowedUsersData.splice(i, 1); renderUserList(); } }
+            
             async function saveUsersToGitHub() {
                 const token = localStorage.getItem("gh_token");
-                if (!token) { alert("認証が必要です"); return; }
-                if(!confirm("GitHub上の allowed_users.js を更新します。よろしいですか？")) return;
-                const jsonString = JSON.stringify(allowedUsersData, null, 4);
-                const content = `// 編集権限を持つユーザーリスト\nconst allowedUsersData = ${jsonString};`;
-                const encodedContent = btoa(unescape(encodeURIComponent(content)));
-                try {
-                    const getRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/allowed_users.js`, { headers: { Authorization: `token ${token}` } });
-                    const fileData = await getRes.json();
-                    const putRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/allowed_users.js`, {
-                        method: "PUT",
-                        headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
-                        body: JSON.stringify({ message: "Update allowed users list", content: encodedContent, sha: fileData.sha })
-                    });
-                    if (putRes.ok) alert("権限設定を更新しました！"); else alert("保存に失敗しました。");
-                } catch (err) { alert("エラー: " + err.message); }
-            }
-    
-            function calcSeconds() {
-                const adPrice = parseFloat(document.getElementById('adPrice').value);
-                const callCost = parseFloat(document.getElementById('callCost').value);
-                const margin = parseFloat(document.getElementById('margin').value);
-                const costPerSec = callCost / 60;
-                const profit = adPrice * (margin / 100);
-                const seconds = Math.floor((adPrice - profit) / costPerSec);
-                document.getElementById('calcOutput').innerText = seconds + " 秒";
+                if (!token) return;
+                const content = `const allowedUsersData = ${JSON.stringify(allowedUsersData, null, 4)};`;
+                const encoded = btoa(unescape(encodeURIComponent(content)));
+                const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/allowed_users.js`, { headers: { Authorization: `token ${token}` } });
+                const sha = (await res.json()).sha;
+                await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/allowed_users.js`, {
+                    method: "PUT", headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: "Update users", content: encoded, sha: sha })
+                });
+                alert("権限更新完了");
             }
             
-        </script>
-    </body>
-    </html>
-            const encoded = btoa(unescape(encodeURIComponent(html)));
-            await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
-                method: "PUT",
-                headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
-                body: JSON.stringify({ message: "Create HP", content: encoded })
-            });
-        }
-
-        // --- ユーザー管理・計算 ---
-        function renderUserList() {
-            const list = document.getElementById('userList'); if(!list) return; list.innerHTML = '';
-            if (typeof allowedUsersData !== 'undefined') {
-                allowedUsersData.forEach((user, index) => {
-                    const li = document.createElement('li');
-                    li.style = "display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid #444; color:#fff;";
-                    li.innerHTML = `<span>${user}</span><button style="background:#c0392b; width:auto; padding:2px 8px; font-size:0.8rem; margin:0;" onclick="removeUser(${index})">削除</button>`;
-                    list.appendChild(li);
-                });
+            function calcSeconds() {
+                const p = parseFloat(document.getElementById('adPrice').value), c = parseFloat(document.getElementById('callCost').value), m = parseFloat(document.getElementById('margin').value);
+                document.getElementById('calcOutput').innerText = Math.floor((p - p*(m/100)) / (c/60)) + " 秒";
             }
-        }
-        function addUser() {
-            const id = document.getElementById('newUserId').value.trim();
-            if(!id || allowedUsersData.includes(id)) return;
-            allowedUsersData.push(id); document.getElementById('newUserId').value=''; renderUserList();
-        }
-        function removeUser(i) { if(confirm("削除?")) { allowedUsersData.splice(i, 1); renderUserList(); } }
-        
-        async function saveUsersToGitHub() {
-            const token = localStorage.getItem("gh_token");
-            if (!token) return;
-            const content = `const allowedUsersData = ${JSON.stringify(allowedUsersData, null, 4)};`;
-            const encoded = btoa(unescape(encodeURIComponent(content)));
-            const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/allowed_users.js`, { headers: { Authorization: `token ${token}` } });
-            const sha = (await res.json()).sha;
-            await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/allowed_users.js`, {
-                method: "PUT", headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
-                body: JSON.stringify({ message: "Update users", content: encoded, sha: sha })
-            });
-            alert("権限更新完了");
-        }
-
-        function calcSeconds() {
-            const p = parseFloat(document.getElementById('adPrice').value), c = parseFloat(document.getElementById('callCost').value), m = parseFloat(document.getElementById('margin').value);
-            document.getElementById('calcOutput').innerText = Math.floor((p - p*(m/100)) / (c/60)) + " 秒";
-        }
     </script>
 </body>
 </html>
