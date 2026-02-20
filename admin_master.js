@@ -1,6 +1,6 @@
 const adminMasterData = [
     {
-        "project_id": "outgoing_call_widget",
+        "project_id": "",
         "date": "2026.02.03",
         "category": "start",
         "image": "index_phot/index_play.png",
