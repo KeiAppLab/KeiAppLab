@@ -9,7 +9,7 @@ const newsData = [
         "title_es": "Se ha completado la configuración del límite de llamadas gratuitas, la visualización del widget en la pantalla de inicio y el sistema para identificar llamadas con costo."
     },
     {
-        "date": "2026.02.20",
+        "date": "2026.02.03",
         "category": "start",
         "title_ja": "70分等の無料通話時間を管理する「発信電話ウィジェット」の開発を開始しました。\n",
         "title_en": "We have launched the development of the \"Outgoing Call Widget,\" designed to manage free calling plans such as 70-minute bundles.",
