@@ -408,12 +408,17 @@
     </div>
 
     <script>
-            // ▼▼▼ 設定 ▼▼▼
+        // ▼▼▼ 設定 ▼▼▼
             const GITHUB_CONFIG = { owner: "KeiAppLab", repo: "KeiAppLab" };
             let previewLang = 'ja';
-            let currentProjectId = ""; // 現在入力中のプロジェクトID
-            
-            // --- 認証・初期化 ---
+            let currentProjectId = "";
+        
+            // ★追加: データを格納するグローバル変数を空で定義
+            let adminMasterData = [];
+            let indexNewsData = [];
+            let appsCatalogData = [];
+        
+            // --- 認証 ---
             async function checkIdentity() {
                 const token = document.getElementById('tokenInput').value.trim() || arguments[0];
                 const status = document.getElementById('authStatus');
@@ -425,19 +430,45 @@
                     const user = await res.json();
                     if (typeof allowedUsersData !== 'undefined' && allowedUsersData.includes(user.login)) {
                         localStorage.setItem('gh_token', token);
+                        // 認証成功時にダッシュボードへ
                         showDashboard();
                     } else { status.innerText = "❌ 未許可ID: " + user.login; status.style.color = "red"; }
                 } catch (err) { status.innerText = "⚠️ " + err.message; status.style.color = "red"; }
             }
-            
-            function showDashboard() {
+        
+            // ★変更: async にして、データ読み込みを待機する
+            async function showDashboard() {
+                const status = document.getElementById('authStatus');
+                if(status) { status.innerText = "データ読み込み中..."; status.style.color = "blue"; }
+        
+                // 1. GitHubから最新データを強制取得 (キャッシュ回避)
+                await loadAllRemoteData();
+        
                 document.getElementById('loginOverlay').style.display = 'none';
                 document.getElementById('mainWrapper').style.display = 'block';
+                
                 updatePreview();
-                initProjectList(); // admin_master.js から履歴を生成
-                initImageSelector(); // 初回はデフォルト画像リスト
+                initProjectList(); // 取得した adminMasterData を元にリスト生成
+                initImageSelector();
             }
-            
+        
+            // ★追加: 3つの主要データを読み込む関数
+            async function loadAllRemoteData() {
+                // 並行して読み込むので高速です
+                const [master, index, catalog] = await Promise.all([
+                    fetchExistingJs('admin_master.js'),
+                    fetchExistingJs('index_news.js'),
+                    fetchExistingJs('apps_catalog.js')
+                ]);
+        
+                // 取得できたら変数に入れる（なければ空配列）
+                adminMasterData = master || [];
+                indexNewsData = index || [];
+                appsCatalogData = catalog || [];
+                
+                console.log("Data Loaded:", {adminMasterData, indexNewsData, appsCatalogData});
+            }
+        
             function logout() { localStorage.removeItem('gh_token'); location.reload(); }
             window.addEventListener('load', () => {
                 const t = localStorage.getItem('gh_token'); if(t) checkIdentity(t); renderUserList();
