@@ -1,5 +1,22 @@
 const indexNewsData = [
     {
+        "id": 1771624071689,
+        "date": "2026.02.12",
+        "category": "start",
+        "image": "kei_applab/index.png",
+        "link": "kei_applab/index.html",
+        "project_ja": "啓(KEI)AppLab",
+        "project_en": "KEI AppLab",
+        "project_de": "",
+        "project_fr": "",
+        "project_es": "",
+        "title_ja": " この度、屋号として新たな一歩を踏み出し、起業することを決意いたしました。",
+        "title_en": " I have officially decided to launch my own business under the trade name KEI AppLab.",
+        "title_de": "",
+        "title_fr": "",
+        "title_es": ""
+    },
+    {
         "id": 1771552017013,
         "date": "2026.02.03",
         "category": "start",
@@ -10,7 +27,6 @@ const indexNewsData = [
         "project_de": "Anruf-Monitor Widget",
         "project_fr": "Widget d'Appels Sortants",
         "project_es": "Salientes",
-        "title_ja": "70分等の無料通話時間を",
         "title_ja": "70分等の無料通話時間を管理する「発信電話ウィジェット」の開発を開始しました。\n",
         "title_en": "We have launched the development of the \"Outgoing Call Widget,\" designed to manage free calling plans such as 70-minute bundles.",
         "title_de": "Wir haben mit der Entwicklung des „Anruf-Monitor Widgets“ begonnen, um Freiminuten-Pakete (z. B. 70 Minuten) komfortabel zu verwalten.",
