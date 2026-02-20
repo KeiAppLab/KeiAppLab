@@ -1134,9 +1134,6 @@
             const p = parseFloat(document.getElementById('adPrice').value), c = parseFloat(document.getElementById('callCost').value), m = parseFloat(document.getElementById('margin').value);
             document.getElementById('calcOutput').innerText = Math.floor((p - p*(m/100)) / (c/60)) + " 秒";
         }
-        
-        // addPostは一時保存用（メモリ内）
-        function addPost() { alert("一時保存しました（ページリロードで消えます）"); }
     </script>
 </body>
 </html>
