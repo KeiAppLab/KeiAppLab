@@ -839,3 +839,96 @@
         if(typeof newsData !== 'undefined' && newsData.length > 0){
             newsData.forEach(item => {
                 const div = document.createElement('div');
+                div.className = 'news-item';
+                div.innerHTML = '<span class="news-date">' + item.date + '</span><span class="news-cat">' + item.category + '</span><b>' + (item.title_ja || item.title_en) + '</b>';
+                container.appendChild(div);
+            });
+        } else {
+            container.innerHTML = '<p>お知らせはありません。</p>';
+        }
+    <\/script>
+</body>
+</html>`;
+            const encoded = btoa(unescape(encodeURIComponent(html)));
+            await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
+                method: "PUT",
+                headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                body: JSON.stringify({ message: "Create HP", content: encoded })
+            });
+        }
+
+        // --- 直接ファイル編集ロジック ---
+        async function loadRawFile(filename, textareaId) {
+            const ta = document.getElementById(textareaId);
+            ta.value = "読み込み中...";
+            const data = await fetchExistingJs(filename);
+            if(data) {
+                ta.value = JSON.stringify(data, null, 4);
+            } else {
+                ta.value = "";
+            }
+        }
+
+        async function saveRawFile(filename, textareaId) {
+            const ta = document.getElementById(textareaId);
+            const token = localStorage.getItem("gh_token");
+            if (!token) { alert("認証が必要です"); return; }
+            
+            let parsedData;
+            try {
+                parsedData = JSON.parse(ta.value);
+            } catch(e) {
+                alert("JSONの形式が正しくありません。修正してから再度保存してください。\nエラー: " + e.message);
+                return;
+            }
+            
+            if(!confirm(`${filename} を上書き保存します。よろしいですか？`)) return;
+            
+            try {
+                await writeJsFile(filename, parsedData, `Direct edit ${filename}`);
+                alert(`✅ ${filename} の保存が完了しました！`);
+            } catch(err) {
+                alert("❌ 保存に失敗しました: " + err.message);
+            }
+        }
+
+        // --- ユーザー管理・計算 ---
+        function renderUserList() {
+            const list = document.getElementById('userList'); if(!list) return; list.innerHTML = '';
+            if (typeof allowedUsersData !== 'undefined') {
+                allowedUsersData.forEach((user, index) => {
+                    const li = document.createElement('li');
+                    li.style = "display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid #444; color:#fff;";
+                    li.innerHTML = `<span>${user}</span><button style="background:#c0392b; width:auto; padding:2px 8px; font-size:0.8rem; margin:0;" onclick="removeUser(${index})">削除</button>`;
+                    list.appendChild(li);
+                });
+            }
+        }
+        function addUser() {
+            const id = document.getElementById('newUserId').value.trim();
+            if(!id || allowedUsersData.includes(id)) return;
+            allowedUsersData.push(id); document.getElementById('newUserId').value=''; renderUserList();
+        }
+        function removeUser(i) { if(confirm("削除?")) { allowedUsersData.splice(i, 1); renderUserList(); } }
+        
+        async function saveUsersToGitHub() {
+            const token = localStorage.getItem("gh_token");
+            if (!token) return;
+            const content = `const allowedUsersData = ${JSON.stringify(allowedUsersData, null, 4)};`;
+            const encoded = btoa(unescape(encodeURIComponent(content)));
+            const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/allowed_users.js`, { headers: { Authorization: `token ${token}` } });
+            const sha = (await res.json()).sha;
+            await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/allowed_users.js`, {
+                method: "PUT", headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                body: JSON.stringify({ message: "Update users", content: encoded, sha: sha })
+            });
+            alert("権限更新完了");
+        }
+
+        function calcSeconds() {
+            const p = parseFloat(document.getElementById('adPrice').value), c = parseFloat(document.getElementById('callCost').value), m = parseFloat(document.getElementById('margin').value);
+            document.getElementById('calcOutput').innerText = Math.floor((p - p*(m/100)) / (c/60)) + " 秒";
+        }
+    </script>
+</body>
+</html>
