@@ -712,7 +712,7 @@
             
                 try {
                     // --- A. admin_master.js (管理者用・上書き) ---
-                    let newMasterData = (typeof adminMasterData !== 'undefined') ? [...adminMasterData] : [];
+                    let newMasterData = [...adminMasterData]; // グローバル変数からコピー
                     const idx = newMasterData.findIndex(d => d.project_id === projectId);
                     if(idx >= 0) newMasterData[idx] = inputData.master; // 上書き
                     else newMasterData.push(inputData.master); // 新規
@@ -720,7 +720,7 @@
                     await writeJsFile('admin_master.js', newMasterData, "Update admin_master");
             
                     // --- B. index_news.js (トップ用・速報) ---
-                    let indexNews = (typeof indexNewsData !== 'undefined') ? [...indexNewsData] : [];
+                    let indexNews = [...indexNewsData]; // グローバル変数からコピー
                     indexNews.unshift(inputData.indexItem);
                     
                     // リリース枠(10)と更新枠(10)に分けて抽出
@@ -734,7 +734,7 @@
                     await writeJsFile('index_news.js', newIndexNews, "Update index_news");
             
                     // --- C. apps_catalog.js (一覧用・カタログ) ---
-                    let catalog = (typeof appsCatalogData !== 'undefined') ? [...appsCatalogData] : [];
+                    let catalog = [...appsCatalogData]; // グローバル変数からコピー
                     const catIdx = catalog.findIndex(d => d.project_id === projectId);
                     if(catIdx >= 0) catalog[catIdx] = inputData.catalogItem;
                     else catalog.push(inputData.catalogItem);
