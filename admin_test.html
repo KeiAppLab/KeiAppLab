@@ -479,10 +479,18 @@
                 }
             }
             
-            // --- CMSロジック: 初期化と入力補助 ---
-            const today = new Date();
-            document.getElementById('inDate').value = today.getFullYear() + '.' + (today.getMonth()+1).toString().padStart(2,'0') + '.' + today.getDate().toString().padStart(2,'0');
+            // --- CMS基本 ---
+            let allPosts =[];
             
+            // 日付の初期化用関数（今日の日付を返す）
+            function getTodayString() {
+                const d = new Date();
+                return d.getFullYear() + '.' + (d.getMonth()+1).toString().padStart(2,'0') + '.' + d.getDate().toString().padStart(2,'0');
+            }
+            
+            // 初回ロード時に今日の日付をセット
+            document.getElementById('inDate').value = getTodayString();
+    
             function switchEditorLang(lang) {
                 document.querySelectorAll('.lang-input-group').forEach(e => e.classList.remove('active'));
                 document.getElementById('group-' + lang).classList.add('active');
@@ -490,154 +498,140 @@
                 event.currentTarget.classList.add('active');
                 previewLang = lang; updatePreview();
             }
-            
-            // プロジェクト履歴リストの生成 (admin_master.js から生成)
-            function initProjectList() {
-                // admin_master.js が読み込まれていない、または空の場合は何もしない
-                if (typeof adminMasterData === 'undefined') return;
     
+            // --- プロジェクト入力 ---
+            function initProjectList() {
+                if (typeof adminMasterData === 'undefined') return;
                 const sel = document.getElementById('projectSelectHelper');
                 sel.innerHTML = '<option value="">▼ 履歴...</option>';
-    
-                // adminMasterData は [ {project_id: "...", project_ja: "...", ...}, ... ] の形式
                 adminMasterData.forEach(item => {
                     const option = document.createElement('option');
-                    // valueには「ID」を入れる（検索用）
                     option.value = item.project_id; 
-                    // 表示名には「日本語名」を入れる（なければIDを表示）
                     option.textContent = item.project_ja || item.project_id;
                     sel.appendChild(option);
                 });
             }
     
-            // リストから選択した時の処理
             function syncProjectSelect() {
                 const sel = document.getElementById('projectSelectHelper');
-                const pid = sel.value; // 選択されたID (例: kei_rpg)
-    
+                const pid = sel.value;
                 if(pid){ 
-                    // adminMasterDataの中から、IDが一致するデータを探す
                     const item = adminMasterData.find(d => d.project_id === pid);
-                    
-                    // データが見つかったらフォームに入力する
                     if(item) fillForm(item);
-                    
-                    // 選択状態を元に戻す
-                    sel.selectedIndex = 0; 
+                    sel.selectedIndex=0; 
                 }
             }
     
-            // データをフォームに埋め込む処理
-            function fillForm(data) {
-                const langs = ['ja', 'en', 'de', 'fr', 'es'];
-                
-                // 各言語の入力欄に値をセット
-                langs.forEach(lang => {
-                    // IDの接尾辞を作成 (jaなら空文字、enならEn...)
-                    const suffix = lang === 'ja' ? '' : lang.charAt(0).toUpperCase() + lang.slice(1);
-                    
-                    // データのキー名は project_ja, title_en などの形式
-                    document.getElementById('inProject' + suffix).value = data['project_' + lang] || "";
-                    document.getElementById('inTitle' + suffix).value = data['title_' + lang] || ""; 
-                    document.getElementById('inBody' + suffix).value = data['body_' + lang] || ""; 
-                });
-    
-                // 画像パスのセット
-                setImageValue(data.image || "");
-    
-                // カテゴリのセット (もし保存されていたら)
-                if (data.category) {
-                    document.getElementById('inCategory').value = data.category;
+            // 簡易通知（トースト）を表示する関数
+            function showToast(message) {
+                let toast = document.getElementById('custom-toast');
+                if (!toast) {
+                    toast = document.createElement('div');
+                    toast.id = 'custom-toast';
+                    toast.style.cssText = "position:fixed; bottom:20px; right:20px; background:#0056b3; color:#fff; padding:10px 20px; border-radius:5px; z-index:9999; transition:opacity 0.3s;";
+                    document.body.appendChild(toast);
                 }
+                toast.textContent = message;
+                toast.style.opacity = '1';
+                setTimeout(() => { toast.style.opacity = '0'; }, 2000);
+            }
     
-                // ステータスのセット (released / coming)
+            function fillForm(data) {
+                const langs =;
+                langs.forEach(lang => {
+                    const suffix = lang === 'ja' ? '' : lang.charAt(0).toUpperCase() + lang.slice(1);
+                    document.getElementById('inProject' + suffix).value = data || "";
+                    document.getElementById('inTitle' + suffix).value = data || "";
+                    document.getElementById('inBody' + suffix).value = data || "";
+                });
+                setImageValue(data.image || "");
+                
+                // ステータスのセット
                 if (data.status) {
-                    const radio = document.querySelector(`input[name="appStatus"][value="${data.status}"]`);
+                    const radio = document.querySelector(`input`);
                     if(radio) radio.checked = true;
                 }
+                
+                // ★追加: 履歴の日付をセットする
+                if (data.date) {
+                    document.getElementById('inDate').value = data.date;
+                    showToast(`履歴の日付(${data.date})を読み込みました`); // ポップアップ通知
+                }
     
-                // 現在のプロジェクトID変数を更新
                 currentProjectId = data.project_id;
-    
-                // プレビュー等の更新
                 updatePreview();
-                checkProjectImages(data.project_id);
+                // checkProjectImages(data.project_id); は削除されたので呼ばない
                 checkProjectUrl(data.project_id);
             }
-            
-            // 入力同期: 英語プロジェクト名が変わったらIDを生成して画像/プレビューをチェック
-            document.getElementById('inProjectEn').addEventListener('input', async function() {
+    
+            // フォームを完全に真っ白（新規プロジェクト状態）にする関数
+            function clearForm() {
+                const langs =;
+                langs.forEach(lang => {
+                    const suffix = lang === 'ja' ? '' : lang.charAt(0).toUpperCase() + lang.slice(1);
+                    document.getElementById('inProject' + suffix).value = "";
+                    document.getElementById('inTitle' + suffix).value = "";
+                    document.getElementById('inBody' + suffix).value = "";
+                });
+                
+                // 日付を「今日」に戻す
+                document.getElementById('inDate').value = getTodayString();
+                
+                // IDリセット
+                currentProjectId = "";
+                setImageValue("");
+                
+                // プレビュー表示をリセット
+                updatePreview();
+                checkProjectUrl(""); // 存在しないのでシミュレーション画面に戻る
+                
+                showToast("新規作成用にフォームをクリアしました");
+            }
+    
+            // 日本語プロジェクト名が手動で消去されたときの監視（完全クリア）
+            document.getElementById('inProject').addEventListener('input', function() {
+                if (this.value.trim() === "") {
+                    clearForm();
+                }
+            });
+    
+            // 英語名入力でID生成
+            document.getElementById('inProjectEn').addEventListener('input', function() {
                 const enName = this.value.trim();
                 if (enName) {
-                    // ID生成: 小文字化、スペースをアンダースコアに
                     currentProjectId = enName.replace(/\s+/g, '_').toLowerCase();
-                    await checkProjectImages(currentProjectId); // 画像フォルダチェック
-                    checkProjectUrl(currentProjectId); // iframeチェック
+                    checkProjectUrl(currentProjectId);
+                } else {
+                    currentProjectId = "";
+                    checkProjectUrl("");
                 }
                 updatePreview();
             });
-            
-            // --- 画像選択ロジック ---
-            let currentImageList = [];
-            
-            async function checkProjectImages(projectId) {
-                const token = localStorage.getItem('gh_token');
-                if (!token) return;
-            
-                // [project_id] フォルダの内容を確認
-                try {
-                    const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${projectId}`, {
-                        headers: { Authorization: `token ${token}` }
-                    });
-                    
-                    if (res.ok) {
-                        const files = await res.json();
-                        // pngファイルだけ抽出
-                        const pngs = files.filter(f => f.name.endsWith('.png')).map(f => f.name);
-                        if (pngs.length > 0) {
-                            // プロジェクト専用画像リストを使用
-                            renderImageSelector(pngs, projectId + "/");
-                            return;
-                        }
-                    }
-                } catch (e) { console.log("New project folder not found, using default."); }
-            
-                // フォルダがない、または画像がない場合はデフォルトを使用
-                const list = (typeof photoList !== 'undefined') ? photoList : ["no_image.png"];
-                renderImageSelector(list, "index_phot/");
-            }
-            
+    
+            // --- 画像処理 ---
+            // ※checkProjectImages関数は削除され、常に index_phot/ フォルダの画像を参照します。
+    
             function initImageSelector() {
-                const list = (typeof photoList !== 'undefined') ? photoList : ["no_image.png"];
+                const list = (typeof photoList !== 'undefined') ? photoList :;
                 renderImageSelector(list, "index_phot/");
             }
-            
+    
             function renderImageSelector(list, basePath) {
                 const c = document.getElementById('imageOptions'); c.innerHTML='';
                 list.forEach(n => {
                     const d=document.createElement('div'); d.className='custom-option';
-                    // フルパスをセットする
                     const fullPath = basePath + n;
                     d.onclick=()=>{ selectImage(fullPath, n) }; 
                     d.innerHTML=`<img src="${fullPath}" class="option-img"><span class="option-text">${n}</span>`;
                     c.appendChild(d);
                 });
             }
-            
+    
             function toggleImageSelect(){ document.querySelector('.custom-select').classList.toggle('open'); }
-            function selectImage(p, n){ 
-                document.getElementById('inImage').value = p; 
-                document.getElementById('selectedImageText').textContent = n; 
-                document.querySelector('.custom-select').classList.remove('open'); 
-                updatePreview(); 
-            }
-            function setImageValue(p){ 
-                document.getElementById('inImage').value=p; 
-                document.getElementById('selectedImageText').textContent=p.split('/').pop()||"画像を選択..."; 
-            }
+            function selectImage(p, n){ document.getElementById('inImage').value = p; document.getElementById('selectedImageText').textContent = n; document.querySelector('.custom-select').classList.remove('open'); updatePreview(); }
+            function setImageValue(p){ document.getElementById('inImage').value=p; document.getElementById('selectedImageText').textContent=p.split('/').pop()||"画像を選択..."; }
             window.onclick=e=>{ if(!e.target.closest('.custom-select')) document.querySelector('.custom-select').classList.remove('open'); }
-            
-            
+           
             // --- プレビューロジック ---
             function checkProjectUrl(projectId) {
                 // 簡易ロジック: adminMasterDataにIDがあれば「既存」とみなしてiframe表示
@@ -950,74 +944,66 @@
                 });
             }
             
-            // HTMLテンプレート作成
+            // --- HTMLテンプレート作成 (完全独立版) ---
             async function createProjectHtml(projectId) {
                 const path = `${projectId}/index.html`;
                 const token = localStorage.getItem("gh_token");
                 
-                // 既に存在するかチェック
+                // 既に存在するかチェック (あれば何もしない)
                 const check = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
                      headers: { Authorization: `token ${token}` }
                 });
-                if(check.ok) return; // 既にあるなら何もしない
+                if(check.ok) return;
             
-                // テンプレートHTML (scriptタグのエスケープ処理済み)
+                // 現在入力されているデータを取得 (プレビュー画面と同じ内容を埋め込む)
+                const title = document.getElementById('inTitle').value || projectId;
+                const body = document.getElementById('inBody').value || ""; // アプリ紹介本文
+            
+                // 完全独立した静的HTMLを生成
+                // ※今後、このファイルは手動で自由に編集可能
                 const htmlContent = `<!DOCTYPE html>
-                <html lang="ja">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>${projectId}</title>
-                    <style>
-                        body { font-family: 'Noto Serif JP', sans-serif; background: #fff; color: #333; padding: 20px; max-width: 800px; margin: 0 auto; line-height: 1.8; }
-                        h1 { border-bottom: 3px solid #0056b3; display: inline-block; padding-bottom: 5px; margin-bottom: 20px; font-size: 1.5rem; }
-                        img { max-width: 100%; border-radius: 10px; margin: 20px 0; }
-                        .news-box { margin-top: 15px; padding: 15px; background: #f9f9f9; border-left: 4px solid #0056b3; border-radius:4px; }
-                        .date { color: #666; font-size: 0.8rem; margin-bottom: 5px; }
-                        .history-link { display: block; margin-top: 15px; text-align: right; color: #0056b3; text-decoration: none; font-weight:bold; }
-                        .history-link:hover { text-decoration: underline; }
-                    </style>
-                </head>
-                <body>
-                    <h1 id="app-title">${projectId}</h1>
-                    <img src="index.png" alt="App Image" id="app-img">
-                    
-                    <div id="app-desc" style="margin-bottom: 30px;"></div>
-                    
-                    <h3 style="border-bottom:2px solid #ccc; padding-bottom:5px;">最新のニュース</h3>
-                    <div id="news-container"></div>
-                    
-                    <a href="old_news.js" class="history-link" onclick="alert('アーカイブページへ移動します'); return false;">▶ すべての更新履歴を見る。</a>
+            <html lang="ja">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>${projectId}</title>
+                <style>
+                    body { font-family: 'Noto Serif JP', sans-serif; background: #fff; color: #333; padding: 20px; max-width: 800px; margin: 0 auto; line-height: 1.8; }
+                    h1 { border-bottom: 3px solid #0056b3; display: inline-block; padding-bottom: 5px; margin-bottom: 20px; font-size: 1.5rem; }
+                    img { max-width: 100%; border-radius: 10px; margin: 20px 0; }
+                    .history-link { display: block; margin-top: 15px; text-align: right; color: #0056b3; text-decoration: none; font-weight:bold; }
+                    .history-link:hover { text-decoration: underline; }
+                </style>
+            </head>
+            <body>
+                <h1>${projectId}</h1>
                 
-                    <!-- データファイルの読み込み (階層に注意: 一つ上の階層のカタログを読む) -->
-                    <script src="../apps_catalog.js"><\/script>
+                <!-- アイコン/サムネイル画像 -->
+                <img src="index.png" alt="App Image">
+                
+                <!-- 初回作成時のアプリ紹介本文を直接埋め込み -->
+                <div style="margin-bottom: 30px;">
+                    ${body.replace(/\n/g, '<br>')}
+                </div>
+                
+                <!-- 更新情報の表示予定地 -->
+                <h3 style="border-bottom:2px solid #ccc; padding-bottom:5px;">最新のニュース</h3>
+                <div id="news-container">
+                    <!-- ニュース用のjsを読み込んで表示する場合はここにスクリプトを追加、
+                         または手動でHTMLを書き換えて運用します -->
                     <script src="news.js"><\/script>
                     <script>
-                        // 1. カタログから自身の紹介文を取得して表示
-                        if (typeof appsCatalogData !== 'undefined') {
-                            const myApp = appsCatalogData.find(app => app.project_id === '${projectId}');
-                            if (myApp) {
-                                document.getElementById('app-title').innerText = myApp.project_ja || '${projectId}';
-                                document.getElementById('app-desc').innerText = myApp.body_ja || '';
-                            }
-                        }
-                        
-                        // 2. ニュースを表示
-                        const container = document.getElementById('news-container');
                         if(typeof newsData !== 'undefined' && newsData.length > 0){
                             newsData.forEach(item => {
-                                const div = document.createElement('div');
-                                div.className = 'news-box';
-                                // 日本語タイトルがあればそれを、なければ英語を表示
-                                div.innerHTML = '<div class="date">' + item.date + '</div><div style="font-weight:bold;">' + (item.title_ja || item.title_en) + '</div>';
-                                container.appendChild(div);
+                                document.write('<div style="margin-bottom:10px;"><b>' + item.date + '</b>: ' + (item.title_ja || item.title_en) + '</div>');
                             });
-                        } else {
-                            container.innerHTML = '<p>現在お知らせはありません。</p>';
                         }
                     <\/script>
-                </body>
-                </html>`;
+                </div>
+                
+                <a href="old_news.js" class="history-link" target="_blank">▶ すべての更新履歴を見る。</a>
+            </body>
+            </html>`;
             
                 const encoded = btoa(unescape(encodeURIComponent(htmlContent)));
                 
@@ -1025,7 +1011,7 @@
                     method: "PUT",
                     headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        message: "Create project homepage",
+                        message: "Create standalone project HTML",
                         content: encoded
                     })
                 });
