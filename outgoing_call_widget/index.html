@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+                <html lang="ja">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>outgoing_call_widget</title>
+                    <style>
+                        body { font-family: 'Noto Serif JP', sans-serif; background: #fff; color: #333; padding: 20px; max-width: 800px; margin: 0 auto; line-height: 1.8; }
+                        h1 { border-bottom: 3px solid #0056b3; display: inline-block; padding-bottom: 5px; margin-bottom: 20px; font-size: 1.5rem; }
+                        img { max-width: 100%; border-radius: 10px; margin: 20px 0; }
+                        .news-box { margin-top: 15px; padding: 15px; background: #f9f9f9; border-left: 4px solid #0056b3; border-radius:4px; }
+                        .date { color: #666; font-size: 0.8rem; margin-bottom: 5px; }
+                        .history-link { display: block; margin-top: 15px; text-align: right; color: #0056b3; text-decoration: none; font-weight:bold; }
+                        .history-link:hover { text-decoration: underline; }
+                    </style>
+                </head>
+                <body>
+                    <h1 id="app-title">outgoing_call_widget</h1>
+                    <img src="index.png" alt="App Image" id="app-img">
+                    
+                    <div id="app-desc" style="margin-bottom: 30px;"></div>
+                    
+                    <h3 style="border-bottom:2px solid #ccc; padding-bottom:5px;">最新のニュース</h3>
+                    <div id="news-container"></div>
+                    
+                    <a href="old_news.js" class="history-link" onclick="alert('アーカイブページへ移動します'); return false;">▶ すべての更新履歴を見る。</a>
+                
+                    <!-- データファイルの読み込み (階層に注意: 一つ上の階層のカタログを読む) -->
+                    <script src="../apps_catalog.js"></script>
+                    <script src="news.js"></script>
+                    <script>
+                        // 1. カタログから自身の紹介文を取得して表示
+                        if (typeof appsCatalogData !== 'undefined') {
+                            const myApp = appsCatalogData.find(app => app.project_id === 'outgoing_call_widget');
+                            if (myApp) {
+                                document.getElementById('app-title').innerText = myApp.project_ja || 'outgoing_call_widget';
+                                document.getElementById('app-desc').innerText = myApp.body_ja || '';
+                            }
+                        }
+                        
+                        // 2. ニュースを表示
+                        const container = document.getElementById('news-container');
+                        if(typeof newsData !== 'undefined' && newsData.length > 0){
+                            newsData.forEach(item => {
+                                const div = document.createElement('div');
+                                div.className = 'news-box';
+                                // 日本語タイトルがあればそれを、なければ英語を表示
+                                div.innerHTML = '<div class="date">' + item.date + '</div><div style="font-weight:bold;">' + (item.title_ja || item.title_en) + '</div>';
+                                container.appendChild(div);
+                            });
+                        } else {
+                            container.innerHTML = '<p>現在お知らせはありません。</p>';
+                        }
+                    </script>
+                </body>
+                </html>
