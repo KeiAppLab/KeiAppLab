@@ -460,57 +460,75 @@
                 previewLang = lang; updatePreview();
             }
             
-            // プロジェクト履歴 (admin_master.js から生成)
+            // プロジェクト履歴リストの生成 (admin_master.js から生成)
             function initProjectList() {
-                // admin_master.js が読み込まれている前提 (adminMasterData)
+                // admin_master.js が読み込まれていない、または空の場合は何もしない
                 if (typeof adminMasterData === 'undefined') return;
+    
                 const sel = document.getElementById('projectSelectHelper');
                 sel.innerHTML = '<option value="">▼ 履歴...</option>';
-                
-                // adminMasterData は [{projectId: "kei_rpg", data: {...}}, ...] の形式を想定
-                // または単純に履歴として保存された配列
+    
+                // adminMasterData は [ {project_id: "...", project_ja: "...", ...}, ... ] の形式
                 adminMasterData.forEach(item => {
                     const option = document.createElement('option');
-                    // 保存されているプロジェクト名(JP)を表示
+                    // valueには「ID」を入れる（検索用）
                     option.value = item.project_id; 
+                    // 表示名には「日本語名」を入れる（なければIDを表示）
                     option.textContent = item.project_ja || item.project_id;
                     sel.appendChild(option);
                 });
             }
-            
-            // 履歴選択時の自動入力
+    
+            // リストから選択した時の処理
             function syncProjectSelect() {
                 const sel = document.getElementById('projectSelectHelper');
-                const pid = sel.value;
+                const pid = sel.value; // 選択されたID (例: kei_rpg)
+    
                 if(pid){ 
+                    // adminMasterDataの中から、IDが一致するデータを探す
                     const item = adminMasterData.find(d => d.project_id === pid);
+                    
+                    // データが見つかったらフォームに入力する
                     if(item) fillForm(item);
-                    sel.selectedIndex=0; 
+                    
+                    // 選択状態を元に戻す
+                    sel.selectedIndex = 0; 
                 }
             }
-            
+    
+            // データをフォームに埋め込む処理
             function fillForm(data) {
-                // 各言語フィールドに値をセット
                 const langs = ['ja', 'en', 'de', 'fr', 'es'];
-                const fields = ['Project', 'Title', 'Body']; // Title=お知らせ, Body=アプリ紹介
                 
+                // 各言語の入力欄に値をセット
                 langs.forEach(lang => {
+                    // IDの接尾辞を作成 (jaなら空文字、enならEn...)
                     const suffix = lang === 'ja' ? '' : lang.charAt(0).toUpperCase() + lang.slice(1);
+                    
+                    // データのキー名は project_ja, title_en などの形式
                     document.getElementById('inProject' + suffix).value = data['project_' + lang] || "";
-                    document.getElementById('inTitle' + suffix).value = data['title_' + lang] || "";
-                    document.getElementById('inBody' + suffix).value = data['body_' + lang] || "";
+                    document.getElementById('inTitle' + suffix).value = data['title_' + lang] || ""; 
+                    document.getElementById('inBody' + suffix).value = data['body_' + lang] || ""; 
                 });
-                
+    
+                // 画像パスのセット
                 setImageValue(data.image || "");
-                
-                // ステータスラジオボタン
+    
+                // カテゴリのセット (もし保存されていたら)
+                if (data.category) {
+                    document.getElementById('inCategory').value = data.category;
+                }
+    
+                // ステータスのセット (released / coming)
                 if (data.status) {
                     const radio = document.querySelector(`input[name="appStatus"][value="${data.status}"]`);
                     if(radio) radio.checked = true;
                 }
-                
-                // IDセット
+    
+                // 現在のプロジェクトID変数を更新
                 currentProjectId = data.project_id;
+    
+                // プレビュー等の更新
                 updatePreview();
                 checkProjectImages(data.project_id);
                 checkProjectUrl(data.project_id);
