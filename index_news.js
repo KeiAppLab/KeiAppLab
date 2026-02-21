@@ -1,5 +1,22 @@
 const indexNewsData = [
     {
+        "id": 1771707317374,
+        "date": "2026.02.12",
+        "category": "start",
+        "image": "free_call_app/index.png",
+        "link": "free_call_app/index.html",
+        "project_ja": "電話無料APP（FreeCallApp）",
+        "project_en": "Free Call App",
+        "project_de": "Gratis Anruf-App",
+        "project_fr": "App d'appels gratuits",
+        "project_es": "App de llamadas gratis",
+        "title_ja": "広告を力に、通話を自由に。",
+        "title_en": "Powered by ads, call freely.",
+        "title_de": "Werbefinanziert, frei telefonieren.",
+        "title_fr": "Appels libres grâce à la publicité.",
+        "title_es": "Llamadas libres impulsadas por anuncios."
+    },
+    {
         "id": 1771624071689,
         "date": "2026.02.12",
         "category": "start",
