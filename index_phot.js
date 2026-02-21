@@ -3,6 +3,7 @@
 const photoList = [
     { file: "index_phot/app-image.png", name: "アプリイメージ" },
     "KEI_App_Lab.png",
+    "freecallapp.png",
     "index_about.png",
     "index_port.png",
     "sample_game.jpg",
