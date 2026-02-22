@@ -396,8 +396,8 @@
                             </div>
                             <div id="simulatedPagePreview" class="page-preview">
                                 <h1 id="prevPageTitle">タイトル</h1>
-                                <div id="prevPageCatchcopy" style="color:#666; font-size:1rem; margin-bottom:20px; font-weight:bold;">
-                                    キャッチコピーがここに入ります
+                                <div style="color:#666; font-size:0.9rem; margin-bottom:20px;">
+                                    <span id="prevPageDate"></span> | <span id="prevPageProject"></span>
                                 </div>
                                 <img src="" id="prevPageImg" style="display:none;">
                                 <div id="prevBody">本文...</div>
@@ -697,34 +697,17 @@
             
             
             // --- プレビューロジック ---
-            async function checkProjectUrl(projectId) {
+            function checkProjectUrl(projectId) {
+                // 簡易ロジック: adminMasterDataにIDがあれば「既存」とみなしてiframe表示
+                const exists = typeof adminMasterData !== 'undefined' && adminMasterData.some(d => d.project_id === projectId);
                 const iframe = document.getElementById('prevIframe');
                 const realPreview = document.getElementById('realPagePreview');
                 const simPreview = document.getElementById('simulatedPagePreview');
                 
-                if (!projectId) {
-                    realPreview.style.display = 'none';
-                    simPreview.style.display = 'block';
-                    return;
-                }
-    
-                const path = `${projectId}/index.html`;
-                const token = localStorage.getItem("gh_token");
-                let fileExists = false;
-    
-                // GitHub APIで本当にファイルが存在するか確認する
-                try {
-                    const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
-                        headers: { Authorization: `token ${token}` }
-                    });
-                    if (res.ok) fileExists = true;
-                } catch (e) { }
-    
-                if (fileExists) {
+                if (exists) {
                     realPreview.style.display = 'block';
                     simPreview.style.display = 'none';
-                    // ブラウザのキャッシュを避けて最新を表示するため、URLの末尾にタイムスタンプを付与
-                    iframe.src = `https://${GITHUB_CONFIG.owner.toLowerCase()}.github.io/${GITHUB_CONFIG.repo}/${projectId}/index.html?t=${Date.now()}`;
+                    iframe.src = `https://${GITHUB_CONFIG.owner.toLowerCase()}.github.io/${GITHUB_CONFIG.repo}/${projectId}/index.html`;
                 } else {
                     realPreview.style.display = 'none';
                     simPreview.style.display = 'block';
@@ -778,17 +761,14 @@
                 if(isComingSoon) { appImg.classList.add('coming-soon-mode'); overlay.style.display = 'block'; } else { appImg.classList.remove('coming-soon-mode'); overlay.style.display = 'none'; }
             
                 // 4. 詳細ページ (シミュレーション)
-                document.getElementById('prevPageTitle').textContent = proj;
+                document.getElementById('prevPageTitle').textContent=proj;
+                // prevPageDate と prevPageProject は非表示(空白)にする
+                document.getElementById('prevPageDate').textContent="";
+                document.getElementById('prevPageProject').textContent="";
                 
-                // 変更: HTML側で修正したIDに対して、キャッチコピー(お知らせ)の改行を反映させて代入
-                document.getElementById('prevPageCatchcopy').innerHTML = title.replace(/\n/g, '<br>');
-                
-                // 変更: アプリ紹介本文の改行(\n)をHTMLの改行(<br>)に変換する
-                const formattedBody = body.replace(/\n/g, '<br>');
-    
                 // アプリ紹介本文 ＋ ニュース予定 ＋ 全履歴リンク を組み立てて流し込む
                 let simHtml = `
-                    <div style="margin-bottom: 20px; line-height:1.6;">${formattedBody}</div>
+                    <div style="margin-bottom: 20px; line-height:1.6;">${body}</div>
                     
                     <h3 style="border-bottom:2px solid #ccc; padding-bottom:5px;">最新のニュース</h3>
                     <div style="margin-top:10px; padding:15px; background:#f9f9f9; border-left:4px solid #0056b3; border-radius:4px;">
