@@ -89,7 +89,7 @@ const adminMasterData = [
     },
     {
         "project_id": "gorira",
-        "date": "2026.02.22",
+        "date": "2026.02.12",
         "category": "update",
         "image": "index_phot/index_play.png",
         "status": "coming",
