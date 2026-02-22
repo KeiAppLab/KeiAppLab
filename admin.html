@@ -180,9 +180,31 @@
         button { padding: 12px 20px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 10px; width: 100%; }
         .btn-save { background: #27ae60; color: white; }
         .btn-copy { background: #e67e22; color: white; margin-top: 20px; }
+
+        /* --- ビルド監視用トースト通知 --- */
+        #build-toast {
+            position: fixed; bottom: 20px; right: 20px;
+            background: #2c3e50; color: #fff; padding: 15px 25px; border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3); z-index: 10000;
+            display: none; align-items: center; gap: 15px; font-family: sans-serif;
+            animation: slideInUp 0.5s ease-out forwards;
+        }
+        @keyframes slideInUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .spinner {
+            width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .toast-btn { background: #27ae60; color: white; border: none; padding: 8px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        .toast-btn:hover { background: #219653; }
     </style>
 </head>
 <body>
+    <div id="build-toast">
+        <div id="toast-icon" class="spinner"></div>
+        <div id="toast-msg" style="font-size: 0.9rem;">🔄 サイトデータを保存しました...</div>
+    </div>
+    
     <div id="loginOverlay">
         <div class="login-container-split">
             <div class="login-left">
@@ -823,9 +845,8 @@
                     // ★修正: 入力データ(inputData)を渡して、HTML内に静的に埋め込む
                     await createProjectHtml(projectId, inputData);
             
-                    alert("✅ 全てのデータの保存が完了しました！");
-                    // データをリロード（簡易リロード）
-                    location.reload();
+                    // 監視関数を呼び出します
+                    startBuildMonitor();
             
                 } catch (err) {
                     console.error(err);
@@ -1118,55 +1139,61 @@
                 const seconds = Math.floor((adPrice - profit) / costPerSec);
                 document.getElementById('calcOutput').innerText = seconds + " 秒";
             }
-            
+
+            // --- GitHub Actions 監視ロジック ---
+            async function startBuildMonitor() {
+                const toast = document.getElementById('build-toast');
+                const icon = document.getElementById('toast-icon');
+                const msg = document.getElementById('toast-msg');
+                
+                // トーストを表示
+                toast.style.display = 'flex';
+                icon.className = 'spinner';
+                icon.textContent = '';
+                msg.innerHTML = `データの保存完了。<br>GitHubで公開準備中...（約1〜3分）`;
+    
+                const token = localStorage.getItem("gh_token");
+                // GitHub Actionsの最新の実行履歴(1件)を取得するAPI
+                const apiUrl = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/actions/runs?per_page=1`;
+    
+                // GitHub側のAction起動に数秒ラグがあるため、5秒待ってから監視開始
+                await new Promise(resolve => setTimeout(resolve, 5000));
+    
+                // 10秒に1回、進捗を確認するタイマーをセット
+                const checkInterval = setInterval(async () => {
+                    try {
+                        const res = await fetch(apiUrl, { headers: { Authorization: `token ${token}` } });
+                        if (!res.ok) throw new Error("API Limit or Error");
+                        const data = await res.json();
+                        
+                        if (data.workflow_runs && data.workflow_runs.length > 0) {
+                            const run = data.workflow_runs[0];
+                            
+                            // 状態が「完了(completed)」になったら
+                            if (run.status === 'completed') {
+                                clearInterval(checkInterval); // タイマー停止
+                                
+                                if (run.conclusion === 'success') {
+                                    // 成功時：リロードボタンを表示
+                                    icon.className = '';
+                                    icon.textContent = '✅';
+                                    msg.innerHTML = `公開準備が完了しました！<br><button class="toast-btn" onclick="location.reload()">最新状態にリロード</button>`;
+                                } else {
+                                    // 失敗時
+                                    icon.className = '';
+                                    icon.textContent = '❌';
+                                    msg.innerHTML = `公開エラーが発生しました。<br><a href="https://github.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/actions" target="_blank" style="color:#ffcccc;">Actionsを確認</a>`;
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        clearInterval(checkInterval);
+                        icon.className = '';
+                        icon.textContent = '⚠️';
+                        msg.textContent = "監視通信に失敗しましたが、裏で処理は進んでいます。";
+                    }
+                }, 10000); // 10,000ミリ秒 = 10秒間隔でチェック
+            }
         </script>
     </body>
     </html>
-            const encoded = btoa(unescape(encodeURIComponent(html)));
-            await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
-                method: "PUT",
-                headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
-                body: JSON.stringify({ message: "Create HP", content: encoded })
-            });
-        }
-
-        // --- ユーザー管理・計算 ---
-        function renderUserList() {
-            const list = document.getElementById('userList'); if(!list) return; list.innerHTML = '';
-            if (typeof allowedUsersData !== 'undefined') {
-                allowedUsersData.forEach((user, index) => {
-                    const li = document.createElement('li');
-                    li.style = "display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid #444; color:#fff;";
-                    li.innerHTML = `<span>${user}</span><button style="background:#c0392b; width:auto; padding:2px 8px; font-size:0.8rem; margin:0;" onclick="removeUser(${index})">削除</button>`;
-                    list.appendChild(li);
-                });
-            }
-        }
-        function addUser() {
-            const id = document.getElementById('newUserId').value.trim();
-            if(!id || allowedUsersData.includes(id)) return;
-            allowedUsersData.push(id); document.getElementById('newUserId').value=''; renderUserList();
-        }
-        function removeUser(i) { if(confirm("削除?")) { allowedUsersData.splice(i, 1); renderUserList(); } }
-        
-        async function saveUsersToGitHub() {
-            const token = localStorage.getItem("gh_token");
-            if (!token) return;
-            const content = `const allowedUsersData = ${JSON.stringify(allowedUsersData, null, 4)};`;
-            const encoded = btoa(unescape(encodeURIComponent(content)));
-            const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/allowed_users.js`, { headers: { Authorization: `token ${token}` } });
-            const sha = (await res.json()).sha;
-            await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/allowed_users.js`, {
-                method: "PUT", headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
-                body: JSON.stringify({ message: "Update users", content: encoded, sha: sha })
-            });
-            alert("権限更新完了");
-        }
-
-        function calcSeconds() {
-            const p = parseFloat(document.getElementById('adPrice').value), c = parseFloat(document.getElementById('callCost').value), m = parseFloat(document.getElementById('margin').value);
-            document.getElementById('calcOutput').innerText = Math.floor((p - p*(m/100)) / (c/60)) + " 秒";
-        }
-    </script>
-</body>
-</html>
