@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+    <html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>GORIRA</title>
+        <!-- 更新履歴を表示するため、自分専用のnews.jsだけを読み込む -->
+        <script src="news.js"></script>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700;900&display=swap');
+            body { font-family: 'Noto Serif JP', serif; background: #fff; color: #333; padding: 20px; max-width: 800px; margin: 0 auto; line-height: 1.8; }
+            h1 { border-bottom: 3px solid #0056b3; display: inline-block; padding-bottom: 5px; margin-bottom: 20px; font-size: 1.5rem; }
+            img { max-width: 100%; border-radius: 10px; margin: 20px 0; }
+            .meta-info { color: #666; font-size: 0.9rem; margin-bottom: 20px; }
+            .news-box { margin-top: 15px; padding: 15px; background: #f9f9f9; border-left: 4px solid #0056b3; border-radius:4px; }
+            .date { color: #666; font-size: 0.8rem; margin-bottom: 5px; }
+            .history-link { display: block; margin-top: 15px; text-align: right; color: #0056b3; text-decoration: none; font-weight:bold; }
+            .history-link:hover { text-decoration: underline; }
+        </style>
+    </head>
+    <body>
+        <!-- 管理画面入力時のデータを静的に埋め込む -->
+        <h1>GORIRA</h1>
+        
+        <div class="meta-info">
+            <span>2026.02.12</span> | <span>GORIRA</span>
+        </div>
+        
+        <img src="index.png" alt="App Image">
+        
+        <div style="margin-bottom: 30px;">
+            特徴
+・完全無料: 短い動画広告を見るだけで通話時間を獲得。
+・固定電話専用: お店や役所へのちょっとした電話に最適。
+・登録不要: 面倒な会員登録なしですぐに使えます。
+        </div>
+        
+        <h3 style="border-bottom:2px solid #ccc; padding-bottom:5px;">最新のニュース</h3>
+        <div id="news-container"></div>
+        
+        <!-- 全履歴用ファイル(old_news.js)は読み込ませるのではなく、履歴ページに飛ぶリンクなどを想定 -->
+        <a href="old_news.js" class="history-link" onclick="alert('全履歴表示機能は現在実装中です'); return false;">▶ すべての更新履歴を見る。</a>
+    
+        <script>
+            // news.js から最新ニュースを表示
+            const container = document.getElementById('news-container');
+            if(typeof newsData !== 'undefined' && newsData.length > 0){
+                newsData.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'news-box';
+                    div.innerHTML = '<div class="date">' + item.date + '</div><div style="font-weight:bold;">' + (item.title_ja || item.title_en) + '</div>';
+                    container.appendChild(div);
+                });
+            } else {
+                container.innerHTML = '<p>現在お知らせはありません。</p>';
+            }
+        </script>
+    </body>
+    </html>
