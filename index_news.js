@@ -51,6 +51,23 @@ const indexNewsData = [
         "title_es": "Hemos iniciado el desarrollo del \"Widget de Llamadas Salientes\", diseñado para gestionar planes de llamadas gratuitas como el de 70 minutos."
     },
     {
+        "id": 1771764402824,
+        "date": "2026.02.12",
+        "category": "update",
+        "image": "gorira/index.png",
+        "link": "gorira/index.html",
+        "project_ja": "GORIRA",
+        "project_en": "GORIRA",
+        "project_de": "Gratis Anruf-App",
+        "project_fr": "App d'appels gratuits",
+        "project_es": "App de llamadas gratis",
+        "title_ja": "広告を力に、通話を自由に。",
+        "title_en": "Powered by ads, call freely.",
+        "title_de": "Werbefinanziert, frei telefonieren.",
+        "title_fr": "Appels libres grâce à la publicité.",
+        "title_es": "Llamadas libres impulsadas por anuncios."
+    },
+    {
         "id": 1771763658579,
         "date": "2026.02.12",
         "category": "update",
