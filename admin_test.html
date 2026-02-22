@@ -864,18 +864,40 @@
                 }
             }
 
-            // 直接編集データの保存
+// 直接編集データの保存（安全対策・サニタイズ強化版）
             async function saveRawData(filename, textareaId) {
+                const textarea = document.getElementById(textareaId);
+                let parsedData;
+                
+                // 1. JSONの構文チェックとサニタイズ
                 try {
-                    const rawVal = document.getElementById(textareaId).value;
-                    const parsedData = JSON.parse(rawVal); // 構文エラーがないかチェック
-                    if(!confirm(`${filename} を手動で上書き保存します。よろしいですか？`)) return;
+                    // 入力された文字をデータとして解釈（構文が間違っていればここで弾く）
+                    parsedData = JSON.parse(textarea.value); 
+                } catch (e) {
+                    alert("❌ JSONの書き方にエラーがあります。\n「 , (カンマ) 」の付け忘れや、「 \" (ダブルクォーテーション) 」の消し忘れがないか確認してください。\n\n詳細: " + e.message);
+                    return; // エラーなら通信させずにここで処理を止める（安全ガード）
+                }
+
+                // 2. データ構造のチェック（意図しない形式への破壊防止）
+                if (!Array.isArray(parsedData)) {
+                    alert("❌ エラー: データは全体が [ ] で囲まれた配列形式である必要があります。");
+                    return;
+                }
+
+                // 3. ユーザーへの最終確認
+                if(!confirm(`${filename} を手動で上書き保存します。よろしいですか？`)) return;
+                
+                try {
+                    // 保存する直前に、テキストエリアの中身を機械が読みやすいように綺麗に自動整形する
+                    textarea.value = JSON.stringify(parsedData, null, 4);
                     
+                    // GitHubへ書き込み
                     await writeJsFile(filename, parsedData, `Manual edit ${filename}`);
                     alert("✅ 保存しました！");
                     location.reload();
                 } catch (e) {
-                    alert("❌ JSONの形式（記号やカンマ等）が正しくありません。\n" + e.message);
+                    // GitHub API の通信エラーはこちらでキャッチ
+                    alert("❌ GitHubへの保存中に通信エラーが発生しました。\n" + e.message);
                 }
             }
             
