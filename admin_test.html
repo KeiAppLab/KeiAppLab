@@ -266,7 +266,10 @@
                     <div class="cms-layout">
                         <!-- エディタ (40%) -->
                         <div class="editor-area">
-                            <h2>📝 記事・プロジェクト作成</h2>
+                            <h2 style="display: flex; align-items: center; justify-content: space-between;">
+                                <span>📝 記事・プロジェクト作成</span>
+                                <span id="lastEditDatePop" style="display:none; font-size: 0.8rem; background: #e67e22; color: white; padding: 4px 12px; border-radius: 12px; font-weight: normal; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">前回編集日: ----.--.--</span>
+                            </h2>
                             
                             <div class="row-group">
                                 <div class="form-group"><label>日付</label><input type="text" id="inDate" class="input-white"></div>
@@ -562,12 +565,13 @@
                     if(radio) radio.checked = true;
                 }
     
-                // ★追加: 日付の同期とポップアップ処理
+                // ★変更: 日付をPOPに表示する
+                const pop = document.getElementById('lastEditDatePop');
                 if (data.date) {
-                    document.getElementById('inDate').value = data.date;
-                    if (data.date !== getTodayString()) {
-                        alert(`プロジェクト履歴を読み込みました。\n日付が過去の日付 [ ${data.date} ] に変更されています。`);
-                    }
+                    pop.textContent = "前回編集日: " + data.date;
+                    pop.style.display = "inline-block";
+                } else {
+                    pop.style.display = "none";
                 }
                 
                 currentProjectId = data.project_id;
@@ -576,7 +580,7 @@
                 checkProjectUrl(data.project_id);
             }
             
-            // ★修正: 日本語プロジェクト名を変更した時の処理（完全リセット対応）
+// ★修正: 日本語プロジェクト名を変更した時の処理（完全リセット対応）
             function autoFillProject() {
                 const val = document.getElementById('inProject').value.trim();
                 
@@ -584,6 +588,7 @@
                 if(!val) { 
                     clearFieldsExcept('inProject');
                     document.getElementById('inDate').value = getTodayString();
+                    document.getElementById('lastEditDatePop').style.display = "none"; // ★追加: POPを消す
                     currentProjectId = "";
                     setImageValue("");
                     initImageSelector(); // 画像リストをデフォルトに戻す
@@ -601,6 +606,7 @@
                         // 履歴に存在しない文字が打たれた場合 =「新規作成」と判断して他をクリア
                         clearFieldsExcept('inProject');
                         document.getElementById('inDate').value = getTodayString();
+                        document.getElementById('lastEditDatePop').style.display = "none"; // ★追加: POPを消す
                         currentProjectId = "";
                         setImageValue("");
                         initImageSelector();
@@ -845,7 +851,7 @@
                     
                     await writeJsFile(oldNewsPath, currentOldNews, `Update ${projectId} archive`);
             
-            // --- F. 画像コピー & HTML生成 (新規プロジェクト時) ---
+// --- F. 画像コピー & HTML生成 (新規プロジェクト時) ---
                     // 画像パスが index_phot/ 始まりなら、それを/index.png にコピー
                     if (inputData.master.image.startsWith('index_phot/')) {
                         await copyImageToProject(inputData.master.image, `${projectId}/index.png`);
@@ -855,6 +861,10 @@
                     // ★修正: 入力データ(inputData)を渡して、HTML内に静的に埋め込む
                     await createProjectHtml(projectId, inputData);
             
+                    // ★追加: 保存完了後に「前回編集日POP」を非表示にする
+                    const pop = document.getElementById('lastEditDatePop');
+                    if(pop) pop.style.display = "none";
+
                     // 監視関数を呼び出します
                     startBuildMonitor();
             
