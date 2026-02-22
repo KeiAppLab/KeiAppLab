@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+    <html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>GORIRA11111</title>
+        <script src="news.js"></script>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700;900&family=Roboto:wght@500;900&display=swap');
+            body { font-family: 'Noto Serif JP', serif; background: #fff; color: #333; padding: 0; margin: 0; line-height: 1.8; overflow-x: hidden; }
+            .top-nav { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); width: 100%; max-width: 1100px; padding: 0 20px; box-sizing: border-box; display: flex; justify-content: space-between; align-items: flex-start; z-index: 1000; pointer-events: none; }
+            .top-nav > * { pointer-events: auto; }
+            .back-btn { cursor: pointer; font-family: 'Roboto', sans-serif; font-weight: 900; color: #0056b3; text-decoration: none; display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.8); padding: 5px 10px; border-radius: 8px; backdrop-filter: blur(2px); }
+            .back-btn:hover { color: #003d82; }
+            .lang-menu-wrapper { position: relative; }
+            .lang-main-btn { background: #0056b3; color: #fff; border: none; padding: 8px 15px; border-radius: 20px; font-family: 'Roboto', sans-serif; font-weight: 900; cursor: pointer; z-index: 10; position: relative; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+            .lang-sub-btns { position: absolute; top: 10px; right: 0; display: flex; flex-direction: row-reverse; pointer-events: none; }
+            .lang-circle { width: 35px; height: 35px; border-radius: 50%; color: white; border: none; font-family: 'Roboto', sans-serif; font-weight: bold; font-size: 0.8rem; display: flex; justify-content: center; align-items: center; cursor: pointer; position: absolute; right: 0; top: 0; opacity: 0; transform: translateY(0) translateX(0); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+            .lang-ja { background: #e74c3c; z-index: 5; } .lang-en { background: #3498db; z-index: 4; } .lang-de { background: #f1c40f; color: #333; z-index: 3; } .lang-fr { background: #9b59b6; z-index: 2; } .lang-es { background: #e67e22; z-index: 1; }
+            .lang-menu-wrapper.open .lang-sub-btns { pointer-events: auto; }
+            .lang-menu-wrapper.open .lang-circle { opacity: 1; }
+            .lang-menu-wrapper.open .lang-circle:nth-child(1) { transform: translateY(45px) translateX(0); }
+            .lang-menu-wrapper.open .lang-circle:nth-child(2) { transform: translateY(45px) translateX(-45px); }
+            .lang-menu-wrapper.open .lang-circle:nth-child(3) { transform: translateY(45px) translateX(-90px); }
+            .lang-menu-wrapper.open .lang-circle:nth-child(4) { transform: translateY(45px) translateX(-135px); }
+            .lang-menu-wrapper.open .lang-circle:nth-child(5) { transform: translateY(45px) translateX(-180px); }
+            .main-content { max-width: 800px; margin: 80px auto 40px auto; padding: 20px; }
+            h1 { border-bottom: 3px solid #0056b3; display: inline-block; padding-bottom: 5px; margin-bottom: 20px; font-size: 1.5rem; }
+            .catchcopy { font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; color: #333; line-height: 1.5; white-space: pre-wrap; }
+            img { max-width: 100%; border-radius: 10px; margin: 20px 0; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+            .app-desc { margin-bottom: 30px; line-height: 1.8; white-space: pre-wrap; }
+            .news-box { margin-top: 15px; padding: 15px; background: #f9f9f9; border-left: 4px solid #0056b3; border-radius:4px; animation: fadeIn 0.5s; }
+            @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+            .date { color: #666; font-size: 0.8rem; margin-bottom: 5px; }
+            .history-link { display: inline-block; margin-top: 15px; color: #0056b3; text-decoration: none; font-weight:bold; cursor: pointer; }
+            .history-link:hover { text-decoration: underline; }
+            .footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; font-size: 0.85rem; color: #666; }
+            .footer a { color: #0056b3; text-decoration: none; font-weight: bold; }
+        </style>
+    </head>
+    <body>
+        <div class="top-nav">
+            <a href="#" class="back-btn" onclick="goBack(event)">🔙 <span id="back-text">戻る</span></a>
+            <div class="lang-menu-wrapper" id="langMenu">
+                <button class="lang-main-btn" onclick="toggleLangMenu()">Language ▼</button>
+                <div class="lang-sub-btns">
+                    <button class="lang-circle lang-es" onclick="changeLang('es')">ES</button>
+                    <button class="lang-circle lang-fr" onclick="changeLang('fr')">FR</button>
+                    <button class="lang-circle lang-de" onclick="changeLang('de')">DE</button>
+                    <button class="lang-circle lang-en" onclick="changeLang('en')">EN</button>
+                    <button class="lang-circle lang-ja" onclick="changeLang('ja')">JP</button>
+                </div>
+            </div>
+        </div>
+        <div class="main-content">
+            <h1 id="app-title">Loading...</h1>
+            <!-- ★追加: 実際のHTML側にもキャッチコピー枠を設ける -->
+            <div id="app-catchcopy" class="catchcopy"></div>
+            
+            <img src="index.png" alt="App Image">
+            <div id="app-desc" class="app-desc"></div>
+            
+            <h3 id="news-heading" style="border-bottom:2px solid #ccc; padding-bottom:5px;">最新のニュース</h3>
+            <div id="news-container"></div>
+            <div style="text-align: right;"><a class="history-link" id="history-link" onclick="loadOldNews(event)">▶ すべての更新履歴を見る。</a></div>
+            <div class="footer">
+                <a href="#" id="privacy-link" onclick="checkPrivacy(event)">プライバシーポリシー</a><br><br>
+                © 2026 啓 App Lab | <a href="../app-ads.txt" target="_blank">app-ads.txt</a>
+            </div>
+        </div>
+        <script>
+            const appData = {"project_id":"kjuhuhuh","date":"2026.02.23","category":"update","image":"index_phot/KEI_App_Lab.png","status":"coming","project_ja":"GORIRA11111","project_en":"kjuhuhuh","project_de":"","project_fr":"","project_es":"","title_ja":"321321321321321","title_en":"","title_de":"","title_fr":"","title_es":"","body_ja":"1111111111\n222222222\n33333333","body_en":"","body_de":"","body_fr":"","body_es":""};
+            let currentLang = localStorage.getItem('selectedLang') || 'ja';
+            const texts = {
+                ja: { back: "戻る", backTop: "啓(KEI)App Labへ戻る", news: "最新のニュース", history: "▶ すべての更新履歴を見る。", loading: "読み込み中...", noNews: "現在お知らせはありません。", privacy: "プライバシーポリシー", privAlert: "プライバシーポリシーは現在準備中（実装予定）です。" },
+                en: { back: "Back", backTop: "Back to KEI App Lab", news: "Latest News", history: "▶ View all history", loading: "Loading...", noNews: "No news available.", privacy: "Privacy Policy", privAlert: "Privacy Policy is currently under preparation." },
+                de: { back: "Zurück", backTop: "Zurück zu KEI App Lab", news: "Aktuelle News", history: "▶ Gesamten Verlauf", loading: "Wird geladen...", noNews: "Keine Nachrichten.", privacy: "Datenschutzrichtlinie", privAlert: "Die Datenschutzrichtlinie ist in Vorbereitung." },
+                fr: { back: "Retour", backTop: "Retour à KEI App Lab", news: "Dernières Nouvelles", history: "▶ Voir tout l'historique", loading: "Chargement...", noNews: "Aucune nouvelle.", privacy: "Politique de confidentialité", privAlert: "La politique de confidentialité est en cours de préparation." },
+                es: { back: "Volver", backTop: "Volver a KEI App Lab", news: "Últimas Noticias", history: "▶ Ver todo el historial", loading: "Cargando...", noNews: "No hay noticias.", privacy: "Política de privacidad", privAlert: "La política de privacidad está en preparación." }
+            };
+            function goBack(e) { e.preventDefault(); if (history.length <= 1 || document.referrer === "") window.location.href = "../index.html"; else history.back(); }
+            function toggleLangMenu() { document.getElementById('langMenu').classList.toggle('open'); }
+            function changeLang(lang) { currentLang = lang; localStorage.setItem('selectedLang', lang); document.getElementById('langMenu').classList.remove('open'); renderPage(); }
+            function renderPage(targetData = null) {
+                const suffix = currentLang === 'ja' ? '' : '_' + currentLang;
+                const t = texts[currentLang] || texts.en;
+                const isDirectLink = (history.length <= 1 || document.referrer === "");
+                document.getElementById('back-text').textContent = isDirectLink ? t.backTop : t.back;
+                document.getElementById('news-heading').textContent = t.news;
+                const hLink = document.getElementById('history-link');
+                if(hLink.style.display !== 'none') hLink.textContent = t.history;
+                document.getElementById('privacy-link').textContent = t.privacy;
+                
+                const projName = appData['project' + suffix] || appData.project_ja || 'kjuhuhuh';
+                document.getElementById('app-title').textContent = projName;
+                
+                // ★追加: キャッチコピーと本文の流し込み（改行対応済み）
+                document.getElementById('app-catchcopy').textContent = appData['title' + suffix] || appData.title_ja || '';
+                document.getElementById('app-desc').textContent = appData['body' + suffix] || appData.body_ja || '';
+    
+                const dataToRender = targetData || (typeof newsData !== 'undefined' ? newsData : []);
+                const container = document.getElementById('news-container');
+                container.innerHTML = '';
+                if(dataToRender.length > 0){
+                    dataToRender.forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = 'news-box';
+                        const title = item['title' + suffix] || item.title_ja || item.title_en || '';
+                        div.innerHTML = '<div class="date">' + item.date + '</div><div style="font-weight:bold; white-space: pre-wrap;">' + title + '</div>';
+                        container.appendChild(div);
+                    });
+                } else { container.innerHTML = '<p>' + t.noNews + '</p>'; }
+            }
+            function loadOldNews(e) {
+                e.preventDefault(); const link = document.getElementById('history-link'); const t = texts[currentLang] || texts.en;
+                link.textContent = t.loading; link.style.pointerEvents = 'none';
+                const script = document.createElement('script'); script.src = 'old_news.js';
+                script.onload = () => { link.style.display = 'none'; if(typeof oldNewsData !== 'undefined') renderPage(oldNewsData); };
+                script.onerror = () => { link.textContent = 'Data Load Error'; link.style.pointerEvents = 'auto'; };
+                document.body.appendChild(script);
+            }
+            async function checkPrivacy(e) { e.preventDefault(); const t = texts[currentLang] || texts.en; try { const res = await fetch('../privacy.html', { method: 'HEAD' }); if (res.ok) window.location.href = '../privacy.html'; else throw new Error('Not Found'); } catch (err) { alert(t.privAlert); } }
+            document.addEventListener("DOMContentLoaded", () => { renderPage(); });
+        </script>
+    </body>
+    </html>
