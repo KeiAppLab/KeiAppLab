@@ -51,6 +51,23 @@ const indexNewsData = [
         "title_es": "Hemos iniciado el desarrollo del \"Widget de Llamadas Salientes\", diseñado para gestionar planes de llamadas gratuitas como el de 70 minutos."
     },
     {
+        "id": 1771774991128,
+        "date": "2026.02.23",
+        "category": "update",
+        "image": "test_gorira/index.png",
+        "link": "test_gorira/index.html",
+        "project_ja": "ゴリラ",
+        "project_en": "test_gorira",
+        "project_de": "",
+        "project_fr": "",
+        "project_es": "",
+        "title_ja": "どうなってる？大丈夫？",
+        "title_en": "",
+        "title_de": "",
+        "title_fr": "",
+        "title_es": ""
+    },
+    {
         "id": 1771771114443,
         "date": "2026.02.12",
         "category": "update",
