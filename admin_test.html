@@ -1193,8 +1193,8 @@
         <\/script>
     </body>
     </html>`;
-        }     
-        async function createProjectHtml(projectId, inputData) {
+            }     
+            async function createProjectHtml(projectId, inputData) {
                 const path = `${projectId}/index.html`;
                 const token = localStorage.getItem("gh_token");
                 
@@ -1207,6 +1207,7 @@
                 const htmlContent = generateProjectHtmlString(projectId, inputData);
             
                 const encoded = btoa(unescape(encodeURIComponent(htmlContent)));
+            }
             
             // --- ユーザー管理・計算 (復元済み) ---
             function renderUserList() {
