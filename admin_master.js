@@ -108,5 +108,27 @@ const adminMasterData = [
         "body_de": "Eigenschaften\n・Komplett kostenlos: Sammeln Sie Gesprächsminuten, indem Sie sich kurze Videoanzeigen ansehen.\n・Exklusiv für das Festnetz: Ideal für kurze Anrufe in Geschäften oder Behörden.\n・Keine Registrierung erforderlich: Sofort einsatzbereit ohne mühsame Anmeldung.",
         "body_fr": "Caractéristiques\n・Entièrement gratuit : Gagnez du temps d'appel en regardant simplement de courtes publicités vidéo.\n・Exclusivement pour les lignes fixes : Idéal pour les courts appels vers les magasins ou les administrations.\n・Aucune inscription requise : Prêt à l'emploi immédiatement sans inscription fastidieuse.",
         "body_es": "Características\n・Totalmente gratis: Obtén tiempo de llamada simplemente viendo anuncios de video cortos.\n・Exclusivo para teléfonos fijos: Ideal para llamadas cortas a tiendas u oficinas públicas.\n・Sin registro: Úselo al instante sin tediosos procesos de suscripción."
+    },
+    {
+        "project_id": "test_gorira",
+        "date": "2026.02.23",
+        "category": "update",
+        "image": "index_phot/index_play.png",
+        "status": "coming",
+        "project_ja": "ゴリラ",
+        "project_en": "test_gorira",
+        "project_de": "",
+        "project_fr": "",
+        "project_es": "",
+        "title_ja": "どうなってる？大丈夫？",
+        "title_en": "",
+        "title_de": "",
+        "title_fr": "",
+        "title_es": "",
+        "body_ja": "コッチガ改行だよ。\nなんでだよ～。\nできてるな～。",
+        "body_en": "",
+        "body_de": "",
+        "body_fr": "",
+        "body_es": ""
     }
 ];
