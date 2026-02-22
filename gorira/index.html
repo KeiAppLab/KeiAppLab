@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+    <html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>GORIRA</title>
+        <!-- 初期状態では最新3件のnews.jsのみ読み込む（通信量節約） -->
+        <script src="news.js"></script>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700;900&family=Roboto:wght@500;900&display=swap');
+            body { font-family: 'Noto Serif JP', serif; background: #fff; color: #333; padding: 0; margin: 0; line-height: 1.8; overflow-x: hidden; }
+            
+            /* --- トップ固定ナビゲーション（背景枠なし、ボタンのみ固定） --- */
+            .top-nav {
+                position: fixed; top: 15px; left: 50%; transform: translateX(-50%);
+                width: 100%; max-width: 800px; padding: 0 20px; box-sizing: border-box;
+                display: flex; justify-content: space-between; align-items: flex-start;
+                z-index: 1000; pointer-events: none; /* コンテナ自体はクリックスルー */
+            }
+            .top-nav > * { pointer-events: auto; /* ボタン部分はクリック有効 */ }
+            
+            /* 戻るボタン */
+            .back-btn {
+                cursor: pointer; font-family: 'Roboto', sans-serif; font-weight: 900;
+                color: #0056b3; text-decoration: none; display: flex; align-items: center; gap: 5px;
+                background: rgba(255,255,255,0.8); padding: 5px 10px; border-radius: 8px; backdrop-filter: blur(2px);
+            }
+            .back-btn:hover { color: #003d82; }
+
+            /* --- 言語切り替えアニメーションUI --- */
+            .lang-menu-wrapper { position: relative; }
+            .lang-main-btn {
+                background: #0056b3; color: #fff; border: none; padding: 8px 15px; border-radius: 20px;
+                font-family: 'Roboto', sans-serif; font-weight: 900; cursor: pointer; z-index: 10; position: relative;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            }
+            .lang-sub-btns {
+                position: absolute; top: 10px; right: 0;
+                display: flex; flex-direction: row-reverse;
+                pointer-events: none;
+            }
+            .lang-circle {
+                width: 35px; height: 35px; border-radius: 50%; color: white; border: none;
+                font-family: 'Roboto', sans-serif; font-weight: bold; font-size: 0.8rem;
+                display: flex; justify-content: center; align-items: center; cursor: pointer;
+                position: absolute; right: 0; top: 0;
+                opacity: 0; transform: translateY(0) translateX(0);
+                transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            }
+            /* 各言語の色と重なり順（z-indexを緻密に設定） */
+            .lang-ja { background: #e74c3c; z-index: 5; }
+            .lang-en { background: #3498db; z-index: 4; }
+            .lang-de { background: #f1c40f; color: #333; z-index: 3; }
+            .lang-fr { background: #9b59b6; z-index: 2; }
+            .lang-es { background: #e67e22; z-index: 1; }
+
+            /* 展開時のアニメーション (移動距離を半減させ、ボタンを重ねる) */
+            .lang-menu-wrapper.open .lang-sub-btns { pointer-events: auto; }
+            .lang-menu-wrapper.open .lang-circle { opacity: 1; }
+            .lang-menu-wrapper.open .lang-circle:nth-child(1) { transform: translateY(45px) translateX(0); }
+            .lang-menu-wrapper.open .lang-circle:nth-child(2) { transform: translateY(45px) translateX(-22px); }
+            .lang-menu-wrapper.open .lang-circle:nth-child(3) { transform: translateY(45px) translateX(-44px); }
+            .lang-menu-wrapper.open .lang-circle:nth-child(4) { transform: translateY(45px) translateX(-66px); }
+            .lang-menu-wrapper.open .lang-circle:nth-child(5) { transform: translateY(45px) translateX(-88px); }
+
+            /* --- メインコンテンツ --- */
+            .main-content { max-width: 800px; margin: 80px auto 40px auto; padding: 20px; }
+            h1 { border-bottom: 3px solid #0056b3; display: inline-block; padding-bottom: 5px; margin-bottom: 20px; font-size: 1.5rem; }
+            img { max-width: 100%; border-radius: 10px; margin: 20px 0; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+            .meta-info { color: #666; font-size: 0.9rem; margin-bottom: 20px; }
+            .news-box { margin-top: 15px; padding: 15px; background: #f9f9f9; border-left: 4px solid #0056b3; border-radius:4px; animation: fadeIn 0.5s; }
+            @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+            .date { color: #666; font-size: 0.8rem; margin-bottom: 5px; }
+            .history-link { display: inline-block; margin-top: 15px; color: #0056b3; text-decoration: none; font-weight:bold; cursor: pointer; }
+            .history-link:hover { text-decoration: underline; }
+            
+            /* フッター */
+            .footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; font-size: 0.85rem; color: #666; }
+            .footer a { color: #0056b3; text-decoration: none; font-weight: bold; }
+            .footer a:hover { text-decoration: underline; }
+        </style>
+    </head>
+    <body>
+        <div class="top-nav">
+            <a href="#" class="back-btn" onclick="goBack(event)">🔙 <span id="back-text">戻る</span></a>
+            
+            <div class="lang-menu-wrapper" id="langMenu">
+                <button class="lang-main-btn" onclick="toggleLangMenu()">Language ▼</button>
+                <div class="lang-sub-btns">
+                    <!-- 右から順に配置 -->
+                    <button class="lang-circle lang-es" onclick="changeLang('es')">ES</button>
+                    <button class="lang-circle lang-fr" onclick="changeLang('fr')">FR</button>
+                    <button class="lang-circle lang-de" onclick="changeLang('de')">DE</button>
+                    <button class="lang-circle lang-en" onclick="changeLang('en')">EN</button>
+                    <button class="lang-circle lang-ja" onclick="changeLang('ja')">JP</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <h1 id="app-title">Loading...</h1>
+            <div class="meta-info">
+                <span id="app-date"></span> | <span id="app-sub-title"></span>
+            </div>
+            
+            <img src="index.png" alt="App Image">
+            
+            <div id="app-desc" style="margin-bottom: 30px;"></div>
+            
+            <h3 id="news-heading" style="border-bottom:2px solid #ccc; padding-bottom:5px;">最新のニュース</h3>
+            <div id="news-container"></div>
+            
+            <!-- クリック時に動的に通信して履歴を読み込む -->
+            <div style="text-align: right;">
+                <a class="history-link" id="history-link" onclick="loadOldNews(event)">▶ すべての更新履歴を見る。</a>
+            </div>
+
+            <div class="footer">
+                <a href="#" id="privacy-link" onclick="checkPrivacy(event)">プライバシーポリシー</a><br><br>
+                © 2026 啓 App Lab | <a href="../app-ads.txt" target="_blank">app-ads.txt</a>
+            </div>
+        </div>
+    
+        <script>
+            // 管理画面から生成時に埋め込まれた多言語データ
+            const appData = {"project_id":"gorira","date":"2026.02.12","category":"update","image":"index_phot/index_play.png","status":"coming","project_ja":"GORIRA","project_en":"GORIRA","project_de":"Gratis Anruf-App","project_fr":"App d'appels gratuits","project_es":"App de llamadas gratis","title_ja":"広告を力に、通話を自由に。","title_en":"Powered by ads, call freely.","title_de":"Werbefinanziert, frei telefonieren.","title_fr":"Appels libres grâce à la publicité.","title_es":"Llamadas libres impulsadas por anuncios.","body_ja":"特徴\n・完全無料: 短い動画広告を見るだけで通話時間を獲得。\n・固定電話専用: お店や役所へのちょっとした電話に最適。\n・登録不要: 面倒な会員登録なしですぐに使えます。","body_en":"Features\n・Completely Free: Earn calling time simply by watching short video ads.\n・Fixed-line Exclusive: Perfect for quick calls to shops or public offices.\n・No Registration Required: Start calling immediately without any tedious sign-up process.","body_de":"Eigenschaften\n・Komplett kostenlos: Sammeln Sie Gesprächsminuten, indem Sie sich kurze Videoanzeigen ansehen.\n・Exklusiv für das Festnetz: Ideal für kurze Anrufe in Geschäften oder Behörden.\n・Keine Registrierung erforderlich: Sofort einsatzbereit ohne mühsame Anmeldung.","body_fr":"Caractéristiques\n・Entièrement gratuit : Gagnez du temps d'appel en regardant simplement de courtes publicités vidéo.\n・Exclusivement pour les lignes fixes : Idéal pour les courts appels vers les magasins ou les administrations.\n・Aucune inscription requise : Prêt à l'emploi immédiatement sans inscription fastidieuse.","body_es":"Características\n・Totalmente gratis: Obtén tiempo de llamada simplemente viendo anuncios de video cortos.\n・Exclusivo para teléfonos fijos: Ideal para llamadas cortas a tiendas u oficinas públicas.\n・Sin registro: Úselo al instante sin tediosos procesos de suscripción."};
+            let currentLang = localStorage.getItem('selectedLang') || 'ja';
+
+            // 多言語用テキスト定義
+            const texts = {
+                ja: { back: "戻る", backTop: "啓(KEI)App Labへ戻る", news: "最新のニュース", history: "▶ すべての更新履歴を見る。", loading: "読み込み中...", noNews: "現在お知らせはありません。", privacy: "プライバシーポリシー", privAlert: "プライバシーポリシーは現在準備中（実装予定）です。" },
+                en: { back: "Back", backTop: "Back to KEI App Lab", news: "Latest News", history: "▶ View all history", loading: "Loading...", noNews: "No news available.", privacy: "Privacy Policy", privAlert: "Privacy Policy is currently under preparation." },
+                de: { back: "Zurück", backTop: "Zurück zu KEI App Lab", news: "Aktuelle News", history: "▶ Gesamten Verlauf", loading: "Wird geladen...", noNews: "Keine Nachrichten.", privacy: "Datenschutzrichtlinie", privAlert: "Die Datenschutzrichtlinie ist in Vorbereitung." },
+                fr: { back: "Retour", backTop: "Retour à KEI App Lab", news: "Dernières Nouvelles", history: "▶ Voir tout l'historique", loading: "Chargement...", noNews: "Aucune nouvelle.", privacy: "Politique de confidentialité", privAlert: "La politique de confidentialité est en cours de préparation." },
+                es: { back: "Volver", backTop: "Volver a KEI App Lab", news: "Últimas Noticias", history: "▶ Ver todo el historial", loading: "Cargando...", noNews: "No hay noticias.", privacy: "Política de privacidad", privAlert: "La política de privacidad está en preparación." }
+            };
+
+            // --- 戻るボタンの制御 ---
+            function goBack(e) {
+                e.preventDefault();
+                if (history.length <= 1 || document.referrer === "") window.location.href = "../index.html";
+                else history.back();
+            }
+
+            // --- 言語メニュー制御 ---
+            function toggleLangMenu() { document.getElementById('langMenu').classList.toggle('open'); }
+            function changeLang(lang) {
+                currentLang = lang;
+                localStorage.setItem('selectedLang', lang);
+                document.getElementById('langMenu').classList.remove('open');
+                renderPage();
+            }
+
+            // --- 画面の描画 ---
+            function renderPage(targetData = null) {
+                const suffix = currentLang === 'ja' ? '' : '_' + currentLang;
+                const t = texts[currentLang] || texts.en;
+
+                // 固定テキストの切り替え
+                const isDirectLink = (history.length <= 1 || document.referrer === "");
+                document.getElementById('back-text').textContent = isDirectLink ? t.backTop : t.back;
+                document.getElementById('news-heading').textContent = t.news;
+                const hLink = document.getElementById('history-link');
+                if(hLink.style.display !== 'none') hLink.textContent = t.history;
+                document.getElementById('privacy-link').textContent = t.privacy;
+
+                // データの埋め込み
+                const projName = appData['project' + suffix] || appData.project_ja || 'gorira';
+                document.getElementById('app-title').textContent = projName;
+                document.getElementById('app-sub-title').textContent = projName;
+                document.getElementById('app-date').textContent = appData.date || '';
+                document.getElementById('app-desc').innerHTML = appData['body' + suffix] || appData.body_ja || '';
+
+                // ニュースの表示 (デフォルトはnewsData, 履歴読み込み後はoldNewsDataを受け取る)
+                const dataToRender = targetData || (typeof newsData !== 'undefined' ? newsData : []);
+                const container = document.getElementById('news-container');
+                container.innerHTML = '';
+                
+                if(dataToRender.length > 0){
+                    dataToRender.forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = 'news-box';
+                        const title = item['title' + suffix] || item.title_ja || item.title_en || '';
+                        div.innerHTML = '<div class="date">' + item.date + '</div><div style="font-weight:bold;">' + title + '</div>';
+                        container.appendChild(div);
+                    });
+                } else {
+                    container.innerHTML = '<p>' + t.noNews + '</p>';
+                }
+            }
+
+            // --- 動的ロード：全履歴データの取得 ---
+            function loadOldNews(e) {
+                e.preventDefault();
+                const link = document.getElementById('history-link');
+                const t = texts[currentLang] || texts.en;
+                link.textContent = t.loading;
+                link.style.pointerEvents = 'none';
+
+                // 通信最適化：クリックされた瞬間にscriptタグを生成してデータを取得する
+                const script = document.createElement('script');
+                script.src = 'old_news.js';
+                script.onload = () => {
+                    link.style.display = 'none'; // リンクを隠す
+                    if(typeof oldNewsData !== 'undefined') renderPage(oldNewsData); // 履歴データで再描画
+                };
+                script.onerror = () => {
+                    link.textContent = 'Data Load Error';
+                    link.style.pointerEvents = 'auto';
+                };
+                document.body.appendChild(script);
+            }
+
+            // --- プライバシーポリシーの存在確認 (HEADリクエスト) ---
+            async function checkPrivacy(e) {
+                e.preventDefault();
+                const t = texts[currentLang] || texts.en;
+                try {
+                    // ダウンロードせずにファイルの存在だけを軽く確認する
+                    const res = await fetch('../privacy.html', { method: 'HEAD' });
+                    if (res.ok) window.location.href = '../privacy.html';
+                    else throw new Error('Not Found');
+                } catch (err) {
+                    alert(t.privAlert); // 存在しない場合は実装予定のPOPを出す
+                }
+            }
+
+            // 初回読み込み時の実行
+            document.addEventListener("DOMContentLoaded", () => { renderPage(); });
+        </script>
+    </body>
+    </html>
