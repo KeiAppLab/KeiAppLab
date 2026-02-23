@@ -58,6 +58,8 @@
         .label-row label { margin: 0; }
 
         input, select, textarea { width: 100%; padding: 10px; border: 1px solid #555; border-radius: 4px; box-sizing: border-box; font-size: 1rem; }
+        /* --- プライバシーポリシーのプレースホルダー（薄く・小さく） --- */
+        #inPrivacy::placeholder { font-size: 0.8rem; color: #999; line-height: 1.5; }
         .input-white { background-color: #ffffff !important; color: #333 !important; border: 1px solid #ccc !important; font-weight: bold; }
         
         .row-group { display: flex; gap: 10px; }
@@ -328,6 +330,11 @@
                                     </div>
                                     <textarea id="inBody" class="input-white" rows="3" oninput="updatePreview()"></textarea>
                                 </div>
+                                <!-- ★追加: プライバシーポリシー (JP) -->
+                                <div class="form-group">
+                                    <label>プライバシーポリシー (JP)</label>
+                                    <textarea id="inPrivacy" class="input-white" rows="8" placeholder="１．EUのGDPR（一般データ保護規則）: ドイツ語・フランス語・スペイン語圏に向けて配信する場合、GDPRの遵守が必須です。「Cookieの利用」「IPアドレスの取得目的」「データの保存場所（日本か米国か）」「ユーザーが自分のデータを削除する権利があること」を明記する必要があります。&#10;２．カリフォルニア州消費者プライバシー法 (CCPA): 英語（米国）向けには、「私の個人情報を販売しないでください（Do Not Sell My Personal Info）」という規定に関する記載が求められる場合があります（今回は個人情報の販売はないと思いますが、その旨を明記すると安全です）。&#10;３．AdMobの記載: Google AdMobを使用しているため、「第三者の広告配信事業者がCookieを使用して広告を配信していること」を全言語で必ず記載してください。"></textarea>
+                                </div>
                             </div>
 
                             <!-- 多言語 -->
@@ -335,10 +342,18 @@
                                 <div class="form-group"><label>Project (EN)</label><input type="text" id="inProjectEn" class="input-white" oninput="updatePreview()"></div>
                                 <div class="form-group"><label>Title (EN)</label><textarea id="inTitleEn" class="input-white" rows="2" oninput="updatePreview()"></textarea></div>
                                 <div class="form-group"><label>App Intro (EN)</label><textarea id="inBodyEn" class="input-white" rows="3" oninput="updatePreview()"></textarea></div>
+                                <!-- ★追加 -->
+                                <div class="form-group"><label>Privacy Policy (EN)</label><textarea id="inPrivacyEn" class="input-white" rows="2" placeholder="５カ国の法律・情勢・通信網に合わせたプライバシーポリシーをご記入ください。"></textarea></div>
                             </div>
-                            <div id="group-de" class="lang-input-group"><div class="form-group"><label>Project (DE)</label><input type="text" id="inProjectDe" class="input-white" oninput="updatePreview()"></div><div class="form-group"><label>Title (DE)</label><textarea id="inTitleDe" class="input-white" rows="2" oninput="updatePreview()"></textarea></div><div class="form-group"><label>App Intro (DE)</label><textarea id="inBodyDe" class="input-white" rows="3" oninput="updatePreview()"></textarea></div></div>
-                            <div id="group-fr" class="lang-input-group"><div class="form-group"><label>Project (FR)</label><input type="text" id="inProjectFr" class="input-white" oninput="updatePreview()"></div><div class="form-group"><label>Title (FR)</label><textarea id="inTitleFr" class="input-white" rows="2" oninput="updatePreview()"></textarea></div><div class="form-group"><label>App Intro (FR)</label><textarea id="inBodyFr" class="input-white" rows="3" oninput="updatePreview()"></textarea></div></div>
-                            <div id="group-es" class="lang-input-group"><div class="form-group"><label>Project (ES)</label><input type="text" id="inProjectEs" class="input-white" oninput="updatePreview()"></div><div class="form-group"><label>Title (ES)</label><textarea id="inTitleEs" class="input-white" rows="2" oninput="updatePreview()"></textarea></div><div class="form-group"><label>App Intro (ES)</label><textarea id="inBodyEs" class="input-white" rows="3" oninput="updatePreview()"></textarea></div></div>
+                            <div id="group-de" class="lang-input-group"><div class="form-group"><label>Project (DE)</label><input type="text" id="inProjectDe" class="input-white" oninput="updatePreview()"></div><div class="form-group"><label>Title (DE)</label><textarea id="inTitleDe" class="input-white" rows="2" oninput="updatePreview()"></textarea></div><div class="form-group"><label>App Intro (DE)</label><textarea id="inBodyDe" class="input-white" rows="3" oninput="updatePreview()"></textarea></div>
+                                <div class="form-group"><label>Datenschutz (DE)</label><textarea id="inPrivacyDe" class="input-white" rows="2" placeholder="５カ国の法律・情勢・通信網に合わせたプライバシーポリシーをご記入ください。"></textarea></div>
+                            </div>
+                            <div id="group-fr" class="lang-input-group"><div class="form-group"><label>Project (FR)</label><input type="text" id="inProjectFr" class="input-white" oninput="updatePreview()"></div><div class="form-group"><label>Title (FR)</label><textarea id="inTitleFr" class="input-white" rows="2" oninput="updatePreview()"></textarea></div><div class="form-group"><label>App Intro (FR)</label><textarea id="inBodyFr" class="input-white" rows="3" oninput="updatePreview()"></textarea></div>
+                                <div class="form-group"><label>Confidentialité (FR)</label><textarea id="inPrivacyFr" class="input-white" rows="2" placeholder="５カ国の法律・情勢・通信網に合わせたプライバシーポリシーをご記入ください。"></textarea></div>
+                            </div>
+                            <div id="group-es" class="lang-input-group"><div class="form-group"><label>Project (ES)</label><input type="text" id="inProjectEs" class="input-white" oninput="updatePreview()"></div><div class="form-group"><label>Title (ES)</label><textarea id="inTitleEs" class="input-white" rows="2" oninput="updatePreview()"></textarea></div><div class="form-group"><label>App Intro (ES)</label><textarea id="inBodyEs" class="input-white" rows="3" oninput="updatePreview()"></textarea></div>
+                                <div class="form-group"><label>Privacidad (ES)</label><textarea id="inPrivacyEs" class="input-white" rows="2" placeholder="５カ国の法律・情勢・通信網に合わせたプライバシーポリシーをご記入ください。"></textarea></div>
+                            </div>
 
                             <button class="btn-save" style="margin-top:20px;" onclick="saveToGitHub()">🚀 GitHubへ更新保存</button>
                         </div>
@@ -941,16 +956,18 @@
                 
                 // 多言語データの取得
                 const langs = ['ja', 'en', 'de', 'fr', 'es'];
-                let names={}, titles={}, bodies={};
+                let names={}, titles={}, bodies={}, privacies={};
                 langs.forEach(l => {
                     const s = l==='ja'?'':l.charAt(0).toUpperCase()+l.slice(1);
                     names['project_'+l] = document.getElementById('inProject'+s).value;
-                    titles['title_'+l] = document.getElementById('inTitle'+s).value; // お知らせ
-                    bodies['body_'+l] = document.getElementById('inBody'+s).value; // アプリ紹介
+                    titles['title_'+l] = document.getElementById('inTitle'+s).value;
+                    bodies['body_'+l] = document.getElementById('inBody'+s).value;
+                    // ★追加: プライバシーポリシーの取得
+                    privacies['privacy_'+l] = document.getElementById('inPrivacy'+s) ? document.getElementById('inPrivacy'+s).value : "";
                 });
             
-                // 1. Master用 (全部入り)
-                const master = { project_id: pid, date, category: cat, image: img, status, ...names, ...titles, ...bodies };
+                // 1. Master用 に privacies を追加
+                const master = { project_id: pid, date, category: cat, image: img, status, ...names, ...titles, ...bodies, ...privacies };
             
                 // 2. Index用 (お知らせ重視・紹介文なし・画像は固定パス化)
                 const indexItem = {
@@ -1101,8 +1118,18 @@
             .news-box { margin-top: 15px; padding: 15px; background: #f9f9f9; border-left: 4px solid #0056b3; border-radius:4px; animation: fadeIn 0.5s; }
             @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
             .date { color: #666; font-size: 0.8rem; margin-bottom: 5px; }
-            .history-link { display: inline-block; margin-top: 15px; color: #0056b3; text-decoration: none; font-weight:bold; cursor: pointer; }
-            .history-link:hover { text-decoration: underline; }
+            .history-link { display: inline-block; margin-top: 15px; color: #0056b3; text-decoration: none; font-weight:bold; cursor: pointer; padding: 10px; border-radius: 5px; background: #f0f8ff; }
+            .history-link:hover { text-decoration: underline; background: #e0f0ff; }
+            
+            /* ★追加: 履歴モーダル（別窓風）のスタイル */
+            .history-modal { display: none; margin-top: 10px; padding: 20px; background: #fff; border: 2px solid #0056b3; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); max-height: 400px; overflow-y: auto; position: relative; animation: fadeIn 0.3s; }
+            .modal-close { position: absolute; top: 10px; right: 15px; cursor: pointer; font-size: 1.5rem; font-weight: bold; color: #999; }
+            .modal-close:hover { color: #333; }
+            .history-list-item { display: flex; align-items: flex-start; gap: 15px; border-bottom: 1px solid #eee; padding: 10px 0; }
+            .history-list-item:last-child { border-bottom: none; }
+            .history-date { font-family: 'Roboto', sans-serif; font-size: 0.85rem; color: #666; white-space: nowrap; padding-top: 3px; }
+            .history-title { font-weight: bold; color: #333; line-height: 1.4; }
+
             .footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; font-size: 0.85rem; color: #666; }
             .footer a { color: #0056b3; text-decoration: none; font-weight: bold; }
         </style>
@@ -1131,7 +1158,16 @@
             
             <h3 id="news-heading" style="border-bottom:2px solid #ccc; padding-bottom:5px;">最新のニュース</h3>
             <div id="news-container"></div>
-            <div style="text-align: right;"><a class="history-link" id="history-link" onclick="loadOldNews(event)">▶ すべての更新履歴を見る。</a></div>
+            
+            <div style="text-align: right; position: relative;">
+                <a class="history-link" id="history-link" onclick="loadOldNews(event)">▶ すべての更新履歴を見る。</a>
+                <!-- ★追加: モーダル領域 -->
+                <div id="history-modal" class="history-modal" style="text-align: left;">
+                    <span class="modal-close" onclick="document.getElementById('history-modal').style.display='none'">×</span>
+                    <h4 id="modal-heading" style="margin-top:0; color:#0056b3;">更新履歴</h4>
+                    <div id="modal-content"></div>
+                </div>
+            </div>
             <div class="footer">
                 <a href="#" id="privacy-link" onclick="checkPrivacy(event)">プライバシーポリシー</a><br><br>
                 © 2026 啓 App Lab | <a href="../app-ads.txt" target="_blank">app-ads.txt</a>
@@ -1180,12 +1216,43 @@
                     });
                 } else { container.innerHTML = '<p>' + t.noNews + '</p>'; }
             }
+// --- 動的ロード：全履歴データを別窓（モーダル）に表示 ---
             function loadOldNews(e) {
-                e.preventDefault(); const link = document.getElementById('history-link'); const t = texts[currentLang] || texts.en;
+                e.preventDefault(); 
+                const link = document.getElementById('history-link'); 
+                const modal = document.getElementById('history-modal');
+                const modalContent = document.getElementById('modal-content');
+                const t = texts[currentLang] || texts.en;
+                
+                // すでに開いている場合は閉じる
+                if (modal.style.display === 'block') {
+                    modal.style.display = 'none';
+                    return;
+                }
+
                 link.textContent = t.loading; link.style.pointerEvents = 'none';
                 const script = document.createElement('script'); script.src = 'old_news.js';
-                script.onload = () => { link.style.display = 'none'; if(typeof oldNewsData !== 'undefined') renderPage(oldNewsData); };
-                script.onerror = () => { link.textContent = 'Data Load Error'; link.style.pointerEvents = 'auto'; };
+                
+                script.onload = () => { 
+                    link.textContent = t.history; // テキストを元に戻す
+                    link.style.pointerEvents = 'auto';
+                    modal.style.display = 'block'; // モーダルを表示
+                    
+                    modalContent.innerHTML = '';
+                    if(typeof oldNewsData !== 'undefined' && oldNewsData.length > 0) {
+                        const suffix = currentLang === 'ja' ? '' : '_' + currentLang;
+                        oldNewsData.forEach(item => {
+                            const title = item['title' + suffix] || item.title_ja || item.title_en || '';
+                            // ★修正: 日付とタイトルを横に並べるレイアウト
+                            modalContent.innerHTML += \`<div class="history-list-item"><div class="history-date">\${item.date}</div><div class="history-title">\${title}</div></div>\`;
+                        });
+                    } else {
+                        modalContent.innerHTML = '<p>' + t.noNews + '</p>';
+                    }
+                };
+                script.onerror = () => { 
+                    link.textContent = 'Data Load Error'; link.style.pointerEvents = 'auto'; 
+                };
                 document.body.appendChild(script);
             }
             async function checkPrivacy(e) { e.preventDefault(); const t = texts[currentLang] || texts.en; try { const res = await fetch('../privacy.html', { method: 'HEAD' }); if (res.ok) window.location.href = '../privacy.html'; else throw new Error('Not Found'); } catch (err) { alert(t.privAlert); } }
@@ -1203,10 +1270,18 @@
                 });
                 if(check.ok) return; 
             
-                // ★修正: 先ほど作った関数を呼び出してHTML文字列を取得する
                 const htmlContent = generateProjectHtmlString(projectId, inputData);
-            
                 const encoded = btoa(unescape(encodeURIComponent(htmlContent)));
+
+                // ★追加: 実際にGitHubへファイルを送信する処理
+                await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
+                    method: "PUT",
+                    headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        message: "Create project index.html",
+                        content: encoded
+                    })
+                });
             }
             
             // --- ユーザー管理・計算 (復元済み) ---
