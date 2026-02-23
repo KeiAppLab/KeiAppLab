@@ -1,1 +1,381 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy | KEI App Lab</title>
+    <style>
+        /* --- 1. デザイン・レイアウトのルール --- */
+        body {
+            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-radius: 8px;
+            position: relative;
+        }
+        h1 {
+            font-size: 24px;
+            border-bottom: 2px solid #F39C12;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+        h2 {
+            font-size: 18px;
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-left: 5px solid #F39C12;
+            margin-top: 30px;
+        }
+        h3 {
+            font-size: 16px;
+            margin-top: 20px;
+            color: #555;
+        }
+        p {
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        ul {
+            margin-bottom: 15px;
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        .date {
+            text-align: right;
+            font-size: 12px;
+            color: #777;
+            margin-bottom: 40px;
+        }
+        .footer {
+            margin-top: 50px;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+            font-size: 12px;
+            text-align: center;
+            color: #777;
+        }
+        .important {
+            color: #d9534f;
+            font-weight: bold;
+        }
 
+        /* --- 5カ国語切り替え用のスタイル --- */
+        .lang-content { display: none; }
+        body[data-lang="ja"] .lang-ja { display: block; }
+        body[data-lang="en"] .lang-en { display: block; }
+        body[data-lang="de"] .lang-de { display: block; }
+        body[data-lang="fr"] .lang-fr { display: block; }
+        body[data-lang="es"] .lang-es { display: block; }
+
+        .lang-selector {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+        select.lang-select {
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+            cursor: pointer;
+            background-color: #fff;
+        }
+    </style>
+</head>
+<body data-lang="ja">
+
+    <!-- 言語切り替えプルダウン -->
+    <div class="lang-selector">
+        <select class="lang-select" onchange="changeLanguage(this.value)" id="langSelect">
+            <option value="ja">日本語</option>
+            <option value="en">English</option>
+            <option value="de">Deutsch</option>
+            <option value="fr">Français</option>
+            <option value="es">Español</option>
+        </select>
+    </div>
+
+    <div class="container">
+        <!-- ==============================================
+             🇯🇵 日本語 (Japanese)
+             ============================================== -->
+        <div class="lang-content lang-ja">
+            <h1>プライバシーポリシー</h1>
+            
+            <div class="date">
+                制定日：2026年3月15日<br>
+                啓 App Lab
+            </div>
+
+            <p>啓 App Lab（以下、「当方」といいます）は、当方が提供する通話アプリケーション（代表例：「FreeCallApp」等。以下、「本アプリ」といいます）における、ユーザーの個人情報を含む利用者情報の取扱いについて、以下のとおりプライバシーポリシー（以下、「本ポリシー」といいます）を定めます。</p>
+
+            <h2>第1条（収集する情報および収集方法）</h2>
+            <p>本アプリの提供にあたり、当方は以下の情報を取得・利用する場合があります。</p>
+
+            <h3>1. 音声データ（マイクロフォン）</h3>
+            <ul>
+                <li><strong>利用目的：</strong> ユーザーの音声をリアルタイムで通話相手に送信するため。</li>
+                <li><strong>データの保存：</strong> 取得された音声データは通信回線を通じて送信されるのみであり、<span class="important">当方のサーバーに録音・保存されることは一切ありません。</span></li>
+            </ul>
+
+            <h3>2. 連絡先情報（電話帳）</h3>
+            <ul>
+                <li><strong>利用目的：</strong> 発信履歴等において、電話番号に対応する登録名を表示するため。</li>
+                <li><strong>データの送信：</strong> 連絡先データが<span class="important">当方のサーバーに送信・保存されることはありません。</span>処理は端末内でのみ行われます。</li>
+            </ul>
+
+            <h3>3. 端末情報・識別子</h3>
+            <ul>
+                <li><strong>取得情報：</strong> IPアドレス、OSバージョン、広告識別子（Google Advertising ID等）。</li>
+                <li><strong>利用目的：</strong> 広告配信、不正利用の防止、サービス品質の維持のため。</li>
+            </ul>
+
+            <h2>第2条（第三者への情報提供・情報収集モジュール）</h2>
+            <p>本アプリの機能提供に不可欠な以下の提携事業者に対し、必要な範囲で情報が送信されます。</p>
+            <ul>
+                <li><strong>Google AdMob：</strong> 適切な広告の配信、および広告視聴完了の検証のため。これにはCookieや広告識別子が使用されます。</li>
+                <li><strong>Firebase：</strong> ユーザーの匿名認証および通話可能時間の管理のため。</li>
+                <li><strong>SIPプロバイダ（Telnyx等）：</strong> 公衆電話網への接続および通話の確立のため。これに伴い発信先電話番号が送信されます。</li>
+            </ul>
+
+            <h2>第3条（ユーザーの権利：GDPRおよびCCPA等）</h2>
+            <h3>1. EU・EEA圏内のユーザー（GDPR）</h3>
+            <p>EU一般データ保護規則（GDPR）に基づき、該当地域のユーザーは自身の個人データへのアクセス、訂正、削除を求める権利を有します。IPアドレス等の取得は、サービス提供と不正防止という正当な利益に基づき行われます。</p>
+            <h3>2. カリフォルニア州のユーザー（CCPA）</h3>
+            <p>カリフォルニア州消費者プライバシー法（CCPA）に基づき、当方がユーザーの個人情報を第三者に<span class="important">販売（Sell）することはありません。</span></p>
+
+            <h2>第4条（通話可能時間の有効期限と管理）</h2>
+            <ul>
+                <li><strong>有効期限：</strong> セキュリティおよびサーバーリソースの観点から、<span class="important">本アプリへの最終アクセスから30日間経過した場合、保有している通話可能時間は自動的にリセットされます。</span></li>
+            </ul>
+
+            <h2>第5条（発信者番号通知に関する免責）</h2>
+            <p>技術的仕様および法令の規定に基づき、本アプリを利用した発信においてユーザー自身の携帯電話番号は相手方に通知されません。相手方が非通知拒否設定を行っていることによる不着等について、当方は責任を負いません。</p>
+
+            <h2>第6条（お問い合わせ窓口）</h2>
+            <p>本ポリシーに関するお問い合わせは、以下の窓口までご連絡ください。</p>
+            <p>
+                <strong>啓 App Lab (KEI App Lab)</strong><br>
+                Email: support@keiapplab.com
+            </p>
+        </div>
+
+        <!-- ==============================================
+             🇺🇸 英語 (English)
+             ============================================== -->
+        <div class="lang-content lang-en">
+            <h1>Privacy Policy</h1>
+            <div class="date">Effective Date: March 15, 2026<br>KEI App Lab</div>
+            <p>KEI App Lab ("we", "us", or "our") establishes this Privacy Policy ("this Policy") regarding the handling of user information in the calling applications provided by us (e.g., "FreeCallApp", collectively "this App").</p>
+
+            <h2>Article 1 (Information Collected)</h2>
+            <h3>1. Audio Data (Microphone)</h3>
+            <ul>
+                <li><strong>Purpose:</strong> To transmit your voice to the callee in real-time.</li>
+                <li><strong>Storage:</strong> Audio data is only transmitted and <span class="important">will never be recorded or stored on our servers.</span></li>
+            </ul>
+            <h3>2. Contact Information (Phonebook)</h3>
+            <ul>
+                <li><strong>Purpose:</strong> To display registered names in your call history.</li>
+                <li><strong>Transmission:</strong> Contact data is processed locally and <span class="important">never uploaded to our servers.</span></li>
+            </ul>
+            <h3>3. Device Information</h3>
+            <ul>
+                <li><strong>Collected:</strong> IP address, OS version, Advertising ID.</li>
+                <li><strong>Purpose:</strong> Ad delivery, fraud prevention, and service quality maintenance.</li>
+            </ul>
+
+            <h2>Article 2 (Third-Party Modules)</h2>
+            <p>Information is shared with the following essential partners:</p>
+            <ul>
+                <li><strong>Google AdMob:</strong> For ad delivery and verification using Cookies and Ad IDs.</li>
+                <li><strong>Firebase:</strong> For user authentication and database management.</li>
+                <li><strong>SIP Providers (e.g., Telnyx):</strong> For telephone network connections (destination numbers are transmitted).</li>
+            </ul>
+
+            <h2>Article 3 (GDPR and CCPA Rights)</h2>
+            <h3>1. EU/EEA Users (GDPR)</h3>
+            <p>Under the GDPR, you have the right to access, rectify, or erase your data. Data collection is based on legitimate interests for service provision and security.</p>
+            <h3>2. California Users (CCPA)</h3>
+            <p>Under the CCPA, we <span class="important">do not sell</span> your personal information to third parties.</p>
+
+            <h2>Article 4 (Call Time Expiration)</h2>
+            <ul>
+                <li><strong>Expiration:</strong> For security reasons, <span class="important">if you do not open this App for 30 days, your accumulated call time will be automatically reset.</span></li>
+            </ul>
+
+            <h2>Article 5 (Disclaimer on Caller ID)</h2>
+            <p>Due to technical and legal constraints, your personal mobile number will not be displayed to the callee. We are not responsible for uncompleted calls if the callee rejects anonymous calls.</p>
+
+            <h2>Article 6 (Contact Us)</h2>
+            <p><strong>KEI App Lab</strong><br>Email: support@keiapplab.com</p>
+        </div>
+
+        <!-- ==============================================
+             🇩🇪 ドイツ語 (Deutsch)
+             ============================================== -->
+        <div class="lang-content lang-de">
+            <h1>Datenschutzerklärung</h1>
+            <div class="date">Datum des Inkrafttretens: 15. März 2026<br>KEI App Lab</div>
+            <p>KEI App Lab („wir“, „uns“ oder „unser“) legt diese Datenschutzerklärung für die Verarbeitung von Nutzerinformationen in unseren Anruf-Anwendungen (z. B. „FreeCallApp“, im Folgenden „diese App“) fest.</p>
+
+            <h2>Artikel 1 (Gesammelte Informationen)</h2>
+            <h3>1. Audiodaten (Mikrofon)</h3>
+            <ul>
+                <li><strong>Zweck:</strong> Übertragung Ihrer Stimme in Echtzeit.</li>
+                <li><strong>Speicherung:</strong> Audiodaten werden nur übertragen und <span class="important">niemals auf unseren Servern aufgezeichnet oder gespeichert.</span></li>
+            </ul>
+            <h3>2. Kontaktinformationen (Telefonbuch)</h3>
+            <ul>
+                <li><strong>Zweck:</strong> Anzeige von Namen im Anrufverlauf.</li>
+                <li><strong>Übertragung:</strong> Kontaktdaten werden lokal verarbeitet und <span class="important">niemals auf unsere Server hochgeladen.</span></li>
+            </ul>
+            <h3>3. Geräteinformationen</h3>
+            <ul>
+                <li><strong>Gesammelt:</strong> IP-Adresse, OS-Version, Werbe-ID.</li>
+                <li><strong>Zweck:</strong> Anzeigenbereitstellung und Betrugsprävention.</li>
+            </ul>
+
+            <h2>Artikel 2 (Drittanbieter-Module)</h2>
+            <ul>
+                <li><strong>Google AdMob:</strong> Für Anzeigen unter Verwendung von Cookies.</li>
+                <li><strong>Firebase:</strong> Zur Authentifizierung und Datenbankverwaltung.</li>
+                <li><strong>SIP-Anbieter (z. B. Telnyx):</strong> Für Telefonnetzverbindungen.</li>
+            </ul>
+
+            <h2>Artikel 3 (Ihre Rechte: DSGVO)</h2>
+            <p>Gemäß der DSGVO haben Nutzer im EWR das Recht auf Auskunft, Berichtigung und Löschung ihrer Daten. Die Datenerhebung basiert auf berechtigten Interessen.</p>
+            <p>Wir <span class="important">verkaufen keine</span> persönlichen Daten (gemäß CCPA).</p>
+
+            <h2>Artikel 4 (Ablauf der Anrufzeit)</h2>
+            <ul>
+                <li><strong>Ablauf:</strong> Aus Sicherheitsgründen wird <span class="important">Ihre angesammelte Anrufzeit nach 30 Tagen Inaktivität automatisch zurückgesetzt.</span></li>
+            </ul>
+
+            <h2>Artikel 5 (Kontakt)</h2>
+            <p><strong>KEI App Lab</strong><br>E-Mail: support@keiapplab.com</p>
+        </div>
+
+        <!-- ==============================================
+             🇫🇷 フランス語 (Français)
+             ============================================== -->
+        <div class="lang-content lang-fr">
+            <h1>Politique de confidentialité</h1>
+            <div class="date">Date d'entrée en vigueur : 15 mars 2026<br>KEI App Lab</div>
+            <p>KEI App Lab (« nous », « notre ») établit cette Politique concernant le traitement des informations des utilisateurs dans nos applications d'appel (ex. « FreeCallApp », ci-après « cette Application »).</p>
+
+            <h2>Article 1 (Informations collectées)</h2>
+            <h3>1. Données audio (Microphone)</h3>
+            <ul>
+                <li><strong>Objectif :</strong> Transmettre votre voix en temps réel.</li>
+                <li><strong>Stockage :</strong> Les données vocales ne sont <span class="important">jamais enregistrées ni stockées sur nos serveurs.</span></li>
+            </ul>
+            <h3>2. Contacts (Répertoire)</h3>
+            <ul>
+                <li><strong>Objectif :</strong> Afficher les noms dans l'historique des appels.</li>
+                <li><strong>Transmission :</strong> Les contacts sont traités localement et <span class="important">ne sont jamais téléchargés.</span></li>
+            </ul>
+            <h3>3. Informations sur l'appareil</h3>
+            <ul>
+                <li><strong>Collecté :</strong> Adresse IP, version de l'OS, ID publicitaire.</li>
+                <li><strong>Objectif :</strong> Diffusion d'annonces et prévention de la fraude.</li>
+            </ul>
+
+            <h2>Article 2 (Modules tiers)</h2>
+            <ul>
+                <li><strong>Google AdMob :</strong> Pour les publicités (utilise des Cookies).</li>
+                <li><strong>Firebase :</strong> Pour l'authentification et la base de données.</li>
+                <li><strong>Fournisseurs SIP :</strong> Pour les connexions téléphoniques.</li>
+            </ul>
+
+            <h2>Article 3 (Droits des utilisateurs : RGPD)</h2>
+            <p>En vertu du RGPD, les utilisateurs de l'UE ont le droit d'accéder, de rectifier et de supprimer leurs données. Nous <span class="important">ne vendons pas</span> vos informations personnelles.</p>
+
+            <h2>Article 4 (Expiration du temps d'appel)</h2>
+            <ul>
+                <li><strong>Expiration :</strong> <span class="important">Si vous n'ouvrez pas cette application pendant 30 jours, votre temps d'appel accumulé sera réinitialisé.</span></li>
+            </ul>
+
+            <h2>Article 5 (Contact)</h2>
+            <p><strong>KEI App Lab</strong><br>E-mail : support@keiapplab.com</p>
+        </div>
+
+        <!-- ==============================================
+             🇪🇸 スペイン語 (Español)
+             ============================================== -->
+        <div class="lang-content lang-es">
+            <h1>Política de privacidad</h1>
+            <div class="date">Fecha de entrada en vigor: 15 de marzo de 2026<br>KEI App Lab</div>
+            <p>KEI App Lab ("nosotros", "nuestro") establece esta Política con respecto al manejo de la información en nuestras aplicaciones de llamadas (ej. "FreeCallApp", en adelante "esta App").</p>
+
+            <h2>Artículo 1 (Información recopilada)</h2>
+            <h3>1. Datos de audio (Micrófono)</h3>
+            <ul>
+                <li><strong>Propósito:</strong> Transmitir su voz en tiempo real.</li>
+                <li><strong>Almacenamiento:</strong> El audio <span class="important">nunca se graba ni se almacena en nuestros servidores.</span></li>
+            </ul>
+            <h3>2. Contactos (Agenda)</h3>
+            <ul>
+                <li><strong>Propósito:</strong> Mostrar nombres en el historial de llamadas.</li>
+                <li><strong>Transmisión:</strong> Se procesan localmente y <span class="important">nunca se suben a nuestros servidores.</span></li>
+            </ul>
+            <h3>3. Información del dispositivo</h3>
+            <ul>
+                <li><strong>Recopilado:</strong> Dirección IP, versión del SO, ID de publicidad.</li>
+                <li><strong>Propósito:</strong> Entrega de anuncios y prevención de fraudes.</li>
+            </ul>
+
+            <h2>Artículo 2 (Módulos de terceros)</h2>
+            <ul>
+                <li><strong>Google AdMob:</strong> Para publicidad (usa Cookies).</li>
+                <li><strong>Firebase:</strong> Para autenticación y base de datos.</li>
+                <li><strong>Proveedores SIP:</strong> Para conexiones telefónicas.</li>
+            </ul>
+
+            <h2>Artículo 3 (Derechos RGPD y CCPA)</h2>
+            <p>Bajo el RGPD, tiene derecho a acceder, rectificar o eliminar sus datos. <span class="important">No vendemos</span> su información personal a terceros (CCPA).</p>
+
+            <h2>Artículo 4 (Expiración del tiempo de llamada)</h2>
+            <ul>
+                <li><strong>Expiración:</strong> <span class="important">Si no abre esta App durante 30 días, su tiempo de llamada se restablecerá automáticamente.</span></li>
+            </ul>
+
+            <h2>Artículo 5 (Contacto)</h2>
+            <p><strong>KEI App Lab</strong><br>Correo: support@keiapplab.com</p>
+        </div>
+
+        <!-- 全言語共通 フッター -->
+        <div class="footer">
+            &copy; 2026 KEI App Lab. All Rights Reserved.
+        </div>
+    </div>
+
+    <script>
+        // --- ブラウザの言語に合わせて初期表示を切り替える ---
+        window.addEventListener('load', () => {
+            const browserLang = (window.navigator.language || window.navigator.userLanguage || 'ja').slice(0, 2).toLowerCase();
+            const supportedLangs = ['ja', 'en', 'de', 'fr', 'es'];
+            const initialLang = supportedLangs.includes(browserLang) ? browserLang : 'en';
+            
+            changeLanguage(initialLang);
+            document.getElementById('langSelect').value = initialLang;
+        });
+
+        // --- 言語切り替え機能 ---
+        function changeLanguage(lang) {
+            document.body.setAttribute('data-lang', lang);
+        }
+    </script>
+</body>
+</html>
