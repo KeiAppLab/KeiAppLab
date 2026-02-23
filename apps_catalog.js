@@ -88,20 +88,5 @@ const appsCatalogData = [
         "body_de": "",
         "body_fr": "",
         "body_es": ""
-    },
-    {
-        "project_id": "kjuhuhuh",
-        "status": "coming",
-        "image": "kjuhuhuh/index.png",
-        "project_ja": "GORIRA11111",
-        "project_en": "kjuhuhuh",
-        "project_de": "",
-        "project_fr": "",
-        "project_es": "",
-        "body_ja": "1111111111\n222222222\n33333333",
-        "body_en": "",
-        "body_de": "",
-        "body_fr": "",
-        "body_es": ""
     }
 ];
