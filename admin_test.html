@@ -596,9 +596,13 @@
                     const htmlCode = generateProjectHtmlString(dummyId, inputData);
                     document.getElementById('raw-project-html').value = htmlCode;
                 } else if (id === 'html-manual') {
-                    // ★修正: バッククォートのエスケープ処理などを安全にする
-                    const manualContent = (typeof privacyManualText !== 'undefined') ? privacyManualText : "ここにマニュアルを記載";
+                    // ★追加: 手順書データをテキストエリアにセット
+                    const manualContent = (typeof privacyManualText !== 'undefined') ? privacyManualText : "ここにマニュアルを記載してください。";
                     document.getElementById('raw-html-manual').value = "const privacyManualText = `" + manualContent.replace(/`/g, '\\`') + "`;";
+                } else if (id === 'memo') {
+                    // ★追加: メモデータをテキストエリアにセット
+                    const memoContent = (typeof adminMemoText !== 'undefined') ? adminMemoText : "ここにメモを記載してください。";
+                    document.getElementById('raw-memo').value = "const adminMemoText = `" + memoContent.replace(/`/g, '\\`') + "`;";
                 }
             }
             
