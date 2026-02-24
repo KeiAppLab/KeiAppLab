@@ -240,8 +240,8 @@
             <!-- ▼▼ サイドバー（左メニュー） ▼▼ -->
             <div class="sidebar">
                 <h1>🚀 KEI Lab Admin</h1>
-                <div class="menu-btn active" onclick="switchPanel('cms')">📝 コンテンツ編集</div>
-                <div class="menu-btn" onclick="switchPanel('calc')">💰 収益・秒数計算</div>
+                <div class="menu-btn active" onclick="switchPanel('calc')">💰 収益・秒数計算</div>
+                <div class="menu-btn" onclick="switchPanel('cms')">📝 コンテンツ編集</div>
                 <div class="menu-btn" onclick="switchPanel('projects')">📂 全プロジェクト情報</div>
                 <div class="menu-btn" style="font-size:0.8rem; padding:10px 15px;" onclick="switchPanel('data-master')">📄 admin_master.js</div>
                 <div class="menu-btn" style="font-size:0.8rem; padding:10px 15px;" onclick="switchPanel('data-index')">📄 index_news.js</div>
@@ -272,8 +272,8 @@
             <!-- ▼▼ メインコンテンツエリア ▼▼ -->
             <div class="main-content">
 
-                <!-- 計算機パネル -->
-                <div id="panel-calc" class="panel">
+                <!-- 計算機パネル (初期表示) -->
+                <div id="panel-calc" class="panel active">
                     <div class="calc-container">
                         <h2>💰 シミュレーター</h2>
                         <div class="calc-grid">
@@ -288,7 +288,7 @@
                 </div>
 
                 <!-- CMSパネル (初期表示) -->
-                <div id="panel-cms" class="panel active">
+                <div id="panel-cms" class="panel">
                     <div class="cms-layout">
                         
                         <!-- エディタ (左側) -->
