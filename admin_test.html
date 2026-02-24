@@ -378,12 +378,13 @@
 
                         <!-- プレビュー -->
                         <div class="preview-area">
-                            <!-- ★修正: absolute指定を削除し、通常のブロックとして配置 -->
-                            <div id="privacyPreviewBox" style="display:none; background:#f9f9f9; border-radius:8px; padding:20px; box-sizing:border-box;">
-                                <div style="text-align:right; margin-bottom:15px; position:sticky; top:0; z-index:51;">
+                            <!-- ★修正: プライバシー専用プレビューを iframe に変更して隔離する -->
+                            <div id="privacyPreviewBox" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:#f9f9f9; z-index:50; padding:20px; box-sizing:border-box; flex-direction:column;">
+                                <div style="text-align:right; margin-bottom:10px;">
                                     <button onclick="togglePrivacyPreview()" style="background:#c0392b; color:white; padding:8px 15px; width:auto; border-radius:4px; font-weight:bold; cursor:pointer; box-shadow:0 2px 5px rgba(0,0,0,0.2);">× プレビューを閉じる</button>
                                 </div>
-                                <div id="privacyPreviewContent" style="background:#fff; padding:30px; border-radius:8px; box-shadow:0 2px 15px rgba(0,0,0,0.05); min-height:80vh;"></div>
+                                <!-- iframeを使用してCSSの汚染を防ぐ -->
+                                <iframe id="privacyPreviewIframe" style="width:100%; flex:1; background:#fff; border:1px solid #ccc; border-radius:8px; box-shadow:0 2px 15px rgba(0,0,0,0.05);"></iframe>
                             </div>
 
                             <!-- 通常プレビューコンテンツ -->
@@ -570,12 +571,9 @@
                     const htmlCode = generateProjectHtmlString(dummyId, inputData);
                     document.getElementById('raw-project-html').value = htmlCode;
                 } else if (id === 'html-manual') {
-                    // ★追加: 手順書データをテキストエリアにセット
-                    if (typeof privacyManualText !== 'undefined') {
-                        document.getElementById('raw-html-manual').value = "const privacyManualText = `" + privacyManualText + "`;";
-                    } else {
-                        document.getElementById('raw-html-manual').value = "const privacyManualText = `ここにマニュアルを記載`;";
-                    }
+                    // ★修正: バッククォートのエスケープ処理などを安全にする
+                    const manualContent = (typeof privacyManualText !== 'undefined') ? privacyManualText : "ここにマニュアルを記載";
+                    document.getElementById('raw-html-manual').value = "const privacyManualText = `" + manualContent.replace(/`/g, '\\`') + "`;";
                 }
             }
             
@@ -596,7 +594,16 @@
                 document.getElementById('group-' + lang).classList.add('active');
                 document.querySelectorAll('.edit-tab').forEach(e => e.classList.remove('active'));
                 event.currentTarget.classList.add('active');
-                previewLang = lang; updatePreview();
+                
+                previewLang = lang; 
+                updatePreview();
+
+                // ★追加: プライバシープレビュー（iframe）が開いていれば、その中身も更新する
+                const privacyBox = document.getElementById('privacyPreviewBox');
+                if (privacyBox && privacyBox.style.display !== 'none') {
+                    privacyBox.style.display = 'none';
+                    togglePrivacyPreview(); // 閉じて開くことで新しい言語で再描画
+                }
             }
             
             // プロジェクト履歴 (admin_master.js から生成)
@@ -1019,15 +1026,15 @@
                 
                 // 多言語データの取得
                 const langs = ['ja', 'en', 'de', 'fr', 'es'];
-                let names={}, titles={}, bodies={}, privacies={};
+                let names={}, titles={}, bodies={}, privacies={}; // privacies を追加
                 langs.forEach(l => {
                     const s = l==='ja'?'':l.charAt(0).toUpperCase()+l.slice(1);
                     names['project_'+l] = document.getElementById('inProject'+s).value;
                     titles['title_'+l] = document.getElementById('inTitle'+s).value;
                     bodies['body_'+l] = document.getElementById('inBody'+s).value;
-                    // ★追加: プライバシーポリシーの取得
-                    privacies['privacy_'+l] = document.getElementById('inPrivacy'+s) ? document.getElementById('inPrivacy'+s).value : "";
                 });
+                    // ★追加: プライバシーポリシーの取得
+                    const privacyHtml = document.getElementById('inPrivacyHtml').value;
             
                 // プライバシーHTMLを取得
                 const privacyHtml = document.getElementById('inPrivacyHtml').value;
@@ -1419,22 +1426,25 @@
                 }
             }
     
-            // 2. プレビューの切り替え
+            // 2. プレビューの切り替え（iframe対応版）
             function togglePrivacyPreview() {
                 const previewBox = document.getElementById('privacyPreviewBox');
-                const previewContent = document.getElementById('privacyPreviewContent');
-                const normalContent = document.getElementById('normalPreviewContent');
+                const iframe = document.getElementById('privacyPreviewIframe');
                 
                 if (previewBox.style.display === 'none') {
-                    // 開くときに、テキストエリアのHTMLを流し込む
-                    const htmlData = document.getElementById('inPrivacyHtml').value;
-                    previewContent.innerHTML = htmlData || "<p style='color:#999; text-align:center; margin-top:50px;'>※HTMLが入力されていません</p>";
+                    let htmlData = document.getElementById('inPrivacyHtml').value;
+                    if (!htmlData) {
+                        htmlData = "<p style='color:#999; text-align:center; margin-top:50px;'>※HTMLが入力されていません</p>";
+                    } else {
+                        // iframe内で正しく表示させるための最低限のHTML骨格を追加
+                        htmlData = `<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><style>body{font-family:sans-serif; padding:20px; line-height:1.6;} .lang-ja, .lang-en, .lang-de, .lang-fr, .lang-es { display:none; } .lang-${previewLang} { display:block; }</style></head><body>${htmlData}</body></html>`;
+                    }
                     
-                    previewBox.style.display = 'block';
-                    // normalContentは隠さずに裏に置いておく（スクロール位置を保持するため）
+                    iframe.srcdoc = htmlData; // iframeの中にHTMLを直接流し込む
+                    previewBox.style.display = 'flex'; // flexにして高さを100%に
                 } else {
-                    // 閉じる
                     previewBox.style.display = 'none';
+                    iframe.srcdoc = ""; // 閉じる時は中身を消す
                 }
             }
     
