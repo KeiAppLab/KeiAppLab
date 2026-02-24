@@ -388,12 +388,13 @@
                         <!-- プレビュー (右側) -->
                         <div class="preview-area">
                             
-                            <!-- プライバシー専用プレビュー枠 -->
-                            <div id="privacyPreviewBox" style="display:none; background:#f9f9f9; border-radius:8px; padding:20px; box-sizing:border-box;">
-                                <div style="text-align:right; margin-bottom:15px; position:sticky; top:0; z-index:51;">
+                            <!-- ★修正: プライバシー専用プレビュー枠 (iframeを使用) -->
+                            <div id="privacyPreviewBox" style="display:none; flex-direction:column; height:100%; background:#f9f9f9; border-radius:8px; padding:20px; box-sizing:border-box;">
+                                <div style="text-align:right; margin-bottom:10px;">
                                     <button onclick="togglePrivacyPreview()" style="background:#c0392b; color:white; padding:8px 15px; width:auto; border-radius:4px; font-weight:bold; cursor:pointer; box-shadow:0 2px 5px rgba(0,0,0,0.2);">× プレビューを閉じる</button>
                                 </div>
-                                <div id="privacyPreviewContent" style="background:#fff; padding:30px; border-radius:8px; box-shadow:0 2px 15px rgba(0,0,0,0.05); min-height:80vh;"></div>
+                                <!-- iframeで完全に隔離。CSSの影響を受けない -->
+                                <iframe id="privacyPreviewIframe" style="width:100%; flex:1; min-height:600px; background:#fff; border:1px solid #ccc; border-radius:8px; box-shadow:0 2px 15px rgba(0,0,0,0.05);"></iframe>
                             </div>
 
                             <!-- 通常プレビュー -->
@@ -837,19 +838,34 @@
                 area.style.display = (area.style.display === 'none') ? 'block' : 'none';
             }
     
+            // ★修正: iframe対応のプレビュー切り替え
             function togglePrivacyPreview() {
-                const box = document.getElementById('privacyPreviewBox');
-                const content = document.getElementById('privacyPreviewContent');
-                const normal = document.getElementById('normalPreviewContent');
+                const previewBox = document.getElementById('privacyPreviewBox');
+                const iframe = document.getElementById('privacyPreviewIframe');
+                const normalContent = document.getElementById('normalPreviewContent');
                 
-                if (box.style.display === 'none') {
-                    // 表示する時に入力されたHTMLを流し込む
-                    content.innerHTML = document.getElementById('inPrivacyHtml').value || "<p style='color:#999;text-align:center;'>HTMLが入力されていません</p>";
-                    box.style.display = 'block';
-                    normal.style.display = 'none'; // 通常プレビューを隠す
+                if (previewBox.style.display === 'none') {
+                    // 入力欄からHTMLを取得
+                    let htmlData = document.getElementById('inPrivacyHtml').value.trim();
+                    
+                    if (!htmlData) {
+                        htmlData = "<h3 style='color:#999; text-align:center; margin-top:50px;'>※HTMLが入力されていません</h3>";
+                    } else {
+                        // iframe内で正しく表示し、かつ選択中の言語(previewLang)だけを表示するための枠組みを追加
+                        htmlData = `<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><style>body{font-family:sans-serif; padding:20px; line-height:1.6; color:#333; background:#fff; margin:0;} .lang-ja, .lang-en, .lang-de, .lang-fr, .lang-es { display:none; } .lang-${previewLang} { display:block; }</style></head><body>${htmlData}</body></html>`;
+                    }
+                    
+                    // iframeの中にHTMLを直接流し込む
+                    iframe.srcdoc = htmlData;
+                    
+                    // 表示の切り替え（flexにして高さを維持）
+                    previewBox.style.display = 'flex';
+                    normalContent.style.display = 'none';
                 } else {
-                    box.style.display = 'none';
-                    normal.style.display = 'block';
+                    // 閉じる処理
+                    previewBox.style.display = 'none';
+                    normalContent.style.display = 'block';
+                    iframe.srcdoc = ""; // メモリ解放のために中身を消す
                 }
             }
             
