@@ -244,11 +244,27 @@
                 <div class="menu-btn" style="font-size:0.8rem; padding:10px 15px;" onclick="switchPanel('data-index')">📄 index_news.js</div>
                 <div class="menu-btn" style="font-size:0.8rem; padding:10px 15px;" onclick="switchPanel('data-catalog')">📄 apps_catalog.js</div>
                 <div class="menu-btn" style="font-size:0.8rem; padding:10px 15px;" onclick="switchPanel('data-project-html')">📄 [project]/index.html</div>
-                <div class="menu-btn" style="font-size:0.8rem; padding:10px 15px;" onclick="switchPanel('html-manual')">📝 HTML生成手順書.js</div>
+                
+                <!-- ★修正: コピーアイコンを追加。onclickに event.stopPropagation() を入れてパネル切り替えの誤爆を防ぐ -->
+                <div class="menu-btn" style="font-size:0.8rem; padding:10px 15px; display:flex; justify-content:space-between; align-items:center;" onclick="switchPanel('html-manual')">
+                    <span>📝 HTML生成手順書.js</span>
+                    <span onclick="event.stopPropagation(); copyPrivacyManual();" style="cursor:pointer; display:flex; align-items:center; justify-content:center; padding:5px; background:rgba(255,255,255,0.1); border-radius:4px;" title="手順書をコピー">
+                        <!-- □が2つ重なったコピーアイコン(SVG) -->
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                    </span>
+                </div>
+
                 <div class="spacer"></div>
+                
+                <!-- ★追加: メモ機能へのリンク -->
+                <div class="menu-btn" onclick="switchPanel('memo')">💦( ..)φメモメモ</div>
+                <hr style="border:0; border-top:1px solid #444; margin: 10px 0; width: 100%;">
+                
                 <div class="menu-btn" onclick="switchPanel('users')">👥 権限管理</div>
                 <div class="menu-btn" onclick="logout()" style="margin-top:auto; background:#c0392b; color:white;">🔒 ログアウト</div>
-            </div>
 
             <div class="main-content">
                 <!-- 計算パネル -->
@@ -340,7 +356,7 @@
                                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                                         <label style="margin:0; color:#e67e22; font-size:1rem;">🛡️ プライバシーポリシー</label>
                                         <div>
-                                            <button type="button" onclick="copyPrivacyManual()" style="background:#0056b3; color:white; padding:5px 10px; border:none; border-radius:4px; font-size:0.8rem; cursor:pointer; width:auto; margin:0;">📄 HTML生成手順書コピー</button>
+                                            <!-- 古いコピーボタンを削除し、プレビューボタンのみ残す -->
                                             <button type="button" onclick="togglePrivacyPreview()" style="background:#27ae60; color:white; padding:5px 10px; border:none; border-radius:4px; font-size:0.8rem; cursor:pointer; width:auto; margin:0; margin-left:5px;">👁️ プレビュー</button>
                                         </div>
                                     </div>
@@ -441,18 +457,36 @@
                                 </div>
 
                                 <span class="preview-label">▼ 詳細ページ (Project Page)</span>
-                                <div id="realPagePreview" style="display:none; width:100%; height:400px; border:1px solid #ccc; background:#fff;">
-                                    <iframe id="prevIframe" style="width:100%; height:100%; border:none;"></iframe>
+                            <div id="realPagePreview" style="display:none; width:100%; height:400px; border:1px solid #ccc; background:#fff;">
+                                <iframe id="prevIframe" style="width:100%; height:100%; border:none;"></iframe>
+                            </div>
+                            <div id="simulatedPagePreview" class="page-preview">
+                                <h1 id="prevPageTitle">タイトル</h1>
+                                <div id="prevPageCatchcopy" style="font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; color: #333; line-height: 1.5; white-space: pre-wrap;">キャッチコピー</div>
+                                
+                                <div style="display:none;">
+                                    <span id="prevPageDate"></span> | <span id="prevPageProject"></span>
                                 </div>
-                                <div id="simulatedPagePreview" class="page-preview">
-                                    <h1 id="prevPageTitle">タイトル</h1>
-                                    <div id="prevPageCatchcopy" style="font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; color: #333; line-height: 1.5; white-space: pre-wrap;">キャッチコピー</div>
-                                    <div style="display:none;"><span id="prevPageDate"></span> | <span id="prevPageProject"></span></div>
-                                    <img src="" id="prevPageImg" style="display:none;">
-                                    <div id="prevBody" style="white-space: pre-wrap;">本文...</div>
+                                <img src="" id="prevPageImg" style="display:none;">
+                                <div id="prevBody">本文...</div>
+                                
+                                <!-- ★追加: プレビュー用のフッターリンク -->
+                                <div style="margin-top: 50px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; font-size: 0.85rem; color: #666; font-family: sans-serif;">
+                                    <a href="#" style="color: #0056b3; text-decoration: none; font-weight: bold;">プライバシーポリシー</a><br><br>
+                                    © 2026 啓 App Lab | <a href="#" style="color: #0056b3; text-decoration: none;">app-ads.txt</a>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- ★追加: メモ機能パネル -->
+                <div id="panel-memo" class="panel">
+                    <div class="calc-container" style="max-width:100%;">
+                        <h2>💦 ( ..)φ メモメモ</h2>
+                        <p style="color:#aaa;">思いついたアイデアやタスクを自由に書き込めます。（memo.js に保存されます）</p>
+                        <textarea id="raw-memo" style="width:100%; height:50vh; background:#fcfcfa; color:#333; font-family:sans-serif; font-size:15px; line-height:1.6; padding:15px; border:1px solid #ccc; border-radius:6px;"></textarea>
+                        <button class="btn-save" onclick="saveMemoJs()">💾 メモを上書き保存</button>
                     </div>
                 </div>
 
