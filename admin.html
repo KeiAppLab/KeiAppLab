@@ -12,6 +12,7 @@
     
     <script src="allowed_users.js"></script>
     <script src="index_phot.js"></script>
+    <script src="html_manual.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700;900&family=Roboto:wght@400;500;900&display=swap');
@@ -58,6 +59,8 @@
         .label-row label { margin: 0; }
 
         input, select, textarea { width: 100%; padding: 10px; border: 1px solid #555; border-radius: 4px; box-sizing: border-box; font-size: 1rem; }
+        /* --- プライバシーポリシーのプレースホルダー（薄く・小さく） --- */
+        #inPrivacy::placeholder { font-size: 0.8rem; color: #999; line-height: 1.5; }
         .input-white { background-color: #ffffff !important; color: #333 !important; border: 1px solid #ccc !important; font-weight: bold; }
         
         .row-group { display: flex; gap: 10px; }
@@ -241,6 +244,7 @@
                 <div class="menu-btn" style="font-size:0.8rem; padding:10px 15px;" onclick="switchPanel('data-index')">📄 index_news.js</div>
                 <div class="menu-btn" style="font-size:0.8rem; padding:10px 15px;" onclick="switchPanel('data-catalog')">📄 apps_catalog.js</div>
                 <div class="menu-btn" style="font-size:0.8rem; padding:10px 15px;" onclick="switchPanel('data-project-html')">📄 [project]/index.html</div>
+                <div class="menu-btn" style="font-size:0.8rem; padding:10px 15px;" onclick="switchPanel('html-manual')">📝 HTML生成手順書.js</div>
                 <div class="spacer"></div>
                 <div class="menu-btn" onclick="switchPanel('users')">👥 権限管理</div>
                 <div class="menu-btn" onclick="logout()" style="margin-top:auto; background:#c0392b; color:white;">🔒 ログアウト</div>
@@ -286,12 +290,16 @@
                                 </div>
                             </div>
 
+<!-- (既存) 画像ファイルのセレクト -->
                             <div class="form-group">
                                 <label>画像ファイル (index_photフォルダ)</label>
                                 <input type="hidden" id="inImage" onchange="updatePreview()">
                                 <div class="custom-select-wrapper">
                                     <div class="custom-select">
-                                        <div class="custom-select__trigger" onclick="toggleImageSelect()"><span id="selectedImageText">画像を選択...</span><span>▼</span></div>
+                                        <div class="custom-select__trigger" onclick="toggleImageSelect()">
+                                            <span id="selectedImageText">画像を選択...</span>
+                                            <span>▼</span>
+                                        </div>
                                         <div class="custom-options" id="imageOptions"></div>
                                     </div>
                                 </div>
@@ -328,6 +336,23 @@
                                     </div>
                                     <textarea id="inBody" class="input-white" rows="3" oninput="updatePreview()"></textarea>
                                 </div>
+                                <div class="form-group" style="background:#2d2d30; padding:15px; border-radius:8px; margin-top:20px;">
+                                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                                        <label style="margin:0; color:#e67e22; font-size:1rem;">🛡️ プライバシーポリシー</label>
+                                        <div>
+                                            <button type="button" onclick="copyPrivacyManual()" style="background:#0056b3; color:white; padding:5px 10px; border:none; border-radius:4px; font-size:0.8rem; cursor:pointer; width:auto; margin:0;">📄 HTML生成手順書コピー</button>
+                                            <button type="button" onclick="togglePrivacyPreview()" style="background:#27ae60; color:white; padding:5px 10px; border:none; border-radius:4px; font-size:0.8rem; cursor:pointer; width:auto; margin:0; margin-left:5px;">👁️ プレビュー</button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 入力エリアをボタンの上に配置 -->
+                                    <div id="privacyInputArea" style="display:none; margin-bottom:10px;">
+                                        <textarea id="inPrivacyHtml" class="input-white" style="height:300px; font-family:monospace; font-size:0.85rem;" placeholder="ここに生成した5言語対応のプライバシーポリシーHTMLを貼り付けてください。"></textarea>
+                                    </div>
+
+                                    <!-- ボタンを下に配置 -->
+                                    <button type="button" onclick="togglePrivacyInput()" style="background:#444; color:#fff; border:1px solid #666; width:100%; text-align:left; margin:0;">▶ (JP, EN, DE, FR, ES) 5言語対応HTMLを入力して下さい。</button>
+                                </div>
                             </div>
 
                             <!-- 多言語 -->
@@ -335,79 +360,97 @@
                                 <div class="form-group"><label>Project (EN)</label><input type="text" id="inProjectEn" class="input-white" oninput="updatePreview()"></div>
                                 <div class="form-group"><label>Title (EN)</label><textarea id="inTitleEn" class="input-white" rows="2" oninput="updatePreview()"></textarea></div>
                                 <div class="form-group"><label>App Intro (EN)</label><textarea id="inBodyEn" class="input-white" rows="3" oninput="updatePreview()"></textarea></div>
+                                <!-- ★追加 -->
+                                <div class="form-group"><label>Privacy Policy (EN)</label></div>
                             </div>
-                            <div id="group-de" class="lang-input-group"><div class="form-group"><label>Project (DE)</label><input type="text" id="inProjectDe" class="input-white" oninput="updatePreview()"></div><div class="form-group"><label>Title (DE)</label><textarea id="inTitleDe" class="input-white" rows="2" oninput="updatePreview()"></textarea></div><div class="form-group"><label>App Intro (DE)</label><textarea id="inBodyDe" class="input-white" rows="3" oninput="updatePreview()"></textarea></div></div>
-                            <div id="group-fr" class="lang-input-group"><div class="form-group"><label>Project (FR)</label><input type="text" id="inProjectFr" class="input-white" oninput="updatePreview()"></div><div class="form-group"><label>Title (FR)</label><textarea id="inTitleFr" class="input-white" rows="2" oninput="updatePreview()"></textarea></div><div class="form-group"><label>App Intro (FR)</label><textarea id="inBodyFr" class="input-white" rows="3" oninput="updatePreview()"></textarea></div></div>
-                            <div id="group-es" class="lang-input-group"><div class="form-group"><label>Project (ES)</label><input type="text" id="inProjectEs" class="input-white" oninput="updatePreview()"></div><div class="form-group"><label>Title (ES)</label><textarea id="inTitleEs" class="input-white" rows="2" oninput="updatePreview()"></textarea></div><div class="form-group"><label>App Intro (ES)</label><textarea id="inBodyEs" class="input-white" rows="3" oninput="updatePreview()"></textarea></div></div>
+                            <div id="group-de" class="lang-input-group"><div class="form-group"><label>Project (DE)</label><input type="text" id="inProjectDe" class="input-white" oninput="updatePreview()"></div><div class="form-group"><label>Title (DE)</label><textarea id="inTitleDe" class="input-white" rows="2" oninput="updatePreview()"></textarea></div><div class="form-group"><label>App Intro (DE)</label><textarea id="inBodyDe" class="input-white" rows="3" oninput="updatePreview()"></textarea></div>
+                                <div class="form-group"><label>Datenschutz (DE)</label></div>
+                            </div>
+                            <div id="group-fr" class="lang-input-group"><div class="form-group"><label>Project (FR)</label><input type="text" id="inProjectFr" class="input-white" oninput="updatePreview()"></div><div class="form-group"><label>Title (FR)</label><textarea id="inTitleFr" class="input-white" rows="2" oninput="updatePreview()"></textarea></div><div class="form-group"><label>App Intro (FR)</label><textarea id="inBodyFr" class="input-white" rows="3" oninput="updatePreview()"></textarea></div>
+                                <div class="form-group"><label>Confidentialité (FR)</label></div>
+                            </div>
+                            <div id="group-es" class="lang-input-group"><div class="form-group"><label>Project (ES)</label><input type="text" id="inProjectEs" class="input-white" oninput="updatePreview()"></div><div class="form-group"><label>Title (ES)</label><textarea id="inTitleEs" class="input-white" rows="2" oninput="updatePreview()"></textarea></div><div class="form-group"><label>App Intro (ES)</label><textarea id="inBodyEs" class="input-white" rows="3" oninput="updatePreview()"></textarea></div>
+                                <div class="form-group"><label>Privacidad (ES)</label></div>
+                            </div>
 
                             <button class="btn-save" style="margin-top:20px;" onclick="saveToGitHub()">🚀 GitHubへ更新保存</button>
                         </div>
 
                         <!-- プレビュー (60%) -->
                         <div class="preview-area">
-                            <div class="preview-header">
-                                <h2 style="border:none; margin:0; font-size:1.1rem; color:#333;">👁️ リアルタイムプレビュー</h2>
-                            </div>
                             
-                            <div style="margin-bottom:30px;">
-                                <span class="preview-label">▼ お知らせ (News List)</span>
-                                <div class="news-item">
-                                    <span class="news-date" id="prevDate">2026.03.15</span>
-                                    <span class="news-tag tag-update" id="prevTag">更新情報</span>
-                                    <div style="flex:1;">
-                                        <span style="font-weight:bold; margin-right:10px; color:#333;" id="prevProjectName">プロジェクト名</span>
-                                        <span class="news-link" id="prevTitle">タイトル</span>
-                                    </div>
+                            <!-- ★修正: プライバシーポリシー専用プレビュー (通常配置) -->
+                            <div id="privacyPreviewBox" style="display:none; flex-direction:column; height:100%;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:2px solid #ccc; padding-bottom:10px;">
+                                    <h2 style="border:none; margin:0; font-size:1.1rem; color:#333;">👁️ プライバシーポリシー プレビュー</h2>
+                                    <button onclick="togglePrivacyPreview()" style="background:#c0392b; color:white; padding:8px 15px; border:none; border-radius:4px; font-weight:bold; cursor:pointer;">× 閉じる</button>
                                 </div>
+                                <!-- iframeで完全に隔離。高さを600px確保 -->
+                                <iframe id="privacyPreviewIframe" style="width:100%; height:600px; background:#fff; border:1px solid #ccc; border-radius:8px; box-shadow:0 2px 10px rgba(0,0,0,0.05);"></iframe>
                             </div>
 
-                            <div class="preview-split-row">
-                                <div class="split-col left">
-                                    <span class="preview-label" style="margin-bottom:10px;">▼ 最新の活動 (Highlights)</span>
-                                    <div class="highlight-card" id="prevHighlightCard">
-                                        <div class="highlight-img-area">
-                                            <img src="" alt="No Image" id="prevImg" class="highlight-img">
-                                            <span class="highlight-category-badge tag-update" id="prevCardCatBadge">更新情報</span>
-                                        </div>
-                                        <div class="highlight-content-tight">
-                                            <div class="highlight-meta" style="padding:0 10px;">
-                                                <span class="meta-date" id="prevCardDate">2026.03.15</span> | 
-                                                <span class="meta-proj" id="prevCardProj">プロジェクト名</span>
-                                            </div>
-                                            <div class="highlight-title-tight" id="prevCardTitle" style="padding:0 10px 10px 10px;">お知らせ・キャッチコピー</div>
-                                        </div>
-                                    </div>
+                            <!-- 通常のプレビューコンテンツ -->
+                            <div id="normalPreviewContent">
+                                <div class="preview-header">
+                                    <h2 style="border:none; margin:0; font-size:1.1rem; color:#333;">👁️ リアルタイムプレビュー</h2>
                                 </div>
-
-                                <div class="split-col right">
-                                    <span class="preview-label" style="margin-bottom:10px;">▼ アプリ紹介 (App List)</span>
-                                    <div class="highlight-card">
-                                        <div class="highlight-img-area">
-                                            <img src="" alt="No Image" id="prevAppImg" class="highlight-img">
-                                            <div id="comingSoonOverlay" class="coming-soon-overlay">Coming Soon</div>
-                                            <div class="project-name-badge" id="prevAppProj">プロジェクト名</div>
-                                        </div>
-                                        <div class="app-desc-content">
-                                            <div class="app-desc-text" id="prevAppDesc">アプリ紹介本文がここに入ります...</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <span class="preview-label">▼ 詳細ページ (Project Page)</span>
-                            <div id="realPagePreview" style="display:none; width:100%; height:400px; border:1px solid #ccc; background:#fff;">
-                                <iframe id="prevIframe" style="width:100%; height:100%; border:none;"></iframe>
-                            </div>
-                            <div id="simulatedPagePreview" class="page-preview">
-                                <h1 id="prevPageTitle">タイトル</h1>
-                                <!-- ★追加: キャッチコピー表示領域 -->
-                                <div id="prevPageCatchcopy" style="font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; color: #333; line-height: 1.5; white-space: pre-wrap;">キャッチコピー</div>
                                 
-                                <div style="display:none;">
-                                    <span id="prevPageDate"></span> | <span id="prevPageProject"></span>
+                                <div style="margin-bottom:30px;">
+                                    <span class="preview-label">▼ お知らせ (News List)</span>
+                                    <div class="news-item">
+                                        <span class="news-date" id="prevDate">2026.03.15</span>
+                                        <span class="news-tag tag-update" id="prevTag">更新情報</span>
+                                        <div style="flex:1;">
+                                            <span style="font-weight:bold; margin-right:10px; color:#333;" id="prevProjectName">プロジェクト名</span>
+                                            <span class="news-link" id="prevTitle">タイトル</span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <img src="" id="prevPageImg" style="display:none;">
-                                <div id="prevBody">本文...</div>
+
+                                <div class="preview-split-row">
+                                    <div class="split-col left">
+                                        <span class="preview-label" style="margin-bottom:10px;">▼ 最新の活動 (Highlights)</span>
+                                        <div class="highlight-card" id="prevHighlightCard">
+                                            <div class="highlight-img-area">
+                                                <img src="" alt="No Image" id="prevImg" class="highlight-img">
+                                                <span class="highlight-category-badge tag-update" id="prevCardCatBadge">更新情報</span>
+                                            </div>
+                                            <div class="highlight-content-tight">
+                                                <div class="highlight-meta" style="padding:0 10px;">
+                                                    <span class="meta-date" id="prevCardDate">2026.03.15</span> | 
+                                                    <span class="meta-proj" id="prevCardProj">プロジェクト名</span>
+                                                </div>
+                                                <div class="highlight-title-tight" id="prevCardTitle" style="padding:0 10px 10px 10px;">お知らせ・キャッチコピー</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="split-col right">
+                                        <span class="preview-label" style="margin-bottom:10px;">▼ アプリ紹介 (App List)</span>
+                                        <div class="highlight-card">
+                                            <div class="highlight-img-area">
+                                                <img src="" alt="No Image" id="prevAppImg" class="highlight-img">
+                                                <div id="comingSoonOverlay" class="coming-soon-overlay">Coming Soon</div>
+                                                <div class="project-name-badge" id="prevAppProj">プロジェクト名</div>
+                                            </div>
+                                            <div class="app-desc-content">
+                                                <div class="app-desc-text" id="prevAppDesc">アプリ紹介本文がここに入ります...</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <span class="preview-label">▼ 詳細ページ (Project Page)</span>
+                                <div id="realPagePreview" style="display:none; width:100%; height:400px; border:1px solid #ccc; background:#fff;">
+                                    <iframe id="prevIframe" style="width:100%; height:100%; border:none;"></iframe>
+                                </div>
+                                <div id="simulatedPagePreview" class="page-preview">
+                                    <h1 id="prevPageTitle">タイトル</h1>
+                                    <div id="prevPageCatchcopy" style="font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; color: #333; line-height: 1.5; white-space: pre-wrap;">キャッチコピー</div>
+                                    <div style="display:none;"><span id="prevPageDate"></span> | <span id="prevPageProject"></span></div>
+                                    <img src="" id="prevPageImg" style="display:none;">
+                                    <div id="prevBody" style="white-space: pre-wrap;">本文...</div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -422,29 +465,41 @@
                 <div id="panel-data-master" class="panel">
                     <div class="calc-container" style="max-width:100%;">
                         <h2>📄 admin_master.js (直接編集)</h2>
-                        <textarea id="raw-admin-master" style="width:100%; height:50vh; background:#1e1e1e; color:#0f0; font-family:monospace; padding:10px;"></textarea>
+                        <textarea id="raw-admin-master" style="width:100%; height:50vh; background:#f4f6f8; color:#333; font-family:'Consolas', monospace; font-size:14px; padding:15px; border:1px solid #ccc; border-radius:6px;"></textarea>
                         <button class="btn-save" onclick="saveRawData('admin_master.js', 'raw-admin-master')">💾 上書き保存</button>
                     </div>
                 </div>
+
                 <div id="panel-data-index" class="panel">
                     <div class="calc-container" style="max-width:100%;">
                         <h2>📄 index_news.js (直接編集)</h2>
-                        <textarea id="raw-index-news" style="width:100%; height:50vh; background:#1e1e1e; color:#0f0; font-family:monospace; padding:10px;"></textarea>
+                        <textarea id="raw-index-news" style="width:100%; height:50vh; background:#f4f6f8; color:#333; font-family:'Consolas', monospace; font-size:14px; padding:15px; border:1px solid #ccc; border-radius:6px;"></textarea>
                         <button class="btn-save" onclick="saveRawData('index_news.js', 'raw-index-news')">💾 上書き保存</button>
                     </div>
                 </div>
+
                 <div id="panel-data-catalog" class="panel">
                     <div class="calc-container" style="max-width:100%;">
                         <h2>📄 apps_catalog.js (直接編集)</h2>
-                        <textarea id="raw-apps-catalog" style="width:100%; height:50vh; background:#1e1e1e; color:#0f0; font-family:monospace; padding:10px;"></textarea>
+                        <textarea id="raw-apps-catalog" style="width:100%; height:50vh; background:#f4f6f8; color:#333; font-family:'Consolas', monospace; font-size:14px; padding:15px; border:1px solid #ccc; border-radius:6px;"></textarea>
                         <button class="btn-save" onclick="saveRawData('apps_catalog.js', 'raw-apps-catalog')">💾 上書き保存</button>
                     </div>
                 </div>
+
                 <div id="panel-data-project-html" class="panel">
                     <div class="calc-container" style="max-width:100%;">
                         <h2>📄 [project]/index.html (プレビュー)</h2>
                         <p style="color:#aaa;">現在入力中の内容から生成されるHTMLコードです（読み取り専用）。保存時にこの内容でファイルが作られます。</p>
-                        <textarea id="raw-project-html" style="width:100%; height:50vh; background:#1e1e1e; color:#0f0; font-family:monospace; padding:10px;" readonly></textarea>
+                        <textarea id="raw-project-html" style="width:100%; height:50vh; background:#f4f6f8; color:#333; font-family:'Consolas', monospace; font-size:14px; padding:15px; border:1px solid #ccc; border-radius:6px;" readonly></textarea>
+                    </div>
+                </div>
+
+                <div id="panel-html-manual" class="panel">
+                    <div class="calc-container" style="max-width:100%;">
+                        <h2>📝 html_manual.js (直接編集)</h2>
+                        <p style="color:#aaa;">プライバシーポリシー生成用のAIプロンプト（手順書）です。※「`」や「;」を消さないように注意してください。</p>
+                        <textarea id="raw-html-manual" style="width:100%; height:50vh; background:#f4f6f8; color:#333; font-family:'Consolas', monospace; font-size:14px; padding:15px; border:1px solid #ccc; border-radius:6px;"></textarea>
+                        <button class="btn-save" onclick="saveManualJs()">💾 手順書を上書き保存</button>
                     </div>
                 </div>
                 <div id="panel-users" class="panel">
@@ -513,13 +568,14 @@
                 } else if (id === 'data-catalog') {
                     document.getElementById('raw-apps-catalog').value = JSON.stringify(typeof appsCatalogData !== 'undefined' ? appsCatalogData :[], null, 4);
                 } else if (id === 'data-project-html') {
-                    // ★追加: 現在入力中の内容からHTMLコードを生成して表示
                     const dummyId = currentProjectId || "new_project_id";
-                    // 現在のフォームの入力内容を収集
                     const inputData = getInputData(dummyId);
-                    // HTML文字列を生成
                     const htmlCode = generateProjectHtmlString(dummyId, inputData);
                     document.getElementById('raw-project-html').value = htmlCode;
+                } else if (id === 'html-manual') {
+                    // ★修正: バッククォートのエスケープ処理などを安全にする
+                    const manualContent = (typeof privacyManualText !== 'undefined') ? privacyManualText : "ここにマニュアルを記載";
+                    document.getElementById('raw-html-manual').value = "const privacyManualText = `" + manualContent.replace(/`/g, '\\`') + "`;";
                 }
             }
             
@@ -540,7 +596,16 @@
                 document.getElementById('group-' + lang).classList.add('active');
                 document.querySelectorAll('.edit-tab').forEach(e => e.classList.remove('active'));
                 event.currentTarget.classList.add('active');
-                previewLang = lang; updatePreview();
+                
+                previewLang = lang; 
+                updatePreview();
+
+                // ★追加: プライバシープレビュー（iframe）が開いていれば、その中身も更新する
+                const privacyBox = document.getElementById('privacyPreviewBox');
+                if (privacyBox && privacyBox.style.display !== 'none') {
+                    privacyBox.style.display = 'none';
+                    togglePrivacyPreview(); // 閉じて開くことで新しい言語で再描画
+                }
             }
             
             // プロジェクト履歴 (admin_master.js から生成)
@@ -736,6 +801,28 @@
                 } else {
                     realPreview.style.display = 'none';
                     simPreview.style.display = 'block';
+                }
+            }
+
+            // --- プライバシーポリシーUI制御 ---
+            function togglePrivacyInput() {
+                const area = document.getElementById('privacyInputArea');
+                area.style.display = (area.style.display === 'none') ? 'block' : 'none';
+            }
+    
+            function togglePrivacyPreview() {
+                const box = document.getElementById('privacyPreviewBox');
+                const content = document.getElementById('privacyPreviewContent');
+                const normal = document.getElementById('normalPreviewContent');
+                
+                if (box.style.display === 'none') {
+                    // 表示する時に入力されたHTMLを流し込む
+                    content.innerHTML = document.getElementById('inPrivacyHtml').value || "<p style='color:#999;text-align:center;'>HTMLが入力されていません</p>";
+                    box.style.display = 'block';
+                    normal.style.display = 'none'; // 通常プレビューを隠す
+                } else {
+                    box.style.display = 'none';
+                    normal.style.display = 'block';
                 }
             }
             
@@ -941,16 +1028,19 @@
                 
                 // 多言語データの取得
                 const langs = ['ja', 'en', 'de', 'fr', 'es'];
-                let names={}, titles={}, bodies={};
+                let names={}, titles={}, bodies={}, privacies={}; // privacies を追加
                 langs.forEach(l => {
                     const s = l==='ja'?'':l.charAt(0).toUpperCase()+l.slice(1);
                     names['project_'+l] = document.getElementById('inProject'+s).value;
-                    titles['title_'+l] = document.getElementById('inTitle'+s).value; // お知らせ
-                    bodies['body_'+l] = document.getElementById('inBody'+s).value; // アプリ紹介
+                    titles['title_'+l] = document.getElementById('inTitle'+s).value;
+                    bodies['body_'+l] = document.getElementById('inBody'+s).value;
                 });
             
-                // 1. Master用 (全部入り)
-                const master = { project_id: pid, date, category: cat, image: img, status, ...names, ...titles, ...bodies };
+                // プライバシーHTMLを取得
+                const privacyHtml = document.getElementById('inPrivacyHtml').value;
+
+                // 1. Master用 に privacy_html を追加
+                const master = { project_id: pid, date, category: cat, image: img, status, privacy_html: privacyHtml, ...names, ...titles, ...bodies };
             
                 // 2. Index用 (お知らせ重視・紹介文なし・画像は固定パス化)
                 const indexItem = {
@@ -1101,8 +1191,18 @@
             .news-box { margin-top: 15px; padding: 15px; background: #f9f9f9; border-left: 4px solid #0056b3; border-radius:4px; animation: fadeIn 0.5s; }
             @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
             .date { color: #666; font-size: 0.8rem; margin-bottom: 5px; }
-            .history-link { display: inline-block; margin-top: 15px; color: #0056b3; text-decoration: none; font-weight:bold; cursor: pointer; }
-            .history-link:hover { text-decoration: underline; }
+            .history-link { display: inline-block; margin-top: 15px; color: #0056b3; text-decoration: none; font-weight:bold; cursor: pointer; padding: 10px; border-radius: 5px; background: #f0f8ff; }
+            .history-link:hover { text-decoration: underline; background: #e0f0ff; }
+            
+            /* ★追加: 履歴モーダル（別窓風）のスタイル */
+            .history-modal { display: none; margin-top: 10px; padding: 20px; background: #fff; border: 2px solid #0056b3; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); max-height: 400px; overflow-y: auto; position: relative; animation: fadeIn 0.3s; }
+            .modal-close { position: absolute; top: 10px; right: 15px; cursor: pointer; font-size: 1.5rem; font-weight: bold; color: #999; }
+            .modal-close:hover { color: #333; }
+            .history-list-item { display: flex; align-items: flex-start; gap: 15px; border-bottom: 1px solid #eee; padding: 10px 0; }
+            .history-list-item:last-child { border-bottom: none; }
+            .history-date { font-family: 'Roboto', sans-serif; font-size: 0.85rem; color: #666; white-space: nowrap; padding-top: 3px; }
+            .history-title { font-weight: bold; color: #333; line-height: 1.4; }
+
             .footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; font-size: 0.85rem; color: #666; }
             .footer a { color: #0056b3; text-decoration: none; font-weight: bold; }
         </style>
@@ -1131,7 +1231,16 @@
             
             <h3 id="news-heading" style="border-bottom:2px solid #ccc; padding-bottom:5px;">最新のニュース</h3>
             <div id="news-container"></div>
-            <div style="text-align: right;"><a class="history-link" id="history-link" onclick="loadOldNews(event)">▶ すべての更新履歴を見る。</a></div>
+            
+            <div style="text-align: right; position: relative;">
+                <a class="history-link" id="history-link" onclick="loadOldNews(event)">▶ すべての更新履歴を見る。</a>
+                <!-- ★追加: モーダル領域 -->
+                <div id="history-modal" class="history-modal" style="text-align: left;">
+                    <span class="modal-close" onclick="document.getElementById('history-modal').style.display='none'">×</span>
+                    <h4 id="modal-heading" style="margin-top:0; color:#0056b3;">更新履歴</h4>
+                    <div id="modal-content"></div>
+                </div>
+            </div>
             <div class="footer">
                 <a href="#" id="privacy-link" onclick="checkPrivacy(event)">プライバシーポリシー</a><br><br>
                 © 2026 啓 App Lab | <a href="../app-ads.txt" target="_blank">app-ads.txt</a>
@@ -1180,12 +1289,43 @@
                     });
                 } else { container.innerHTML = '<p>' + t.noNews + '</p>'; }
             }
+// --- 動的ロード：全履歴データを別窓（モーダル）に表示 ---
             function loadOldNews(e) {
-                e.preventDefault(); const link = document.getElementById('history-link'); const t = texts[currentLang] || texts.en;
+                e.preventDefault(); 
+                const link = document.getElementById('history-link'); 
+                const modal = document.getElementById('history-modal');
+                const modalContent = document.getElementById('modal-content');
+                const t = texts[currentLang] || texts.en;
+                
+                // すでに開いている場合は閉じる
+                if (modal.style.display === 'block') {
+                    modal.style.display = 'none';
+                    return;
+                }
+
                 link.textContent = t.loading; link.style.pointerEvents = 'none';
                 const script = document.createElement('script'); script.src = 'old_news.js';
-                script.onload = () => { link.style.display = 'none'; if(typeof oldNewsData !== 'undefined') renderPage(oldNewsData); };
-                script.onerror = () => { link.textContent = 'Data Load Error'; link.style.pointerEvents = 'auto'; };
+                
+                script.onload = () => { 
+                    link.textContent = t.history; // テキストを元に戻す
+                    link.style.pointerEvents = 'auto';
+                    modal.style.display = 'block'; // モーダルを表示
+                    
+                    modalContent.innerHTML = '';
+                    if(typeof oldNewsData !== 'undefined' && oldNewsData.length > 0) {
+                        const suffix = currentLang === 'ja' ? '' : '_' + currentLang;
+                        oldNewsData.forEach(item => {
+                            const title = item['title' + suffix] || item.title_ja || item.title_en || '';
+                            // ★修正: 日付とタイトルを横に並べるレイアウト
+                            modalContent.innerHTML += \`<div class="history-list-item"><div class="history-date">\${item.date}</div><div class="history-title">\${title}</div></div>\`;
+                        });
+                    } else {
+                        modalContent.innerHTML = '<p>' + t.noNews + '</p>';
+                    }
+                };
+                script.onerror = () => { 
+                    link.textContent = 'Data Load Error'; link.style.pointerEvents = 'auto'; 
+                };
                 document.body.appendChild(script);
             }
             async function checkPrivacy(e) { e.preventDefault(); const t = texts[currentLang] || texts.en; try { const res = await fetch('../privacy.html', { method: 'HEAD' }); if (res.ok) window.location.href = '../privacy.html'; else throw new Error('Not Found'); } catch (err) { alert(t.privAlert); } }
@@ -1203,10 +1343,18 @@
                 });
                 if(check.ok) return; 
             
-                // ★修正: 先ほど作った関数を呼び出してHTML文字列を取得する
                 const htmlContent = generateProjectHtmlString(projectId, inputData);
-            
                 const encoded = btoa(unescape(encodeURIComponent(htmlContent)));
+
+                // ★追加: 実際にGitHubへファイルを送信する処理
+                await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
+                    method: "PUT",
+                    headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        message: "Create project index.html",
+                        content: encoded
+                    })
+                });
             }
             
             // --- ユーザー管理・計算 (復元済み) ---
@@ -1263,6 +1411,105 @@
                 const seconds = Math.floor((adPrice - profit) / costPerSec);
                 document.getElementById('calcOutput').innerText = seconds + " 秒";
             }
+
+            // --- ★追加: プライバシーポリシー関連のロジック ---
+
+            // 1. 入力枠の開閉（ボタンの上に出現）
+            function togglePrivacyInput() {
+                const area = document.getElementById('privacyInputArea');
+                if (area.style.display === 'none') {
+                    area.style.display = 'block';
+                    // 入力欄にフォーカスを当てる
+                    document.getElementById('inPrivacyHtml').focus();
+                } else {
+                    area.style.display = 'none';
+                }
+            }
+    
+            // 2. プレビューの切り替え（安全版）
+            function togglePrivacyPreview() {
+                const previewBox = document.getElementById('privacyPreviewBox');
+                const iframe = document.getElementById('privacyPreviewIframe');
+                const normalContent = document.getElementById('normalPreviewContent');
+                
+                if (previewBox.style.display === 'none') {
+                    let htmlData = document.getElementById('inPrivacyHtml').value;
+                    if (!htmlData) {
+                        htmlData = "<h3 style='color:#999; text-align:center; margin-top:50px;'>※HTMLが入力されていません</h3>";
+                    } else {
+                        htmlData = `<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><style>body{font-family:sans-serif; padding:20px; line-height:1.6; color:#333; background:#fff;} .lang-ja, .lang-en, .lang-de, .lang-fr, .lang-es { display:none; } .lang-${previewLang} { display:block; }</style></head><body>${htmlData}</body></html>`;
+                    }
+                    
+                    iframe.srcdoc = htmlData;
+                    previewBox.style.display = 'flex';
+                    normalContent.style.display = 'none'; // 通常プレビューを隠す
+                } else {
+                    previewBox.style.display = 'none';
+                    normalContent.style.display = 'block'; // 通常プレビューを戻す
+                    iframe.srcdoc = ""; 
+                }
+            }
+    
+            // 3. 手順書のコピー機能
+            function copyPrivacyManual() {
+                // html_manual.js の中に `const privacyManualText = "..."` という変数が定義されている前提
+                if (typeof privacyManualText !== 'undefined') {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = privacyManualText;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    try {
+                        document.execCommand('copy');
+                        alert("✅ HTML生成手順書をコピーしました。\nAI（ChatGPT等）に貼り付けてHTMLを生成してください。");
+                    } catch (err) {
+                        alert("❌ コピーに失敗しました。");
+                    }
+                    document.body.removeChild(textarea);
+                } else {
+                    alert("⚠️ エラー: html_manual.js が読み込まれていないか、変数 privacyManualText が定義されていません。");
+                }
+            }
+
+            // 4. --- HTML生成手順書の保存機能 ---
+            async function saveManualJs() {
+                const textarea = document.getElementById('raw-html-manual');
+                const contentToSave = textarea.value;
+                
+                if(!confirm(`html_manual.js を手動で上書き保存します。よろしいですか？`)) return;
+
+                try {
+                    const token = localStorage.getItem("gh_token");
+                    const path = "html_manual.js";
+                    
+                    let sha = null;
+                    try {
+                        const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
+                            headers: { Authorization: `token ${token}` }
+                        });
+                        if (res.ok) {
+                            const json = await res.json();
+                            sha = json.sha;
+                        }
+                    } catch(e) {} // 新規作成時はエラーになるので無視
+
+                    const encoded = btoa(unescape(encodeURIComponent(contentToSave)));
+                    
+                    const putRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
+                        method: "PUT",
+                        headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                        body: JSON.stringify({ message: "Update html_manual.js", content: encoded, sha: sha })
+                    });
+                    
+                    if (!putRes.ok) throw new Error(`APIリクエスト失敗`);
+                    alert("✅ 手順書を保存しました！");
+                    location.reload();
+                } catch(e) {
+                    alert("❌ 保存に失敗しました。\n" + e.message);
+                }
+            }
+
+            // 5. (重要) getInputData 関数に入力値を反映させる
+            // ※既存の getInputData() 関数の中の master オブジェクト定義部分を書き換える必要があります。
 
             // --- GitHub Actions 監視ロジック ---
             async function startBuildMonitor() {
