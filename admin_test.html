@@ -244,6 +244,7 @@
                 <div class="menu-btn" style="font-size:0.8rem; padding:10px 15px;" onclick="switchPanel('data-index')">📄 index_news.js</div>
                 <div class="menu-btn" style="font-size:0.8rem; padding:10px 15px;" onclick="switchPanel('data-catalog')">📄 apps_catalog.js</div>
                 <div class="menu-btn" style="font-size:0.8rem; padding:10px 15px;" onclick="switchPanel('data-project-html')">📄 [project]/index.html</div>
+                <div class="menu-btn" style="font-size:0.8rem; padding:10px 15px;" onclick="switchPanel('html-manual')">📝 HTML生成手順書.js</div>
                 <div class="spacer"></div>
                 <div class="menu-btn" onclick="switchPanel('users')">👥 権限管理</div>
                 <div class="menu-btn" onclick="logout()" style="margin-top:auto; background:#c0392b; color:white;">🔒 ログアウト</div>
@@ -304,26 +305,6 @@
                                 </div>
                             </div>
 
-                            <!-- ★ここから追加: プライバシーポリシー設定UI -->
-                            <div class="form-group" style="background:#2d2d30; padding:15px; border-radius:8px; margin-top:20px;">
-                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                                    <label style="margin:0; color:#e67e22; font-size:1rem;">🛡️ プライバシーポリシー</label>
-                                    <div>
-                                        <button type="button" onclick="copyPrivacyManual()" style="background:#0056b3; color:white; padding:5px 10px; border:none; border-radius:4px; font-size:0.8rem; cursor:pointer; width:auto; margin:0;">📄 HTML生成手順書コピー</button>
-                                        <button type="button" onclick="togglePrivacyPreview()" style="background:#27ae60; color:white; padding:5px 10px; border:none; border-radius:4px; font-size:0.8rem; cursor:pointer; width:auto; margin:0; margin-left:5px;">👁️ プレビュー</button>
-                                    </div>
-                                </div>
-                                
-                                <!-- 入力エリア（要望通りボタンの上に配置。初期は非表示） -->
-                                <div id="privacyInputArea" style="display:none; margin-bottom:10px;">
-                                    <textarea id="inPrivacyHtml" class="input-white" style="height:300px; font-family:monospace; font-size:0.85rem;" placeholder="ここに生成した5言語対応のプライバシーポリシーHTMLを貼り付けてください。"></textarea>
-                                </div>
-
-                                <!-- 開閉ボタン -->
-                                <button type="button" onclick="togglePrivacyInput()" style="background:#444; color:#fff; border:1px solid #666; width:100%; text-align:left; margin:0;">▶ (JP, EN, DE, FR, ES) 5言語対応HTMLを入力して下さい。</button>
-                            </div>
-                            <!-- ★ここまで追加 -->
-
                             <hr style="border:0; border-top:1px dashed #555; margin: 20px 0;">
 
                             <div class="editor-lang-tabs">
@@ -355,9 +336,22 @@
                                     </div>
                                     <textarea id="inBody" class="input-white" rows="3" oninput="updatePreview()"></textarea>
                                 </div>
-                                <!-- ★追加: プライバシーポリシー (JP) -->
-                                <div class="form-group">
-                                    <label>プライバシーポリシー (JP)</label>
+                                <div class="form-group" style="background:#2d2d30; padding:15px; border-radius:8px; margin-top:20px;">
+                                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                                        <label style="margin:0; color:#e67e22; font-size:1rem;">🛡️ プライバシーポリシー</label>
+                                        <div>
+                                            <button type="button" onclick="copyPrivacyManual()" style="background:#0056b3; color:white; padding:5px 10px; border:none; border-radius:4px; font-size:0.8rem; cursor:pointer; width:auto; margin:0;">📄 HTML生成手順書コピー</button>
+                                            <button type="button" onclick="togglePrivacyPreview()" style="background:#27ae60; color:white; padding:5px 10px; border:none; border-radius:4px; font-size:0.8rem; cursor:pointer; width:auto; margin:0; margin-left:5px;">👁️ プレビュー</button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 入力エリアをボタンの上に配置 -->
+                                    <div id="privacyInputArea" style="display:none; margin-bottom:10px;">
+                                        <textarea id="inPrivacyHtml" class="input-white" style="height:300px; font-family:monospace; font-size:0.85rem;" placeholder="ここに生成した5言語対応のプライバシーポリシーHTMLを貼り付けてください。"></textarea>
+                                    </div>
+
+                                    <!-- ボタンを下に配置 -->
+                                    <button type="button" onclick="togglePrivacyInput()" style="background:#444; color:#fff; border:1px solid #666; width:100%; text-align:left; margin:0;">▶ (JP, EN, DE, FR, ES) 5言語対応HTMLを入力して下さい。</button>
                                 </div>
                             </div>
 
@@ -382,21 +376,18 @@
                             <button class="btn-save" style="margin-top:20px;" onclick="saveToGitHub()">🚀 GitHubへ更新保存</button>
                         </div>
 
-                        <!-- プレビュー (60%) -->
-                        <!-- ★修正: プレビューエリアを relative にし、切り替え可能にする -->
-                        <div class="preview-area" style="position:relative; overflow:hidden; padding:0;">
-                            
-                            <!-- ★追加: プライバシー専用プレビュー（初期は非表示、z-indexで上に被せる） -->
-                            <div id="privacyPreviewBox" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:#f9f9f9; z-index:50; overflow-y:auto; padding:20px; box-sizing:border-box;">
+                        <!-- プレビュー -->
+                        <div class="preview-area">
+                            <!-- ★修正: absolute指定を削除し、通常のブロックとして配置 -->
+                            <div id="privacyPreviewBox" style="display:none; background:#f9f9f9; border-radius:8px; padding:20px; box-sizing:border-box;">
                                 <div style="text-align:right; margin-bottom:15px; position:sticky; top:0; z-index:51;">
                                     <button onclick="togglePrivacyPreview()" style="background:#c0392b; color:white; padding:8px 15px; width:auto; border-radius:4px; font-weight:bold; cursor:pointer; box-shadow:0 2px 5px rgba(0,0,0,0.2);">× プレビューを閉じる</button>
                                 </div>
-                                <!-- 入力されたHTMLがここに流し込まれます -->
-                                <div id="privacyPreviewContent" style="background:#fff; padding:30px; border-radius:8px; box-shadow:0 2px 15px rgba(0,0,0,0.05); min-height:80%;"></div>
+                                <div id="privacyPreviewContent" style="background:#fff; padding:30px; border-radius:8px; box-shadow:0 2px 15px rgba(0,0,0,0.05); min-height:80vh;"></div>
                             </div>
 
-                            <!-- 既存の通常プレビュー（パディングをここで設定） -->
-                            <div id="normalPreviewContent" style="padding:20px; height:100%; overflow-y:auto;">
+                            <!-- 通常プレビューコンテンツ -->
+                            <div id="normalPreviewContent">
                                 <div class="preview-header">
                                     <h2 style="border:none; margin:0; font-size:1.1rem; color:#333;">👁️ リアルタイムプレビュー</h2>
                                 </div>
@@ -500,6 +491,14 @@
                         <textarea id="raw-project-html" style="width:100%; height:50vh; background:#1e1e1e; color:#0f0; font-family:monospace; padding:10px;" readonly></textarea>
                     </div>
                 </div>
+                <div id="panel-html-manual" class="panel">
+                    <div class="calc-container" style="max-width:100%;">
+                        <h2>📝 html_manual.js (直接編集)</h2>
+                        <p style="color:#aaa;">プライバシーポリシー生成用のAIプロンプト（手順書）を編集します。※「`」や「;」を消さないように注意してください。</p>
+                        <textarea id="raw-html-manual" style="width:100%; height:50vh; background:#f4f6f8; color:#333; font-family:'Consolas', 'Courier New', monospace; font-size:14px; line-height:1.6; padding:15px; border:1px solid #ccc; border-radius:6px;"></textarea>
+                        <button class="btn-save" onclick="saveManualJs()">💾 手順書を上書き保存</button>
+                    </div>
+                </div>
                 <div id="panel-users" class="panel">
                     <div class="calc-container">
                         <h2>👥 編集権限者の管理</h2>
@@ -566,13 +565,17 @@
                 } else if (id === 'data-catalog') {
                     document.getElementById('raw-apps-catalog').value = JSON.stringify(typeof appsCatalogData !== 'undefined' ? appsCatalogData :[], null, 4);
                 } else if (id === 'data-project-html') {
-                    // ★追加: 現在入力中の内容からHTMLコードを生成して表示
                     const dummyId = currentProjectId || "new_project_id";
-                    // 現在のフォームの入力内容を収集
                     const inputData = getInputData(dummyId);
-                    // HTML文字列を生成
                     const htmlCode = generateProjectHtmlString(dummyId, inputData);
                     document.getElementById('raw-project-html').value = htmlCode;
+                } else if (id === 'html-manual') {
+                    // ★追加: 手順書データをテキストエリアにセット
+                    if (typeof privacyManualText !== 'undefined') {
+                        document.getElementById('raw-html-manual').value = "const privacyManualText = `" + privacyManualText + "`;";
+                    } else {
+                        document.getElementById('raw-html-manual').value = "const privacyManualText = `ここにマニュアルを記載`;";
+                    }
                 }
             }
             
@@ -1454,8 +1457,46 @@
                     alert("⚠️ エラー: html_manual.js が読み込まれていないか、変数 privacyManualText が定義されていません。");
                 }
             }
-    
-            // 4. (重要) getInputData 関数に入力値を反映させる
+
+            // 4. --- HTML生成手順書の保存機能 ---
+            async function saveManualJs() {
+                const textarea = document.getElementById('raw-html-manual');
+                const contentToSave = textarea.value;
+                
+                if(!confirm(`html_manual.js を手動で上書き保存します。よろしいですか？`)) return;
+
+                try {
+                    const token = localStorage.getItem("gh_token");
+                    const path = "html_manual.js";
+                    
+                    let sha = null;
+                    try {
+                        const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
+                            headers: { Authorization: `token ${token}` }
+                        });
+                        if (res.ok) {
+                            const json = await res.json();
+                            sha = json.sha;
+                        }
+                    } catch(e) {} // 新規作成時はエラーになるので無視
+
+                    const encoded = btoa(unescape(encodeURIComponent(contentToSave)));
+                    
+                    const putRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
+                        method: "PUT",
+                        headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                        body: JSON.stringify({ message: "Update html_manual.js", content: encoded, sha: sha })
+                    });
+                    
+                    if (!putRes.ok) throw new Error(`APIリクエスト失敗`);
+                    alert("✅ 手順書を保存しました！");
+                    location.reload();
+                } catch(e) {
+                    alert("❌ 保存に失敗しました。\n" + e.message);
+                }
+            }
+
+            // 5. (重要) getInputData 関数に入力値を反映させる
             // ※既存の getInputData() 関数の中の master オブジェクト定義部分を書き換える必要があります。
 
             // --- GitHub Actions 監視ロジック ---
