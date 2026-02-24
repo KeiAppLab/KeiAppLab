@@ -12,6 +12,7 @@
     
     <script src="allowed_users.js"></script>
     <script src="index_phot.js"></script>
+    <script src="html_manual.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700;900&family=Roboto:wght@400;500;900&display=swap');
@@ -288,16 +289,40 @@
                                 </div>
                             </div>
 
+<!-- (既存) 画像ファイルのセレクト -->
                             <div class="form-group">
                                 <label>画像ファイル (index_photフォルダ)</label>
                                 <input type="hidden" id="inImage" onchange="updatePreview()">
                                 <div class="custom-select-wrapper">
                                     <div class="custom-select">
-                                        <div class="custom-select__trigger" onclick="toggleImageSelect()"><span id="selectedImageText">画像を選択...</span><span>▼</span></div>
+                                        <div class="custom-select__trigger" onclick="toggleImageSelect()">
+                                            <span id="selectedImageText">画像を選択...</span>
+                                            <span>▼</span>
+                                        </div>
                                         <div class="custom-options" id="imageOptions"></div>
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- ★ここから追加: プライバシーポリシー設定UI -->
+                            <div class="form-group" style="background:#2d2d30; padding:15px; border-radius:8px; margin-top:20px;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                                    <label style="margin:0; color:#e67e22; font-size:1rem;">🛡️ プライバシーポリシー</label>
+                                    <div>
+                                        <button type="button" onclick="copyPrivacyManual()" style="background:#0056b3; color:white; padding:5px 10px; border:none; border-radius:4px; font-size:0.8rem; cursor:pointer; width:auto; margin:0;">📄 HTML生成手順書コピー</button>
+                                        <button type="button" onclick="togglePrivacyPreview()" style="background:#27ae60; color:white; padding:5px 10px; border:none; border-radius:4px; font-size:0.8rem; cursor:pointer; width:auto; margin:0; margin-left:5px;">👁️ プレビュー</button>
+                                    </div>
+                                </div>
+                                
+                                <!-- 入力エリア（要望通りボタンの上に配置。初期は非表示） -->
+                                <div id="privacyInputArea" style="display:none; margin-bottom:10px;">
+                                    <textarea id="inPrivacyHtml" class="input-white" style="height:300px; font-family:monospace; font-size:0.85rem;" placeholder="ここに生成した5言語対応のプライバシーポリシーHTMLを貼り付けてください。"></textarea>
+                                </div>
+
+                                <!-- 開閉ボタン -->
+                                <button type="button" onclick="togglePrivacyInput()" style="background:#444; color:#fff; border:1px solid #666; width:100%; text-align:left; margin:0;">▶ (JP, EN, DE, FR, ES) 5言語対応HTMLを入力して下さい。</button>
+                            </div>
+                            <!-- ★ここまで追加 -->
 
                             <hr style="border:0; border-top:1px dashed #555; margin: 20px 0;">
 
@@ -333,7 +358,6 @@
                                 <!-- ★追加: プライバシーポリシー (JP) -->
                                 <div class="form-group">
                                     <label>プライバシーポリシー (JP)</label>
-                                    <textarea id="inPrivacy" class="input-white" rows="8" placeholder="１．EUのGDPR（一般データ保護規則）: ドイツ語・フランス語・スペイン語圏に向けて配信する場合、GDPRの遵守が必須です。「Cookieの利用」「IPアドレスの取得目的」「データの保存場所（日本か米国か）」「ユーザーが自分のデータを削除する権利があること」を明記する必要があります。&#10;２．カリフォルニア州消費者プライバシー法 (CCPA): 英語（米国）向けには、「私の個人情報を販売しないでください（Do Not Sell My Personal Info）」という規定に関する記載が求められる場合があります（今回は個人情報の販売はないと思いますが、その旨を明記すると安全です）。&#10;３．AdMobの記載: Google AdMobを使用しているため、「第三者の広告配信事業者がCookieを使用して広告を配信していること」を全言語で必ず記載してください。"></textarea>
                                 </div>
                             </div>
 
@@ -343,29 +367,43 @@
                                 <div class="form-group"><label>Title (EN)</label><textarea id="inTitleEn" class="input-white" rows="2" oninput="updatePreview()"></textarea></div>
                                 <div class="form-group"><label>App Intro (EN)</label><textarea id="inBodyEn" class="input-white" rows="3" oninput="updatePreview()"></textarea></div>
                                 <!-- ★追加 -->
-                                <div class="form-group"><label>Privacy Policy (EN)</label><textarea id="inPrivacyEn" class="input-white" rows="2" placeholder="５カ国の法律・情勢・通信網に合わせたプライバシーポリシーをご記入ください。"></textarea></div>
+                                <div class="form-group"><label>Privacy Policy (EN)</label></div>
                             </div>
                             <div id="group-de" class="lang-input-group"><div class="form-group"><label>Project (DE)</label><input type="text" id="inProjectDe" class="input-white" oninput="updatePreview()"></div><div class="form-group"><label>Title (DE)</label><textarea id="inTitleDe" class="input-white" rows="2" oninput="updatePreview()"></textarea></div><div class="form-group"><label>App Intro (DE)</label><textarea id="inBodyDe" class="input-white" rows="3" oninput="updatePreview()"></textarea></div>
-                                <div class="form-group"><label>Datenschutz (DE)</label><textarea id="inPrivacyDe" class="input-white" rows="2" placeholder="５カ国の法律・情勢・通信網に合わせたプライバシーポリシーをご記入ください。"></textarea></div>
+                                <div class="form-group"><label>Datenschutz (DE)</label></div>
                             </div>
                             <div id="group-fr" class="lang-input-group"><div class="form-group"><label>Project (FR)</label><input type="text" id="inProjectFr" class="input-white" oninput="updatePreview()"></div><div class="form-group"><label>Title (FR)</label><textarea id="inTitleFr" class="input-white" rows="2" oninput="updatePreview()"></textarea></div><div class="form-group"><label>App Intro (FR)</label><textarea id="inBodyFr" class="input-white" rows="3" oninput="updatePreview()"></textarea></div>
-                                <div class="form-group"><label>Confidentialité (FR)</label><textarea id="inPrivacyFr" class="input-white" rows="2" placeholder="５カ国の法律・情勢・通信網に合わせたプライバシーポリシーをご記入ください。"></textarea></div>
+                                <div class="form-group"><label>Confidentialité (FR)</label></div>
                             </div>
                             <div id="group-es" class="lang-input-group"><div class="form-group"><label>Project (ES)</label><input type="text" id="inProjectEs" class="input-white" oninput="updatePreview()"></div><div class="form-group"><label>Title (ES)</label><textarea id="inTitleEs" class="input-white" rows="2" oninput="updatePreview()"></textarea></div><div class="form-group"><label>App Intro (ES)</label><textarea id="inBodyEs" class="input-white" rows="3" oninput="updatePreview()"></textarea></div>
-                                <div class="form-group"><label>Privacidad (ES)</label><textarea id="inPrivacyEs" class="input-white" rows="2" placeholder="５カ国の法律・情勢・通信網に合わせたプライバシーポリシーをご記入ください。"></textarea></div>
+                                <div class="form-group"><label>Privacidad (ES)</label></div>
                             </div>
 
                             <button class="btn-save" style="margin-top:20px;" onclick="saveToGitHub()">🚀 GitHubへ更新保存</button>
                         </div>
 
                         <!-- プレビュー (60%) -->
-                        <div class="preview-area">
-                            <div class="preview-header">
-                                <h2 style="border:none; margin:0; font-size:1.1rem; color:#333;">👁️ リアルタイムプレビュー</h2>
-                            </div>
+                        <!-- ★修正: プレビューエリアを relative にし、切り替え可能にする -->
+                        <div class="preview-area" style="position:relative; overflow:hidden; padding:0;">
                             
-                            <div style="margin-bottom:30px;">
-                                <span class="preview-label">▼ お知らせ (News List)</span>
+                            <!-- ★追加: プライバシー専用プレビュー（初期は非表示、z-indexで上に被せる） -->
+                            <div id="privacyPreviewBox" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:#f9f9f9; z-index:50; overflow-y:auto; padding:20px; box-sizing:border-box;">
+                                <div style="text-align:right; margin-bottom:15px; position:sticky; top:0; z-index:51;">
+                                    <button onclick="togglePrivacyPreview()" style="background:#c0392b; color:white; padding:8px 15px; width:auto; border-radius:4px; font-weight:bold; cursor:pointer; box-shadow:0 2px 5px rgba(0,0,0,0.2);">× プレビューを閉じる</button>
+                                </div>
+                                <!-- 入力されたHTMLがここに流し込まれます -->
+                                <div id="privacyPreviewContent" style="background:#fff; padding:30px; border-radius:8px; box-shadow:0 2px 15px rgba(0,0,0,0.05); min-height:80%;"></div>
+                            </div>
+
+                            <!-- 既存の通常プレビュー（パディングをここで設定） -->
+                            <div id="normalPreviewContent" style="padding:20px; height:100%; overflow-y:auto;">
+                                <div class="preview-header">
+                                    <h2 style="border:none; margin:0; font-size:1.1rem; color:#333;">👁️ リアルタイムプレビュー</h2>
+                                </div>
+                                
+                                <div style="margin-bottom:30px;">
+                                    <span class="preview-label">▼ お知らせ (News List)</span>
+
                                 <div class="news-item">
                                     <span class="news-date" id="prevDate">2026.03.15</span>
                                     <span class="news-tag tag-update" id="prevTag">更新情報</span>
@@ -753,6 +791,28 @@
                     simPreview.style.display = 'block';
                 }
             }
+
+            // --- プライバシーポリシーUI制御 ---
+            function togglePrivacyInput() {
+                const area = document.getElementById('privacyInputArea');
+                area.style.display = (area.style.display === 'none') ? 'block' : 'none';
+            }
+    
+            function togglePrivacyPreview() {
+                const box = document.getElementById('privacyPreviewBox');
+                const content = document.getElementById('privacyPreviewContent');
+                const normal = document.getElementById('normalPreviewContent');
+                
+                if (box.style.display === 'none') {
+                    // 表示する時に入力されたHTMLを流し込む
+                    content.innerHTML = document.getElementById('inPrivacyHtml').value || "<p style='color:#999;text-align:center;'>HTMLが入力されていません</p>";
+                    box.style.display = 'block';
+                    normal.style.display = 'none'; // 通常プレビューを隠す
+                } else {
+                    box.style.display = 'none';
+                    normal.style.display = 'block';
+                }
+            }
             
             function updatePreview() {
                 const date = document.getElementById('inDate').value;
@@ -966,8 +1026,11 @@
                     privacies['privacy_'+l] = document.getElementById('inPrivacy'+s) ? document.getElementById('inPrivacy'+s).value : "";
                 });
             
-                // 1. Master用 に privacies を追加
-                const master = { project_id: pid, date, category: cat, image: img, status, ...names, ...titles, ...bodies, ...privacies };
+                // プライバシーHTMLを取得
+                const privacyHtml = document.getElementById('inPrivacyHtml').value;
+
+                // 1. Master用 に privacy_html を追加
+                const master = { project_id: pid, date, category: cat, image: img, status, privacy_html: privacyHtml, ...names, ...titles, ...bodies };
             
                 // 2. Index用 (お知らせ重視・紹介文なし・画像は固定パス化)
                 const indexItem = {
@@ -1338,6 +1401,62 @@
                 const seconds = Math.floor((adPrice - profit) / costPerSec);
                 document.getElementById('calcOutput').innerText = seconds + " 秒";
             }
+
+            // --- ★追加: プライバシーポリシー関連のロジック ---
+
+            // 1. 入力枠の開閉（ボタンの上に出現）
+            function togglePrivacyInput() {
+                const area = document.getElementById('privacyInputArea');
+                if (area.style.display === 'none') {
+                    area.style.display = 'block';
+                    // 入力欄にフォーカスを当てる
+                    document.getElementById('inPrivacyHtml').focus();
+                } else {
+                    area.style.display = 'none';
+                }
+            }
+    
+            // 2. プレビューの切り替え
+            function togglePrivacyPreview() {
+                const previewBox = document.getElementById('privacyPreviewBox');
+                const previewContent = document.getElementById('privacyPreviewContent');
+                const normalContent = document.getElementById('normalPreviewContent');
+                
+                if (previewBox.style.display === 'none') {
+                    // 開くときに、テキストエリアのHTMLを流し込む
+                    const htmlData = document.getElementById('inPrivacyHtml').value;
+                    previewContent.innerHTML = htmlData || "<p style='color:#999; text-align:center; margin-top:50px;'>※HTMLが入力されていません</p>";
+                    
+                    previewBox.style.display = 'block';
+                    // normalContentは隠さずに裏に置いておく（スクロール位置を保持するため）
+                } else {
+                    // 閉じる
+                    previewBox.style.display = 'none';
+                }
+            }
+    
+            // 3. 手順書のコピー機能
+            function copyPrivacyManual() {
+                // html_manual.js の中に `const privacyManualText = "..."` という変数が定義されている前提
+                if (typeof privacyManualText !== 'undefined') {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = privacyManualText;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    try {
+                        document.execCommand('copy');
+                        alert("✅ HTML生成手順書をコピーしました。\nAI（ChatGPT等）に貼り付けてHTMLを生成してください。");
+                    } catch (err) {
+                        alert("❌ コピーに失敗しました。");
+                    }
+                    document.body.removeChild(textarea);
+                } else {
+                    alert("⚠️ エラー: html_manual.js が読み込まれていないか、変数 privacyManualText が定義されていません。");
+                }
+            }
+    
+            // 4. (重要) getInputData 関数に入力値を反映させる
+            // ※既存の getInputData() 関数の中の master オブジェクト定義部分を書き換える必要があります。
 
             // --- GitHub Actions 監視ロジック ---
             async function startBuildMonitor() {
