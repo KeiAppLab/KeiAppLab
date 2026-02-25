@@ -635,16 +635,21 @@
                 document.querySelectorAll('.lang-input-group').forEach(e => e.classList.remove('active'));
                 document.getElementById('group-' + lang).classList.add('active');
                 document.querySelectorAll('.edit-tab').forEach(e => e.classList.remove('active'));
-                event.currentTarget.classList.add('active');
+                
+                // イベントが存在する場合のみ処理（プログラムから強制呼び出しした時のエラー回避）
+                if (window.event && window.event.currentTarget) {
+                    window.event.currentTarget.classList.add('active');
+                } else {
+                    document.querySelector(`.edit-tab[onclick="switchEditorLang('${lang}')"]`).classList.add('active');
+                }
                 
                 previewLang = lang; 
                 updatePreview();
 
-                // ★追加: プライバシープレビュー（iframe）が開いていれば、その中身も更新する
+                // 開いている場合は「再描画」だけを行う
                 const privacyBox = document.getElementById('privacyPreviewBox');
                 if (privacyBox && privacyBox.style.display !== 'none') {
-                    privacyBox.style.display = 'none';
-                    togglePrivacyPreview(); // 閉じて開くことで新しい言語で再描画
+                    updatePrivacyIframeContent(); // 新しく作る関数を呼ぶ
                 }
             }
             
@@ -830,7 +835,6 @@
             
             // --- プレビューロジック ---
             function checkProjectUrl(projectId) {
-                // 簡易ロジック: adminMasterDataにIDがあれば「既存」とみなしてiframe表示
                 const exists = typeof adminMasterData !== 'undefined' && adminMasterData.some(d => d.project_id === projectId);
                 const iframe = document.getElementById('prevIframe');
                 const realPreview = document.getElementById('realPagePreview');
@@ -839,7 +843,10 @@
                 if (exists) {
                     realPreview.style.display = 'block';
                     simPreview.style.display = 'none';
-                    iframe.src = `https://${GITHUB_CONFIG.owner.toLowerCase()}.github.io/${GITHUB_CONFIG.repo}/${projectId}/index.html`;
+                    
+                    // ★改良：URLの末尾に言語指定(?lang=)と、古いキャッシュを読ませないための時間(&t=)を付与する
+                    const timeStamp = Date.now();
+                    iframe.src = `https://${GITHUB_CONFIG.owner.toLowerCase()}.github.io/${GITHUB_CONFIG.repo}/${projectId}/index.html?lang=${previewLang}&t=${timeStamp}`;
                 } else {
                     realPreview.style.display = 'none';
                     simPreview.style.display = 'block';
@@ -952,6 +959,10 @@
                     </div>
                 `;
                 document.getElementById('prevBody').innerHTML = simHtml;
+                // iframeが表示されている（既存プロジェクト）なら、言語切り替えを反映させるためにリロード
+                if (document.getElementById('realPagePreview').style.display === 'block') {
+                    checkProjectUrl(currentProjectId);
+                }
             }
             
             // --- ★核心：保存ロジック ---
@@ -1327,8 +1338,24 @@
             </div>
         </div>
         <script>
+             // 管理画面から生成時に埋め込まれた多言語データ
             const appData = ${appDataJson};
-            let currentLang = localStorage.getItem('selectedLang') || 'ja';
+            
+            // ★改良：URLパラメータ > 保存設定 > ブラウザ設定 の順で言語を決める
+            let currentLang = 'ja';
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlLang = urlParams.get('lang');
+            
+            if (urlLang && ['ja', 'en', 'de', 'fr', 'es'].includes(urlLang)) {
+                currentLang = urlLang; // URLで指定された言語を最優先
+                localStorage.setItem('selectedLang', currentLang); // 記憶も上書き
+            } else {
+                currentLang = localStorage.getItem('selectedLang');
+                if (!currentLang) {
+                    const browserLang = (window.navigator.language || window.navigator.userLanguage || 'ja').slice(0, 2).toLowerCase();
+                    currentLang =['en', 'de', 'fr', 'es'].includes(browserLang) ? browserLang : 'ja';
+                }
+            }
             const texts = {
                 ja: { back: "戻る", backTop: "啓(KEI)App Labへ戻る", news: "最新のニュース", history: "▶ すべての更新履歴を見る。", loading: "読み込み中...", noNews: "現在お知らせはありません。", privacy: "プライバシーポリシー", privAlert: "プライバシーポリシーは現在準備中（実装予定）です。" },
                 en: { back: "Back", backTop: "Back to KEI App Lab", news: "Latest News", history: "▶ View all history", loading: "Loading...", noNews: "No news available.", privacy: "Privacy Policy", privAlert: "Privacy Policy is currently under preparation." },
@@ -1518,27 +1545,32 @@
                 }
             }
     
-            // 2. プレビューの切り替え（安全版）
+            // 2-1. プレビューの中身を更新する専用関数
+            function updatePrivacyIframeContent() {
+                const iframe = document.getElementById('privacyPreviewIframe');
+                let htmlData = document.getElementById('inPrivacyHtml').value;
+                if (!htmlData) {
+                    htmlData = "<h3 style='color:#999; text-align:center; margin-top:50px;'>※HTMLが入力されていません</h3>";
+                } else {
+                    // 現在の previewLang の部分だけを表示するスタイルを注入
+                    htmlData = `<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><style>body{font-family:sans-serif; padding:20px; line-height:1.6; color:#333; background:#fff;} .lang-ja, .lang-en, .lang-de, .lang-fr, .lang-es { display:none !important; } .lang-${previewLang} { display:block !important; }</style></head><body>${htmlData}</body></html>`;
+                }
+                iframe.srcdoc = htmlData;
+            }
+
+            // 2-2. プレビューの開閉スイッチ
             function togglePrivacyPreview() {
                 const previewBox = document.getElementById('privacyPreviewBox');
-                const iframe = document.getElementById('privacyPreviewIframe');
                 const normalContent = document.getElementById('normalPreviewContent');
                 
                 if (previewBox.style.display === 'none') {
-                    let htmlData = document.getElementById('inPrivacyHtml').value;
-                    if (!htmlData) {
-                        htmlData = "<h3 style='color:#999; text-align:center; margin-top:50px;'>※HTMLが入力されていません</h3>";
-                    } else {
-                        htmlData = `<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><style>body{font-family:sans-serif; padding:20px; line-height:1.6; color:#333; background:#fff;} .lang-ja, .lang-en, .lang-de, .lang-fr, .lang-es { display:none; } .lang-${previewLang} { display:block; }</style></head><body>${htmlData}</body></html>`;
-                    }
-                    
-                    iframe.srcdoc = htmlData;
-                    previewBox.style.display = 'flex';
-                    normalContent.style.display = 'none'; // 通常プレビューを隠す
+                    updatePrivacyIframeContent(); // 中身を作ってから
+                    previewBox.style.display = 'flex'; // 表示する
+                    normalContent.style.display = 'none';
                 } else {
-                    previewBox.style.display = 'none';
-                    normalContent.style.display = 'block'; // 通常プレビューを戻す
-                    iframe.srcdoc = ""; 
+                    previewBox.style.display = 'none'; // 隠す
+                    normalContent.style.display = 'block';
+                    document.getElementById('privacyPreviewIframe').srcdoc = ""; 
                 }
             }
     
