@@ -88,5 +88,20 @@ const appsCatalogData = [
         "body_de": "",
         "body_fr": "",
         "body_es": ""
+    },
+    {
+        "project_id": "qqqqq",
+        "status": "coming",
+        "image": "qqqqq/index.png",
+        "project_ja": "654654654321",
+        "project_en": "qqqqq",
+        "project_de": "",
+        "project_fr": "",
+        "project_es": "",
+        "body_ja": "654654654654",
+        "body_en": "",
+        "body_de": "",
+        "body_fr": "",
+        "body_es": ""
     }
 ];
