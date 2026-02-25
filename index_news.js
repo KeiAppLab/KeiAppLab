@@ -51,6 +51,23 @@ const indexNewsData = [
         "title_es": "Hemos iniciado el desarrollo del \"Widget de Llamadas Salientes\", diseñado para gestionar planes de llamadas gratuitas como el de 70 minutos."
     },
     {
+        "id": 1772052334027,
+        "date": "2026.02.26",
+        "category": "update",
+        "image": "qqqqq/index.png",
+        "link": "qqqqq/index.html",
+        "project_ja": "654654654321",
+        "project_en": "qqqqq",
+        "project_de": "",
+        "project_fr": "",
+        "project_es": "",
+        "title_ja": "654654654",
+        "title_en": "",
+        "title_de": "",
+        "title_fr": "",
+        "title_es": ""
+    },
+    {
         "id": 1771774991128,
         "date": "2026.02.23",
         "category": "update",
