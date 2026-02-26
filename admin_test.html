@@ -1335,11 +1335,11 @@
 
 
                 <!-- プライバシーポリシー用モーダル -->
-                <div id="privacy-modal" class="history-modal" style="text-align: left;">
+                <div id="privacy-modal" class="history-modal" style="text-align: left; padding-bottom: 0;">
                     <span class="modal-close" onclick="document.getElementById('privacy-modal').style.display='none'">×</span>
                     <h4 id="privacy-modal-heading" style="margin-top:0; color:#0056b3;">プライバシーポリシー</h4>
-                    <!-- ここのクラスを切り替えることで言語を変える -->
-                    <div id="privacy-modal-content" class="show-ja"></div>
+                    <!-- ここに別ファイルの privacy.html を読み込みます -->
+                    <iframe id="privacy-iframe" src="" style="width:100%; height:300px; border:none; border-top:1px solid #eee; margin-top:10px;"></iframe>
                 </div>
             </div>
             
@@ -1410,10 +1410,12 @@
 
                 // もし「プライバシーモーダル」が開いていたら言語クラスを切り替える
                 const pModal = document.getElementById('privacy-modal');
-                if (pModal.style.display === 'block') {
-                    document.getElementById('privacy-modal-content').className = 'show-' + lang;
+                if (pModal && pModal.style.display === 'block') {
+                    const iframe = document.getElementById('privacy-iframe');
                     const t = texts[lang] || texts.en;
                     document.getElementById('privacy-modal-heading').textContent = t.privacy;
+                    // URLパラメータを新しい言語にして開き直す
+                    iframe.src = 'privacy.html?lang=' + lang;
                 }
             }
             function renderPage(targetData = null) {
@@ -1496,27 +1498,32 @@
             }
 
             // --- プライバシーポリシーのモーダル表示 ---
-            function showPrivacy(e) {
+            async function showPrivacy(e) {
                 e.preventDefault();
                 const modal = document.getElementById('privacy-modal');
-                const content = document.getElementById('privacy-modal-content');
+                const iframe = document.getElementById('privacy-iframe');
                 const t = texts[currentLang] || texts.en;
                 
                 // すでに開いている場合は閉じる
                 if (modal.style.display === 'block') {
                     modal.style.display = 'none';
+                    iframe.src = ""; // 閉じた時は中身を消して軽くする
                     return;
                 }
 
-                // admin.html で入力された appData.privacy_html があるか確認
-                if (appData.privacy_html && appData.privacy_html.trim() !== '') {
-                    // 中身をセットし、現在の言語のクラスを付与
-                    content.innerHTML = appData.privacy_html;
-                    content.className = 'show-' + currentLang;
+                // サーバー上に privacy.html というファイルが存在するか確認
+                try {
+                    const res = await fetch('privacy.html', { method: 'HEAD' });
+                    if (!res.ok) throw new Error('Not Found');
+                    
+                    // 存在すれば、URLの末尾に現在の言語（?lang=XX）を付けてiframeで開く！
                     document.getElementById('privacy-modal-heading').textContent = t.privacy;
+                    iframe.src = 'privacy.html?lang=' + currentLang;
                     modal.style.display = 'block';
-                } else {
-                    alert(t.privAlert); // なければ「準備中」アラート
+
+                } catch (err) {
+                    // 存在しなければ「準備中」アラート
+                    alert(t.privAlert);
                 }
             }
             
