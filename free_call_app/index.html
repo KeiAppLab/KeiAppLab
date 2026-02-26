@@ -88,24 +88,38 @@
             </div>
         </div>
         <script>
-             // 管理画面から生成時に埋め込まれた多言語データ
             const appData = {"project_id":"free_call_app","date":"2026.02.26","category":"update","image":"index_phot/freecallapp.png","status":"coming","privacy_html":"","project_ja":"電話無料APP（FreeCallApp）","project_en":"Free Call App","project_de":"Gratis Anruf-App","project_fr":"App d'appels gratuits","project_es":"App de llamadas gratis","title_ja":"広告を力に、通話を自由に。","title_en":"Powered by ads, call freely.","title_de":"Werbefinanziert, frei telefonieren.","title_fr":"Appels libres grâce à la publicité.","title_es":"Llamadas libres impulsadas por anuncios.","body_ja":"特徴\n・完全無料: 短い動画広告を見るだけで通話時間を獲得。\n・固定電話専用: お店や役所へのちょっとした電話に最適。\n・登録不要: 面倒な会員登録なしですぐに使えます。","body_en":"Features\n・Completely Free: Earn calling time simply by watching short video ads.\n・Fixed-line Exclusive: Perfect for quick calls to shops or public offices.\n・No Registration Required: Start calling immediately without any tedious sign-up process.","body_de":"Eigenschaften\n・Komplett kostenlos: Sammeln Sie Gesprächsminuten, indem Sie sich kurze Videoanzeigen ansehen.\n・Exklusiv für das Festnetz: Ideal für kurze Anrufe in Geschäften oder Behörden.\n・Keine Registrierung erforderlich: Sofort einsatzbereit ohne mühsame Anmeldung.","body_fr":"Caractéristiques\n・Entièrement gratuit : Gagnez du temps d'appel en regardant simplement de courtes publicités vidéo.\n・Exclusivement pour les lignes fixes : Idéal pour les courts appels vers les magasins ou les administrations.\n・Aucune inscription requise : Prêt à l'emploi immédiatement sans inscription fastidieuse.","body_es":"Características\n・Totalmente gratis: Obtén tiempo de llamada simplemente viendo anuncios de video cortos.\n・Exclusivo para teléfonos fijos: Ideal para llamadas cortas a tiendas u oficinas públicas.\n・Sin registro: Úselo al instante sin tediosos procesos de suscripción."};
             
-            // ★改良：URLパラメータ > 保存設定 > ブラウザ設定 の順で言語を決める
-            let currentLang = 'ja';
-            const urlParams = new URLSearchParams(window.location.search);
-            const urlLang = urlParams.get('lang');
-            
-            if (urlLang && ['ja', 'en', 'de', 'fr', 'es'].includes(urlLang)) {
-                currentLang = urlLang; // URLで指定された言語を最優先
-                localStorage.setItem('selectedLang', currentLang); // 記憶も上書き
-            } else {
-                currentLang = localStorage.getItem('selectedLang');
-                if (!currentLang) {
-                    const browserLang = (window.navigator.language || window.navigator.userLanguage || 'ja').slice(0, 2).toLowerCase();
-                    currentLang =['en', 'de', 'fr', 'es'].includes(browserLang) ? browserLang : 'ja';
+            // --- 最強の言語判定ロジック ---
+            function determineLanguage() {
+                const supportedLangs = ['ja', 'en', 'de', 'fr', 'es'];
+                
+                // 1. URLの末尾（?lang=xx）をチェック（最優先）
+                const urlParams = new URLSearchParams(window.location.search);
+                const langParam = urlParams.get('lang');
+                if (langParam && supportedLangs.includes(langParam)) {
+                    return langParam;
                 }
+                
+                // 2. ブラウザに保存された過去の記憶（preferredLang）をチェック
+                const savedLang = localStorage.getItem('preferredLang');
+                if (savedLang && supportedLangs.includes(savedLang)) {
+                    return savedLang;
+                }
+                
+                // 3. ユーザーの見ている地域（ブラウザ設定言語）をチェック
+                const browserLang = (window.navigator.language || window.navigator.userLanguage || '').slice(0, 2).toLowerCase();
+                if (supportedLangs.includes(browserLang)) {
+                    return browserLang;
+                }
+                
+                // 4. いずれにも該当しない場合は「英語 (en)」
+                return 'en';
             }
+            
+            // 判定結果を変数に入れ、記憶の箱にも保存しておく
+            let currentLang = determineLanguage();
+            localStorage.setItem('preferredLang', currentLang);
             const texts = {
                 ja: { back: "戻る", backTop: "啓(KEI)App Labへ戻る", news: "最新のニュース", history: "▶ すべての更新履歴を見る。", loading: "読み込み中...", noNews: "現在お知らせはありません。", privacy: "プライバシーポリシー", privAlert: "プライバシーポリシーは現在準備中（実装予定）です。" },
                 en: { back: "Back", backTop: "Back to KEI App Lab", news: "Latest News", history: "▶ View all history", loading: "Loading...", noNews: "No news available.", privacy: "Privacy Policy", privAlert: "Privacy Policy is currently under preparation." },
@@ -115,7 +129,7 @@
             };
             function goBack(e) { e.preventDefault(); if (history.length <= 1 || document.referrer === "") window.location.href = "../index.html"; else history.back(); }
             function toggleLangMenu() { document.getElementById('langMenu').classList.toggle('open'); }
-            function changeLang(lang) { currentLang = lang; localStorage.setItem('selectedLang', lang); document.getElementById('langMenu').classList.remove('open'); renderPage(); }
+            function changeLang(lang) { currentLang = lang; localStorage.setItem('preferredLang', lang); document.getElementById('langMenu').classList.remove('open'); renderPage(); }
             function renderPage(targetData = null) {
                 const suffix = currentLang === 'ja' ? '' : '_' + currentLang;
                 const t = texts[currentLang] || texts.en;
