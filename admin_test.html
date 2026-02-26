@@ -640,11 +640,13 @@
                 previewLang = lang; 
                 updatePreview();
 
-                // ★追加: プライバシープレビュー（iframe）が開いていれば、その中身も更新する
+                // 既存プロジェクトのiframeプレビューも新しい言語で再読み込みさせる
+                if (currentProjectId) checkProjectUrl(currentProjectId);
+                // プライバシープレビュー（iframe）が開いていれば、その中身も更新する
                 const privacyBox = document.getElementById('privacyPreviewBox');
                 if (privacyBox && privacyBox.style.display !== 'none') {
                     privacyBox.style.display = 'none';
-                    togglePrivacyPreview(); // 閉じて開くことで新しい言語で再描画
+                    togglePrivacyPreview(); 
                 }
             }
             
@@ -836,10 +838,11 @@
                 const realPreview = document.getElementById('realPagePreview');
                 const simPreview = document.getElementById('simulatedPagePreview');
                 
-                if (exists) {
+                if (exists && projectId !== "") {
                     realPreview.style.display = 'block';
                     simPreview.style.display = 'none';
-                    iframe.src = `https://${GITHUB_CONFIG.owner.toLowerCase()}.github.io/${GITHUB_CONFIG.repo}/${projectId}/index.html`;
+                    // ▼ URLの末尾に「現在のプレビュー言語」をパラメータとして付与する ▼
+                    iframe.src = `https://${GITHUB_CONFIG.owner.toLowerCase()}.github.io/${GITHUB_CONFIG.repo}/${projectId}/index.html?lang=${previewLang}`;
                 } else {
                     realPreview.style.display = 'none';
                     simPreview.style.display = 'block';
@@ -1328,7 +1331,37 @@
         </div>
         <script>
             const appData = ${appDataJson};
-            let currentLang = localStorage.getItem('selectedLang') || 'ja';
+            
+            // --- 最強の言語判定ロジック ---
+            function determineLanguage() {
+                const supportedLangs = ['ja', 'en', 'de', 'fr', 'es'];
+                
+                // 1. URLの末尾（?lang=xx）をチェック（最優先）
+                const urlParams = new URLSearchParams(window.location.search);
+                const langParam = urlParams.get('lang');
+                if (langParam && supportedLangs.includes(langParam)) {
+                    return langParam;
+                }
+                
+                // 2. ブラウザに保存された過去の記憶（preferredLang）をチェック
+                const savedLang = localStorage.getItem('preferredLang');
+                if (savedLang && supportedLangs.includes(savedLang)) {
+                    return savedLang;
+                }
+                
+                // 3. ユーザーの見ている地域（ブラウザ設定言語）をチェック
+                const browserLang = (window.navigator.language || window.navigator.userLanguage || '').slice(0, 2).toLowerCase();
+                if (supportedLangs.includes(browserLang)) {
+                    return browserLang;
+                }
+                
+                // 4. いずれにも該当しない場合は「英語 (en)」
+                return 'en';
+            }
+            
+            // 判定結果を変数に入れ、記憶の箱にも保存しておく
+            let currentLang = determineLanguage();
+            localStorage.setItem('preferredLang', currentLang);
             const texts = {
                 ja: { back: "戻る", backTop: "啓(KEI)App Labへ戻る", news: "最新のニュース", history: "▶ すべての更新履歴を見る。", loading: "読み込み中...", noNews: "現在お知らせはありません。", privacy: "プライバシーポリシー", privAlert: "プライバシーポリシーは現在準備中（実装予定）です。" },
                 en: { back: "Back", backTop: "Back to KEI App Lab", news: "Latest News", history: "▶ View all history", loading: "Loading...", noNews: "No news available.", privacy: "Privacy Policy", privAlert: "Privacy Policy is currently under preparation." },
@@ -1338,7 +1371,7 @@
             };
             function goBack(e) { e.preventDefault(); if (history.length <= 1 || document.referrer === "") window.location.href = "../index.html"; else history.back(); }
             function toggleLangMenu() { document.getElementById('langMenu').classList.toggle('open'); }
-            function changeLang(lang) { currentLang = lang; localStorage.setItem('selectedLang', lang); document.getElementById('langMenu').classList.remove('open'); renderPage(); }
+            function changeLang(lang) { currentLang = lang; localStorage.setItem('preferredLang', lang); document.getElementById('langMenu').classList.remove('open'); renderPage(); }
             function renderPage(targetData = null) {
                 const suffix = currentLang === 'ja' ? '' : '_' + currentLang;
                 const t = texts[currentLang] || texts.en;
