@@ -1031,7 +1031,6 @@
                     if (inputData.master.privacy_html && inputData.master.privacy_html.trim() !== "") {
                         const privacyPath = `${projectId}/privacy.html`;
                         
-                        // 既存のprivacy.htmlがあるか確認（上書き用SHA取得）
                         let privacySha = null;
                         try {
                             const checkPriv = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${privacyPath}`, {
@@ -1042,7 +1041,46 @@
                             }
                         } catch(e) {}
 
-                        const privacyEncoded = btoa(unescape(encodeURIComponent(inputData.master.privacy_html)));
+                        // ▼▼▼ ここを修正：スマホ(600px以下)で文字サイズを70%にするCSSを含めた枠組みで包む ▼▼▼
+                        const privacyTemplate = `<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* 基本スタイル（PC） */
+        body { font-family: sans-serif; padding: 20px; line-height: 1.8; color: #333; background: #fff; margin: 0; font-size: 16px; }
+        
+        /* 言語切り替え用の非表示設定 */
+        .lang-ja, .lang-en, .lang-de, .lang-fr, .lang-es { display: none; }
+        
+        /* スマホ対応：画面幅が600px以下の時、文字サイズを70%に縮小する */
+        @media (max-width: 600px) {
+            body { font-size: 70%; padding: 10px; line-height: 1.6; }
+        }
+    </style>
+</head>
+<body>
+    ${inputData.master.privacy_html}
+    
+    <script>
+        // URLパラメータ ?lang=XX を読み取って該当言語を表示する
+        const params = new URLSearchParams(window.location.search);
+        const lang = params.get('lang') || localStorage.getItem('preferredLang') || 'ja';
+        const els = document.querySelectorAll('.lang-' + lang);
+        if(els.length > 0) {
+            els.forEach(el => el.style.display = 'block');
+        } else {
+            // 指定言語がない場合は日本語を表示
+            document.querySelectorAll('.lang-ja').forEach(el => el.style.display = 'block');
+        }
+    <\/script>
+</body>
+</html>`;
+                        
+                        // 作成したテンプレートをエンコードして送信
+                        const privacyEncoded = btoa(unescape(encodeURIComponent(privacyTemplate)));
+
                         await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${privacyPath}`, {
                             method: "PUT",
                             headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
