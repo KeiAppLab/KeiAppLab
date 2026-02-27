@@ -14,8 +14,6 @@
     <script src="index_phot.js"></script>
     <script src="html_manual.js"></script>
 
-    <script src="memo.j"></script>
-
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700;900&family=Roboto:wght@400;500;900&display=swap');
 
@@ -1137,16 +1135,20 @@
                 }
             }
             
-            // データ収集ヘルパー
+            // データ収集ヘルパー（プライバシーポリシー対応版）
             function getInputData(pid) {
                 const date = document.getElementById('inDate').value;
                 const cat = document.getElementById('inCategory').value;
                 const img = document.getElementById('inImage').value; // フルパス
-                const status = document.querySelector('input[name="appStatus"]:checked').value;
+                
+                // アプリステータスの取得（チェックされているラジオボタンの値）
+                let status = "coming";
+                const statusRadio = document.querySelector('input[name="appStatus"]:checked');
+                if (statusRadio) status = statusRadio.value;
                 
                 // 多言語データの取得
-                const langs = ['ja', 'en', 'de', 'fr', 'es'];
-                let names={}, titles={}, bodies={}, privacies={}; // privacies を追加
+                const langs =['ja', 'en', 'de', 'fr', 'es'];
+                let names={}, titles={}, bodies={}; 
                 langs.forEach(l => {
                     const s = l==='ja'?'':l.charAt(0).toUpperCase()+l.slice(1);
                     names['project_'+l] = document.getElementById('inProject'+s).value;
@@ -1157,31 +1159,25 @@
                 // プライバシーHTMLを取得
                 const privacyHtml = document.getElementById('inPrivacyHtml').value;
 
-                // 1. Master用 に privacy_html を追加
+                // 1. Master用 (全データ＋プライバシー)
                 const master = { project_id: pid, date, category: cat, image: img, status, privacy_html: privacyHtml, ...names, ...titles, ...bodies };
             
                 // 2. Index用 (お知らせ重視・紹介文なし・画像は固定パス化)
                 const indexItem = {
-                    id: Date.now(), // 一意のID
+                    id: Date.now(), 
                     date, category: cat,
-                    image: `${pid}/index.png`, // 固定パス
+                    image: `${pid}/index.png`,
                     link: `${pid}/index.html`,
-                    ...names, ...titles // 紹介文なし
+                    ...names, ...titles 
                 };
             
                 // 3. Catalog用 (紹介文重視・お知らせなし)
                 const catalogItem = {
-                    project_id: pid,
-                    status,
-                    image: `${pid}/index.png`,
-                    ...names, ...bodies // お知らせなし
+                    project_id: pid, status, image: `${pid}/index.png`, ...names, ...bodies 
                 };
             
                 // 4. AppNews用 (お知らせのみ)
-                const newsItem = {
-                    date, category: cat,
-                    ...titles // お知らせのみ
-                };
+                const newsItem = { date, category: cat, ...titles };
             
                 return { master, indexItem, catalogItem, newsItem };
             }
@@ -1189,25 +1185,19 @@
             // GitHub API ヘルパー: ファイル書き込み
             async function writeJsFile(path, dataObj, msg) {
                 const token = localStorage.getItem("gh_token");
-                // 既存ファイルのSHAを取得して上書き
                 let sha = null;
                 try {
                     const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
                         headers: { Authorization: `token ${token}` }
                     });
-                    if (res.ok) {
-                        const json = await res.json();
-                        sha = json.sha;
-                    }
+                    if (res.ok) { const json = await res.json(); sha = json.sha; }
                 } catch(e) {}
             
-                // JSファイル形式に変換
-                // pathから変数名を推測 (簡易的)
                 let varName = "data";
                 if(path.includes("admin_master")) varName = "adminMasterData";
                 else if(path.includes("index_news")) varName = "indexNewsData";
                 else if(path.includes("apps_catalog")) varName = "appsCatalogData";
-                else if(path.includes("old_news")) varName = "oldNewsData"; // 先に判定
+                else if(path.includes("old_news")) varName = "oldNewsData";
                 else if(path.includes("news")) varName = "newsData";
             
                 const contentStr = `const ${varName} = ${JSON.stringify(dataObj, null, 4)};`;
@@ -1226,30 +1216,27 @@
                 const token = localStorage.getItem("gh_token");
                 try {
                     const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
-                        headers: { Authorization: `token ${token}` } // キャッシュ回避推奨
+                        headers: { Authorization: `token ${token}` }
                     });
                     if (!res.ok) return null;
                     const json = await res.json();
                     const content = decodeURIComponent(escape(atob(json.content)));
-                    // JSON部分を抽出
-                    const match = content.match(/\[.*\]/s); // 配列を探す
+                    const match = content.match(/\[.*\]/s);
                     if (match) return JSON.parse(match[0]);
-                } catch (e) { console.log("File not found or parse error:", path); }
+                } catch (e) { console.log("File not found:", path); }
                 return null;
             }
             
             // 画像コピー
             async function copyImageToProject(srcPath, destPath) {
                 const token = localStorage.getItem("gh_token");
-                // 1. 元画像をバイナリ(Blob->Base64)で取得
                 const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${srcPath}`, {
                     headers: { Authorization: `token ${token}` }
                 });
-                if(!res.ok) return; // 画像がない
+                if(!res.ok) return; 
                 const data = await res.json();
-                const content = data.content; // Base64のまま
+                const content = data.content; 
             
-                // 2. 宛先に書き込み (存在チェックして上書きするか、常にするか。ここでは常に上書き)
                 let sha = null;
                 try {
                     const check = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${destPath}`, {
@@ -1261,335 +1248,231 @@
                 await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${destPath}`, {
                     method: "PUT",
                     headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        message: "Copy image to project folder",
-                        content: content,
-                        sha: sha
-                    })
+                    body: JSON.stringify({ message: "Copy image to project", content: content, sha: sha })
                 });
             }
-            
-// HTMLテンプレート作成 (完全独立型・多言語対応・通信最適化済み)
-           // --- ★追加: HTML文字列を生成する独立関数 ---
+
+            // HTML生成ヘルパー (完全独立型)
             function generateProjectHtmlString(projectId, inputData) {
                 const projectJa = inputData.master.project_ja || projectId;
                 const appDataJson = JSON.stringify(inputData.master);
-    
+                
                 return `<!DOCTYPE html>
-    <html lang="ja">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>${projectJa}</title>
-        <script src="news.js"><\/script>
-        <style>
-            @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700;900&family=Roboto:wght@500;900&display=swap');
-            body { font-family: 'Noto Serif JP', serif; background: #fff; color: #333; padding: 0; margin: 0; line-height: 1.8; overflow-x: hidden; }
-            .top-nav { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); width: 100%; max-width: 1100px; padding: 0 20px; box-sizing: border-box; display: flex; justify-content: space-between; align-items: flex-start; z-index: 1000; pointer-events: none; }
-            .top-nav > * { pointer-events: auto; }
-            .back-btn { cursor: pointer; font-family: 'Roboto', sans-serif; font-weight: 900; color: #0056b3; text-decoration: none; display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.8); padding: 5px 10px; border-radius: 8px; backdrop-filter: blur(2px); }
-            .back-btn:hover { color: #003d82; }
-            .lang-menu-wrapper { position: relative; }
-            .lang-main-btn { background: #0056b3; color: #fff; border: none; padding: 8px 15px; border-radius: 20px; font-family: 'Roboto', sans-serif; font-weight: 900; cursor: pointer; z-index: 10; position: relative; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-            .lang-sub-btns { position: absolute; top: 10px; right: 0; display: flex; flex-direction: row-reverse; pointer-events: none; }
-            .lang-circle { width: 35px; height: 35px; border-radius: 50%; color: white; border: none; font-family: 'Roboto', sans-serif; font-weight: bold; font-size: 0.8rem; display: flex; justify-content: center; align-items: center; cursor: pointer; position: absolute; right: 0; top: 0; opacity: 0; transform: translateY(0) translateX(0); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-            .lang-ja { background: #e74c3c; z-index: 5; } .lang-en { background: #3498db; z-index: 4; } .lang-de { background: #f1c40f; color: #333; z-index: 3; } .lang-fr { background: #9b59b6; z-index: 2; } .lang-es { background: #e67e22; z-index: 1; }
-            .lang-menu-wrapper.open .lang-sub-btns { pointer-events: auto; }
-            .lang-menu-wrapper.open .lang-circle { opacity: 1; }
-            .lang-menu-wrapper.open .lang-circle:nth-child(1) { transform: translateY(45px) translateX(0); }
-            .lang-menu-wrapper.open .lang-circle:nth-child(2) { transform: translateY(45px) translateX(-45px); }
-            .lang-menu-wrapper.open .lang-circle:nth-child(3) { transform: translateY(45px) translateX(-90px); }
-            .lang-menu-wrapper.open .lang-circle:nth-child(4) { transform: translateY(45px) translateX(-135px); }
-            .lang-menu-wrapper.open .lang-circle:nth-child(5) { transform: translateY(45px) translateX(-180px); }
-            .main-content { max-width: 800px; margin: 80px auto 40px auto; padding: 20px; }
-            h1 { border-bottom: 3px solid #0056b3; display: inline-block; padding-bottom: 5px; margin-bottom: 20px; font-size: 1.5rem; }
-            .catchcopy { font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; color: #333; line-height: 1.5; white-space: pre-wrap; }
-            img { max-width: 100%; border-radius: 10px; margin: 20px 0; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-            .app-desc { margin-bottom: 30px; line-height: 1.8; white-space: pre-wrap; }
-            .news-box { margin-top: 15px; padding: 15px; background: #f9f9f9; border-left: 4px solid #0056b3; border-radius:4px; animation: fadeIn 0.5s; }
-            @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-            .date { color: #666; font-size: 0.8rem; margin-bottom: 5px; }
-            .history-link { display: inline-block; margin-top: 15px; color: #0056b3; text-decoration: none; font-weight:bold; cursor: pointer; padding: 10px; border-radius: 5px; background: #f0f8ff; }
-            .history-link:hover { text-decoration: underline; background: #e0f0ff; }
-            
-            /* ★追加: 履歴モーダル（別窓風）のスタイル */
-            .history-modal { display: none; margin-top: 10px; padding: 20px; background: #fff; border: 2px solid #0056b3; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); max-height: 400px; overflow-y: auto; position: relative; animation: fadeIn 0.3s; }
-            .modal-close { position: absolute; top: 10px; right: 15px; cursor: pointer; font-size: 1.5rem; font-weight: bold; color: #999; }
-            .modal-close:hover { color: #333; }
-            .history-list-item { display: flex; align-items: flex-start; gap: 15px; border-bottom: 1px solid #eee; padding: 10px 0; }
-            .history-list-item:last-child { border-bottom: none; }
-            .history-date { font-family: 'Roboto', sans-serif; font-size: 0.85rem; color: #666; white-space: nowrap; padding-top: 3px; }
-            .history-title { font-weight: bold; color: #333; line-height: 1.4; }
-
-            .footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; font-size: 0.85rem; color: #666; }
-            .footer a { color: #0056b3; text-decoration: none; font-weight: bold; }
-
-            /* モーダル内の言語切り替え制御 */
-            .lang-content { display: none; }
-            .show-ja .lang-ja { display: block; }
-            .show-en .lang-en { display: block; }
-            .show-de .lang-de { display: block; }
-            .show-fr .lang-fr { display: block; }
-            .show-es .lang-es { display: block; }
-            /* 一枚の紙のスタイル */
-            .privacy-paper {
-                background: #ffffff;
-                border-radius: 4px; /* 紙っぽく、角丸は控えめに */
-                /* 浮き上がるような柔らかい影 */
-                box-shadow: 0 10px 30px rgba(0,0,0,0.15), 0 2px 5px rgba(0,0,0,0.05); 
-                padding: 15px;
-                margin: 15px auto 40px auto; /* 下に余裕を持たせる */
-                max-width: 800px;
-                text-align: left;
-                position: relative;
-                animation: fadeIn 0.4s ease-out;
-            }
-            .privacy-paper-close {
-                display: block; text-align: right; cursor: pointer; 
-                font-size: 1.2rem; font-weight: bold; color: #999; margin-bottom: 5px;
-            }
-            .privacy-paper-close:hover { color: #333; }
-        </style>
-    </head>
-    <body>
-        <div class="top-nav">
-            <a href="#" class="back-btn" onclick="goBack(event)">🔙 <span id="back-text">戻る</span></a>
-            <div class="lang-menu-wrapper" id="langMenu">
-                <button class="lang-main-btn" onclick="toggleLangMenu()">Language ▼</button>
-                <div class="lang-sub-btns">
-                    <button class="lang-circle lang-es" onclick="changeLang('es')">ES</button>
-                    <button class="lang-circle lang-fr" onclick="changeLang('fr')">FR</button>
-                    <button class="lang-circle lang-de" onclick="changeLang('de')">DE</button>
-                    <button class="lang-circle lang-en" onclick="changeLang('en')">EN</button>
-                    <button class="lang-circle lang-ja" onclick="changeLang('ja')">JP</button>
-                </div>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${projectJa}</title>
+    <script src="news.js"><\/script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700;900&family=Roboto:wght@500;900&display=swap');
+        body { font-family: 'Noto Serif JP', serif; background: #fff; color: #333; padding: 0; margin: 0; line-height: 1.8; overflow-x: hidden; }
+        .top-nav { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); width: 100%; max-width: 1100px; padding: 0 20px; box-sizing: border-box; display: flex; justify-content: space-between; align-items: flex-start; z-index: 1000; pointer-events: none; }
+        .top-nav > * { pointer-events: auto; }
+        .back-btn { cursor: pointer; font-family: 'Roboto', sans-serif; font-weight: 900; color: #0056b3; text-decoration: none; display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.8); padding: 5px 10px; border-radius: 8px; backdrop-filter: blur(2px); }
+        .back-btn:hover { color: #003d82; }
+        .lang-menu-wrapper { position: relative; }
+        .lang-main-btn { background: #0056b3; color: #fff; border: none; padding: 8px 15px; border-radius: 20px; font-family: 'Roboto', sans-serif; font-weight: 900; cursor: pointer; z-index: 10; position: relative; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .lang-sub-btns { position: absolute; top: 10px; right: 0; display: flex; flex-direction: row-reverse; pointer-events: none; }
+        .lang-circle { width: 35px; height: 35px; border-radius: 50%; color: white; border: none; font-family: 'Roboto', sans-serif; font-weight: bold; font-size: 0.8rem; display: flex; justify-content: center; align-items: center; cursor: pointer; position: absolute; right: 0; top: 0; opacity: 0; transform: translateY(0) translateX(0); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .lang-ja { background: #e74c3c; z-index: 5; } .lang-en { background: #3498db; z-index: 4; } .lang-de { background: #f1c40f; color: #333; z-index: 3; } .lang-fr { background: #9b59b6; z-index: 2; } .lang-es { background: #e67e22; z-index: 1; }
+        .lang-menu-wrapper.open .lang-sub-btns { pointer-events: auto; }
+        .lang-menu-wrapper.open .lang-circle { opacity: 1; }
+        .lang-menu-wrapper.open .lang-circle:nth-child(1) { transform: translateY(45px) translateX(0); }
+        .lang-menu-wrapper.open .lang-circle:nth-child(2) { transform: translateY(45px) translateX(-45px); }
+        .lang-menu-wrapper.open .lang-circle:nth-child(3) { transform: translateY(45px) translateX(-90px); }
+        .lang-menu-wrapper.open .lang-circle:nth-child(4) { transform: translateY(45px) translateX(-135px); }
+        .lang-menu-wrapper.open .lang-circle:nth-child(5) { transform: translateY(45px) translateX(-180px); }
+        .main-content { max-width: 800px; margin: 80px auto 40px auto; padding: 20px; }
+        h1 { border-bottom: 3px solid #0056b3; display: inline-block; padding-bottom: 5px; margin-bottom: 20px; font-size: 1.5rem; }
+        .catchcopy { font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; color: #333; line-height: 1.5; white-space: pre-wrap; }
+        img { max-width: 100%; border-radius: 10px; margin: 20px 0; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .app-desc { margin-bottom: 30px; line-height: 1.8; white-space: pre-wrap; }
+        .news-box { margin-top: 15px; padding: 15px; background: #f9f9f9; border-left: 4px solid #0056b3; border-radius:4px; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .date { color: #666; font-size: 0.8rem; margin-bottom: 5px; }
+        .history-link { display: inline-block; margin-top: 15px; color: #0056b3; text-decoration: none; font-weight:bold; cursor: pointer; padding: 10px; border-radius: 5px; background: #f0f8ff; }
+        .history-link:hover { text-decoration: underline; background: #e0f0ff; }
+        .history-modal { display: none; margin-top: 10px; padding: 20px; background: #fff; border: 2px solid #0056b3; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); max-height: 400px; overflow-y: auto; position: relative; animation: fadeIn 0.3s; }
+        .modal-close { position: absolute; top: 10px; right: 15px; cursor: pointer; font-size: 1.5rem; font-weight: bold; color: #999; }
+        .modal-close:hover { color: #333; }
+        .history-list-item { display: flex; align-items: flex-start; gap: 15px; border-bottom: 1px solid #eee; padding: 10px 0; }
+        .history-list-item:last-child { border-bottom: none; }
+        .history-date { font-family: 'Roboto', sans-serif; font-size: 0.85rem; color: #666; white-space: nowrap; padding-top: 3px; }
+        .history-title { font-weight: bold; color: #333; line-height: 1.4; }
+        .footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; font-size: 0.85rem; color: #666; }
+        .footer a { color: #0056b3; text-decoration: none; font-weight: bold; cursor: pointer; }
+        .privacy-paper { background: #ffffff; border-radius: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.15), 0 2px 5px rgba(0,0,0,0.05); padding: 15px; margin: 15px auto 40px auto; max-width: 800px; text-align: left; position: relative; animation: fadeIn 0.4s ease-out; }
+        .privacy-paper-close { display: block; text-align: right; cursor: pointer; font-size: 1.2rem; font-weight: bold; color: #999; margin-bottom: 5px; }
+        .privacy-paper-close:hover { color: #333; }
+    </style>
+</head>
+<body>
+    <div class="top-nav">
+        <a href="#" class="back-btn" onclick="goBack(event)">🔙 <span id="back-text">戻る</span></a>
+        <div class="lang-menu-wrapper" id="langMenu">
+            <button class="lang-main-btn" onclick="toggleLangMenu()">Language ▼</button>
+            <div class="lang-sub-btns">
+                <button class="lang-circle lang-es" onclick="changeLang('es')">ES</button>
+                <button class="lang-circle lang-fr" onclick="changeLang('fr')">FR</button>
+                <button class="lang-circle lang-de" onclick="changeLang('de')">DE</button>
+                <button class="lang-circle lang-en" onclick="changeLang('en')">EN</button>
+                <button class="lang-circle lang-ja" onclick="changeLang('ja')">JP</button>
             </div>
         </div>
-        <div class="main-content">
-            <h1 id="app-title">Loading...</h1>
-            <!-- ★追加: 実際のHTML側にもキャッチコピー枠を設ける -->
-            <div id="app-catchcopy" class="catchcopy"></div>
-            
-            <img src="index.png" alt="App Image">
-            <div id="app-desc" class="app-desc"></div>
-            
-            <h3 id="news-heading" style="border-bottom:2px solid #ccc; padding-bottom:5px;">最新のニュース</h3>
-            <div id="news-container"></div>
-            
-            <div style="text-align: right; position: relative;">
-                <a class="history-link" id="history-link" onclick="loadOldNews(event)">▶ すべての更新履歴を見る。</a>
-                <!-- 既存の更新履歴モーダル（これだけ残す） -->
-                <div id="history-modal" class="history-modal" style="text-align: left;">
-                    <span class="modal-close" onclick="document.getElementById('history-modal').style.display='none'">×</span>
-                    <h4 id="modal-heading" style="margin-top:0; color:#0056b3;">更新履歴</h4>
-                    <div id="modal-content"></div>
-                </div>
-            </div>
-
-            <div class="footer">
-                <a href="privacy.html" id="privacy-link" onclick="showPrivacy(event)">プライバシーポリシー</a>
-                
-                <!-- ▼▼▼ プライバシーポリシー展開エリア（紙の表現） ▼▼▼ -->
-                <div id="privacy-paper" class="privacy-paper" style="display: none;">
-                    <span class="privacy-paper-close" onclick="closePrivacy()">×</span>
-                    <iframe id="privacy-iframe" src="" style="width:100%; height:75vh; border:none;"></iframe>
-                </div>
-                <!-- ▲▲▲ ここまで ▲▲▲ -->
-
-                <br><br>
-                © 2026 啓 App Lab | <a href="../app-ads.txt" target="_blank">app-ads.txt</a>
+    </div>
+    <div class="main-content">
+        <h1 id="app-title">Loading...</h1>
+        <div id="app-catchcopy" class="catchcopy"></div>
+        <img src="index.png" alt="App Image">
+        <div id="app-desc" class="app-desc"></div>
+        <h3 id="news-heading" style="border-bottom:2px solid #ccc; padding-bottom:5px;">最新のニュース</h3>
+        <div id="news-container"></div>
+        <div style="text-align: right; position: relative;">
+            <a class="history-link" id="history-link" onclick="loadOldNews(event)">▶ すべての更新履歴を見る。</a>
+            <div id="history-modal" class="history-modal" style="text-align: left;">
+                <span class="modal-close" onclick="document.getElementById('history-modal').style.display='none'">×</span>
+                <h4 id="modal-heading" style="margin-top:0; color:#0056b3;">更新履歴</h4>
+                <div id="modal-content"></div>
             </div>
         </div>
-        <script>
-            const appData = ${appDataJson};
+        <div class="footer">
+            <a id="privacy-link" onclick="showPrivacy(event)">プライバシーポリシー</a>
+            <div id="privacy-paper" class="privacy-paper" style="display: none;">
+                <span class="privacy-paper-close" onclick="closePrivacy()">×</span>
+                <iframe id="privacy-iframe" src="" style="width:100%; height:75vh; border:none;"></iframe>
+            </div>
+            <br><br>
+            © 2026 啓 App Lab | <a href="../app-ads.txt" target="_blank">app-ads.txt</a>
+        </div>
+    </div>
+    <script>
+        const appData = ${appDataJson};
+        
+        function determineLanguage() {
+            const supportedLangs = ['ja', 'en', 'de', 'fr', 'es'];
+            const urlParams = new URLSearchParams(window.location.search);
+            const langParam = urlParams.get('lang');
+            if (langParam && supportedLangs.includes(langParam)) return langParam;
+            const savedLang = localStorage.getItem('preferredLang');
+            if (savedLang && supportedLangs.includes(savedLang)) return savedLang;
+            const browserLang = (window.navigator.language || '').slice(0, 2).toLowerCase();
+            if (supportedLangs.includes(browserLang)) return browserLang;
+            return 'en';
+        }
+        
+        let currentLang = determineLanguage();
+        localStorage.setItem('preferredLang', currentLang);
+
+        const texts = {
+            ja: { back: "戻る", backTop: "啓(KEI)App Labへ戻る", news: "最新のニュース", history: "▶ すべての更新履歴を見る。", loading: "読み込み中...", noNews: "現在お知らせはありません。", privacy: "プライバシーポリシー", privAlert: "プライバシーポリシーは現在準備中（実装予定）です。" },
+            en: { back: "Back", backTop: "Back to KEI App Lab", news: "Latest News", history: "▶ View all history", loading: "Loading...", noNews: "No news available.", privacy: "Privacy Policy", privAlert: "Privacy Policy is currently under preparation." },
+            de: { back: "Zurück", backTop: "Zurück zu KEI App Lab", news: "Aktuelle News", history: "▶ Gesamten Verlauf", loading: "Wird geladen...", noNews: "Keine Nachrichten.", privacy: "Datenschutzrichtlinie", privAlert: "Die Datenschutzrichtlinie ist in Vorbereitung." },
+            fr: { back: "Retour", backTop: "Retour à KEI App Lab", news: "Dernières Nouvelles", history: "▶ Voir tout l'historique", loading: "Chargement...", noNews: "Aucune nouvelle.", privacy: "Politique de confidentialité", privAlert: "La politique de confidentialité est en cours de préparation." },
+            es: { back: "Volver", backTop: "Volver a KEI App Lab", news: "Últimas Noticias", history: "▶ Ver todo el historial", loading: "Cargando...", noNews: "No hay noticias.", privacy: "Política de privacidad", privAlert: "La política de privacidad está en preparación." }
+        };
+
+        function goBack(e) { e.preventDefault(); if (history.length <= 1 || document.referrer === "") window.location.href = "../index.html"; else history.back(); }
+        function toggleLangMenu() { document.getElementById('langMenu').classList.toggle('open'); }
+        function changeLang(lang) { 
+            currentLang = lang; 
+            localStorage.setItem('preferredLang', lang); 
+            document.getElementById('langMenu').classList.remove('open'); 
+            const url = new URL(window.location);
+            url.searchParams.set('lang', lang);
+            window.history.replaceState({}, '', url);
+            renderPage(); 
             
-            // --- 最強の言語判定ロジック ---
-            function determineLanguage() {
-                const supportedLangs = ['ja', 'en', 'de', 'fr', 'es'];
-                
-                // 1. URLの末尾（?lang=xx）をチェック（最優先）
-                const urlParams = new URLSearchParams(window.location.search);
-                const langParam = urlParams.get('lang');
-                if (langParam && supportedLangs.includes(langParam)) {
-                    return langParam;
-                }
-                
-                // 2. ブラウザに保存された過去の記憶（preferredLang）をチェック
-                const savedLang = localStorage.getItem('preferredLang');
-                if (savedLang && supportedLangs.includes(savedLang)) {
-                    return savedLang;
-                }
-                
-                // 3. ユーザーの見ている地域（ブラウザ設定言語）をチェック
-                const browserLang = (window.navigator.language || window.navigator.userLanguage || '').slice(0, 2).toLowerCase();
-                if (supportedLangs.includes(browserLang)) {
-                    return browserLang;
-                }
-                
-                // 4. いずれにも該当しない場合は「英語 (en)」
-                return 'en';
-            }
+            const hModal = document.getElementById('history-modal');
+            if (hModal.style.display === 'block' && typeof oldNewsData !== 'undefined') renderHistoryList();
+            const pPaper = document.getElementById('privacy-paper');
+            if (pPaper && pPaper.style.display === 'block') document.getElementById('privacy-iframe').src = 'privacy.html?lang=' + lang;
+        }
+
+        function renderPage(targetData = null) {
+            const suffix = currentLang === 'ja' ? '' : '_' + currentLang;
+            const t = texts[currentLang] || texts.en;
+            const isDirectLink = (history.length <= 1 || document.referrer === "");
+            document.getElementById('back-text').textContent = isDirectLink ? t.backTop : t.back;
+            document.getElementById('news-heading').textContent = t.news;
+            const hLink = document.getElementById('history-link');
+            if(hLink.style.display !== 'none') hLink.textContent = t.history;
+            document.getElementById('privacy-link').textContent = t.privacy;
             
-            // 判定結果を変数に入れ、記憶の箱にも保存しておく
-            let currentLang = determineLanguage();
-            localStorage.setItem('preferredLang', currentLang);
-            const texts = {
-                ja: { back: "戻る", backTop: "啓(KEI)App Labへ戻る", news: "最新のニュース", history: "▶ すべての更新履歴を見る。", loading: "読み込み中...", noNews: "現在お知らせはありません。", privacy: "プライバシーポリシー", privAlert: "プライバシーポリシーは現在準備中（実装予定）です。" },
-                en: { back: "Back", backTop: "Back to KEI App Lab", news: "Latest News", history: "▶ View all history", loading: "Loading...", noNews: "No news available.", privacy: "Privacy Policy", privAlert: "Privacy Policy is currently under preparation." },
-                de: { back: "Zurück", backTop: "Zurück zu KEI App Lab", news: "Aktuelle News", history: "▶ Gesamten Verlauf", loading: "Wird geladen...", noNews: "Keine Nachrichten.", privacy: "Datenschutzrichtlinie", privAlert: "Die Datenschutzrichtlinie ist in Vorbereitung." },
-                fr: { back: "Retour", backTop: "Retour à KEI App Lab", news: "Dernières Nouvelles", history: "▶ Voir tout l'historique", loading: "Chargement...", noNews: "Aucune nouvelle.", privacy: "Politique de confidentialité", privAlert: "La politique de confidentialité est en cours de préparation." },
-                es: { back: "Volver", backTop: "Volver a KEI App Lab", news: "Últimas Noticias", history: "▶ Ver todo el historial", loading: "Cargando...", noNews: "No hay noticias.", privacy: "Política de privacidad", privAlert: "La política de privacidad está en preparación." }
+            document.getElementById('app-title').textContent = appData['project' + suffix] || appData.project_ja || '${projectId}';
+            document.getElementById('app-catchcopy').textContent = appData['title' + suffix] || appData.title_ja || '';
+            document.getElementById('app-desc').textContent = appData['body' + suffix] || appData.body_ja || '';
+
+            const dataToRender = targetData || (typeof newsData !== 'undefined' ? newsData :[]);
+            const container = document.getElementById('news-container');
+            container.innerHTML = '';
+            if(dataToRender.length > 0){
+                dataToRender.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'news-box';
+                    const title = item['title' + suffix] || item.title_ja || item.title_en || '';
+                    div.innerHTML = '<div class="date">' + item.date + '</div><div style="font-weight:bold; white-space: pre-wrap;">' + title + '</div>';
+                    container.appendChild(div);
+                });
+            } else { container.innerHTML = '<p>' + t.noNews + '</p>'; }
+        }
+
+        function renderHistoryList() {
+            const modalContent = document.getElementById('modal-content');
+            modalContent.innerHTML = '';
+            const suffix = currentLang === 'ja' ? '' : '_' + currentLang;
+            const t = texts[currentLang] || texts.en;
+            if (typeof oldNewsData !== 'undefined' && oldNewsData.length > 0) {
+                oldNewsData.forEach(item => {
+                    const title = item['title' + suffix] || item.title_ja || item.title_en || '';
+                    modalContent.innerHTML += \`<div class="history-list-item"><div class="history-date">\${item.date}</div><div class="history-title">\${title}</div></div>\`;
+                });
+            } else { modalContent.innerHTML = '<p>' + t.noNews + '</p>'; }
+        }
+
+        function loadOldNews(e) {
+            e.preventDefault(); 
+            const link = document.getElementById('history-link'); 
+            const modal = document.getElementById('history-modal');
+            const t = texts[currentLang] || texts.en;
+            if (modal.style.display === 'block') { modal.style.display = 'none'; return; }
+            link.textContent = t.loading; link.style.pointerEvents = 'none';
+            const script = document.createElement('script'); script.src = 'old_news.js';
+            script.onload = () => { 
+                link.textContent = t.history; link.style.pointerEvents = 'auto'; modal.style.display = 'block';
+                document.getElementById('modal-heading').textContent = t.history.replace('▶ ', '');
+                renderHistoryList(); 
             };
-            function goBack(e) { e.preventDefault(); if (history.length <= 1 || document.referrer === "") window.location.href = "../index.html"; else history.back(); }
-            function toggleLangMenu() { document.getElementById('langMenu').classList.toggle('open'); }
-            function changeLang(lang) { 
-                currentLang = lang; 
-                localStorage.setItem('preferredLang', lang); 
-                document.getElementById('langMenu').classList.remove('open'); 
-                
-                // URLパラメータも変更して、後でリロードしても維持されるようにする
-                const url = new URL(window.location);
-                url.searchParams.set('lang', lang);
-                window.history.replaceState({}, '', url);
+            script.onerror = () => { link.textContent = 'Data Load Error'; link.style.pointerEvents = 'auto'; };
+            document.body.appendChild(script);
+        }
 
-                renderPage(); 
-                
-                // もし「更新履歴モーダル」が開いていたら中身を再描画する
-                const hModal = document.getElementById('history-modal');
-                if (hModal.style.display === 'block' && typeof oldNewsData !== 'undefined') {
-                    renderHistoryList();
-                }
+        async function showPrivacy(e) {
+            e.preventDefault();
+            const paper = document.getElementById('privacy-paper');
+            const iframe = document.getElementById('privacy-iframe');
+            const t = texts[currentLang] || texts.en;
+            if (paper.style.display === 'block') { closePrivacy(); return; }
+            try {
+                const res = await fetch('privacy.html', { method: 'HEAD' });
+                if (!res.ok) throw new Error('Not Found');
+                iframe.src = 'privacy.html?lang=' + currentLang;
+                paper.style.display = 'block';
+                setTimeout(() => { paper.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, 100);
+            } catch (err) { alert(t.privAlert); }
+        }
 
-                // もし「プライバシーモーダル」が開いていたら言語クラスを切り替える
-                const pPaper = document.getElementById('privacy-paper');
-                if (pPaper && pPaper.style.display === 'block') {
-                    const iframe = document.getElementById('privacy-iframe');
-                    iframe.src = 'privacy.html?lang=' + lang;
-                }
-            }
-            function renderPage(targetData = null) {
-                const suffix = currentLang === 'ja' ? '' : '_' + currentLang;
-                const t = texts[currentLang] || texts.en;
-                const isDirectLink = (history.length <= 1 || document.referrer === "");
-                document.getElementById('back-text').textContent = isDirectLink ? t.backTop : t.back;
-                document.getElementById('news-heading').textContent = t.news;
-                const hLink = document.getElementById('history-link');
-                if(hLink.style.display !== 'none') hLink.textContent = t.history;
-                document.getElementById('privacy-link').textContent = t.privacy;
-                
-                const projName = appData['project' + suffix] || appData.project_ja || '${projectId}';
-                document.getElementById('app-title').textContent = projName;
-                
-                // ★追加: キャッチコピーと本文の流し込み（改行対応済み）
-                document.getElementById('app-catchcopy').textContent = appData['title' + suffix] || appData.title_ja || '';
-                document.getElementById('app-desc').textContent = appData['body' + suffix] || appData.body_ja || '';
-    
-                const dataToRender = targetData || (typeof newsData !== 'undefined' ? newsData : []);
-                const container = document.getElementById('news-container');
-                container.innerHTML = '';
-                if(dataToRender.length > 0){
-                    dataToRender.forEach(item => {
-                        const div = document.createElement('div');
-                        div.className = 'news-box';
-                        const title = item['title' + suffix] || item.title_ja || item.title_en || '';
-                        div.innerHTML = '<div class="date">' + item.date + '</div><div style="font-weight:bold; white-space: pre-wrap;">' + title + '</div>';
-                        container.appendChild(div);
-                    });
-                } else { container.innerHTML = '<p>' + t.noNews + '</p>'; }
+        function closePrivacy() {
+            document.getElementById('privacy-paper').style.display = 'none';
+            document.getElementById('privacy-iframe').src = "";
+        }
+
+        document.addEventListener("DOMContentLoaded", () => { renderPage(); });
+    <\/script>
+</body>
+</html>`;
             }
 
-            // 履歴リストのHTMLを生成・流し込む専用の関数
-            function renderHistoryList() {
-                const modalContent = document.getElementById('modal-content');
-                modalContent.innerHTML = '';
-                const suffix = currentLang === 'ja' ? '' : '_' + currentLang;
-                const t = texts[currentLang] || texts.en;
-
-                if (typeof oldNewsData !== 'undefined' && oldNewsData.length > 0) {
-                    oldNewsData.forEach(item => {
-                        const title = item['title' + suffix] || item.title_ja || item.title_en || '';
-                        modalContent.innerHTML += \`<div class="history-list-item"><div class="history-date">\${item.date}</div><div class="history-title">\${title}</div></div>\`;
-                    });
-                } else {
-                    modalContent.innerHTML = '<p>' + t.noNews + '</p>';
-                }
-            }
-
-            // --- 動的ロード：全履歴データを別窓（モーダル）に表示 ---
-            function loadOldNews(e) {
-                e.preventDefault(); 
-                const link = document.getElementById('history-link'); 
-                const modal = document.getElementById('history-modal');
-                const t = texts[currentLang] || texts.en;
-                
-                // すでに開いている場合は閉じる
-                if (modal.style.display === 'block') {
-                    modal.style.display = 'none';
-                    return;
-                }
-
-                link.textContent = t.loading; link.style.pointerEvents = 'none';
-                
-                // 通信してデータを取得
-                const script = document.createElement('script'); 
-                script.src = 'old_news.js';
-                script.onload = () => { 
-                    link.textContent = t.history;
-                    link.style.pointerEvents = 'auto';
-                    modal.style.display = 'block';
-                    document.getElementById('modal-heading').textContent = t.history.replace('▶ ', '');
-                    renderHistoryList(); // 独立させた関数を呼ぶ
-                };
-                script.onerror = () => { 
-                    link.textContent = 'Data Load Error'; link.style.pointerEvents = 'auto'; 
-                };
-                document.body.appendChild(script);
-            }
-
-            // --- プライバシーポリシーの表示（紙の展開） ---
-            async function showPrivacy(e) {
-                e.preventDefault();
-                const paper = document.getElementById('privacy-paper');
-                const iframe = document.getElementById('privacy-iframe');
-                const t = texts[currentLang] || texts.en;
-                
-                // すでに開いている場合は閉じる
-                if (paper.style.display === 'block') {
-                    closePrivacy();
-                    return;
-                }
-
-                try {
-                    const res = await fetch('privacy.html', { method: 'HEAD' });
-                    if (!res.ok) throw new Error('Not Found');
-                    
-                    // iframeにURLをセットして、紙を表示する
-                    iframe.src = 'privacy.html?lang=' + currentLang;
-                    paper.style.display = 'block';
-
-                    // ★魔法：開いた後、紙の下端が画面に入るようにスムーズに自動スクロールする
-                    setTimeout(() => {
-                        paper.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                    }, 100);
-
-                } catch (err) {
-                    alert(t.privAlert);
-                }
-            }
-
-            // --- プライバシーポリシーを閉じる ---
-            function closePrivacy() {
-                const paper = document.getElementById('privacy-paper');
-                const iframe = document.getElementById('privacy-iframe');
-                paper.style.display = 'none';
-                iframe.src = ""; // 中身を消して軽くする
-            }
-
-            document.addEventListener("DOMContentLoaded", () => { renderPage(); });
-        <\/script>
-    </body>
-    </html>`;
-            }     
             async function createProjectHtml(projectId, inputData) {
                 const path = `${projectId}/index.html`;
                 const token = localStorage.getItem("gh_token");
@@ -1602,202 +1485,120 @@
                 const htmlContent = generateProjectHtmlString(projectId, inputData);
                 const encoded = btoa(unescape(encodeURIComponent(htmlContent)));
 
-                // ★追加: 実際にGitHubへファイルを送信する処理
                 await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
                     method: "PUT",
                     headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        message: "Create project index.html",
-                        content: encoded
-                    })
+                    body: JSON.stringify({ message: "Create project index.html", content: encoded })
                 });
             }
-            
-            // --- ユーザー管理・計算 (復元済み) ---
-            function renderUserList() {
-                const list = document.getElementById('userList');
-                if(!list) return;
-                list.innerHTML = '';
-                if (typeof allowedUsersData !== 'undefined') {
-                    allowedUsersData.forEach((user, index) => {
-                        const li = document.createElement('li');
-                        li.style = "display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid #444; color:#fff;";
-                        li.innerHTML = `<span>${user}</span><button style="background:#c0392b; width:auto; padding:2px 8px; font-size:0.8rem; margin:0;" onclick="removeUser(${index})">削除</button>`;
-                        list.appendChild(li);
-                    });
-                }
-            }
-            function addUser() {
-                const input = document.getElementById('newUserId');
-                const id = input.value.trim();
-                if(!id) return;
-                if(allowedUsersData.includes(id)) { alert("既に登録されています"); return; }
-                allowedUsersData.push(id);
-                input.value = '';
-                renderUserList();
-            }
-            function removeUser(index) {
-                if(confirm("削除しますか？")) { allowedUsersData.splice(index, 1); renderUserList(); }
-            }
-            async function saveUsersToGitHub() {
+
+            // --- 大元の保存処理 ---
+            async function saveToGitHub() {
                 const token = localStorage.getItem("gh_token");
                 if (!token) { alert("認証が必要です"); return; }
-                if(!confirm("GitHub上の allowed_users.js を更新します。よろしいですか？")) return;
-                const jsonString = JSON.stringify(allowedUsersData, null, 4);
-                const content = `// 編集権限を持つユーザーリスト\nconst allowedUsersData = ${jsonString};`;
-                const encodedContent = btoa(unescape(encodeURIComponent(content)));
-                try {
-                    const getRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/allowed_users.js`, { headers: { Authorization: `token ${token}` } });
-                    const fileData = await getRes.json();
-                    const putRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/allowed_users.js`, {
-                        method: "PUT",
-                        headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
-                        body: JSON.stringify({ message: "Update allowed users list", content: encodedContent, sha: fileData.sha })
-                    });
-                    if (putRes.ok) alert("権限設定を更新しました！"); else alert("保存に失敗しました。");
-                } catch (err) { alert("エラー: " + err.message); }
-            }
-    
-            function calcSeconds() {
-                const adPrice = parseFloat(document.getElementById('adPrice').value);
-                const callCost = parseFloat(document.getElementById('callCost').value);
-                const margin = parseFloat(document.getElementById('margin').value);
-                const costPerSec = callCost / 60;
-                const profit = adPrice * (margin / 100);
-                const seconds = Math.floor((adPrice - profit) / costPerSec);
-                document.getElementById('calcOutput').innerText = seconds + " 秒";
-            }
-
-            // --- ★追加: プライバシーポリシー関連のロジック ---
-
-            // 1. 入力枠の開閉（ボタンの上に出現）
-            function togglePrivacyInput() {
-                const area = document.getElementById('privacyInputArea');
-                if (area.style.display === 'none') {
-                    area.style.display = 'block';
-                    // 入力欄にフォーカスを当てる
-                    document.getElementById('inPrivacyHtml').focus();
-                } else {
-                    area.style.display = 'none';
-                }
-            }
-    
-            // 2. プレビューの切り替え（安全版）
-            function togglePrivacyPreview() {
-                const previewBox = document.getElementById('privacyPreviewBox');
-                const iframe = document.getElementById('privacyPreviewIframe');
-                const normalContent = document.getElementById('normalPreviewContent');
+            
+                const projectEn = document.getElementById('inProjectEn').value.trim();
+                if (!projectEn) { alert("⚠️ 英語のプロジェクト名を入力してください（ID生成に必要です）"); return; }
                 
-                if (previewBox.style.display === 'none') {
-                    let htmlData = document.getElementById('inPrivacyHtml').value;
-                    if (!htmlData) {
-                        htmlData = "<h3 style='color:#999; text-align:center; margin-top:50px;'>※HTMLが入力されていません</h3>";
-                    } else {
-                        htmlData = `<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><style>body{font-family:sans-serif; padding:20px; line-height:1.6; color:#333; background:#fff;} .lang-ja, .lang-en, .lang-de, .lang-fr, .lang-es { display:none; } .lang-${previewLang} { display:block; }</style></head><body>${htmlData}</body></html>`;
-                    }
-                    
-                    iframe.srcdoc = htmlData;
-                    previewBox.style.display = 'flex';
-                    normalContent.style.display = 'none'; // 通常プレビューを隠す
-                } else {
-                    previewBox.style.display = 'none';
-                    normalContent.style.display = 'block'; // 通常プレビューを戻す
-                    iframe.srcdoc = ""; 
-                }
-            }
-    
-            // 3. 手順書のコピー機能
-            function copyPrivacyManual() {
-                // html_manual.js の中に `const privacyManualText = "..."` という変数が定義されている前提
-                if (typeof privacyManualText !== 'undefined') {
-                    const textarea = document.createElement('textarea');
-                    textarea.value = privacyManualText;
-                    document.body.appendChild(textarea);
-                    textarea.select();
-                    try {
-                        document.execCommand('copy');
-                        alert("✅ HTML生成手順書をコピーしました。\nAI（ChatGPT等）に貼り付けてHTMLを生成してください。");
-                    } catch (err) {
-                        alert("❌ コピーに失敗しました。");
-                    }
-                    document.body.removeChild(textarea);
-                } else {
-                    alert("⚠️ エラー: html_manual.js が読み込まれていないか、変数 privacyManualText が定義されていません。");
-                }
-            }
-
-            // 4. --- HTML生成手順書の保存機能 ---
-            async function saveManualJs() {
-                const textarea = document.getElementById('raw-html-manual');
-                const contentToSave = textarea.value;
+                const projectId = projectEn.replace(/\s+/g, '_').toLowerCase();
                 
-                if(!confirm(`html_manual.js を手動で上書き保存します。よろしいですか？`)) return;
-
+                if(!confirm(`以下のIDで保存処理を開始します。\nProject ID: ${projectId}\n\nよろしいですか？`)) return;
+            
+                const inputData = getInputData(projectId);
+            
                 try {
-                    const token = localStorage.getItem("gh_token");
-                    const path = "html_manual.js";
-                    
-                    let sha = null;
-                    try {
-                        const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
-                            headers: { Authorization: `token ${token}` }
+                    // A. admin_master.js
+                    let newMasterData = (typeof adminMasterData !== 'undefined') ? [...adminMasterData] :[];
+                    const idx = newMasterData.findIndex(d => d.project_id === projectId);
+                    if(idx >= 0) newMasterData[idx] = inputData.master; 
+                    else newMasterData.push(inputData.master); 
+                    await writeJsFile('admin_master.js', newMasterData, "Update admin_master");
+            
+                    // B. index_news.js
+                    let indexNews = (typeof indexNewsData !== 'undefined') ? [...indexNewsData] :[];
+                    indexNews.unshift(inputData.indexItem);
+                    const releaseCats = ['release', 'start', 'steam'];
+                    const updateCats = ['update', 'game'];
+                    const releases = indexNews.filter(i => releaseCats.includes(i.category)).slice(0, 10);
+                    const updates = indexNews.filter(i => updateCats.includes(i.category)).slice(0, 10);
+                    await writeJsFile('index_news.js', [...releases, ...updates], "Update index_news");
+            
+                    // C. apps_catalog.js
+                    let catalog = (typeof appsCatalogData !== 'undefined') ? [...appsCatalogData] :[];
+                    const catIdx = catalog.findIndex(d => d.project_id === projectId);
+                    if(catIdx >= 0) catalog[catIdx] = inputData.catalogItem;
+                    else catalog.push(inputData.catalogItem);
+                    await writeJsFile('apps_catalog.js', catalog, "Update apps_catalog");
+            
+                    // D. [id]/news.js
+                    const newsPath = `${projectId}/news.js`;
+                    let currentAppNews = await fetchExistingJs(newsPath) ||[];
+                    currentAppNews.unshift(inputData.newsItem);
+                    await writeJsFile(newsPath, currentAppNews.slice(0, 3), `Update ${projectId} news`);
+            
+                    // E. [id]/old_news.js
+                    const oldNewsPath = `${projectId}/old_news.js`;
+                    let currentOldNews = await fetchExistingJs(oldNewsPath) ||[];
+                    currentOldNews.unshift(inputData.newsItem); 
+                    await writeJsFile(oldNewsPath, currentOldNews, `Update ${projectId} archive`);
+            
+                    // F. 画像コピー & HTML生成
+                    if (inputData.master.image.startsWith('index_phot/')) {
+                        await copyImageToProject(inputData.master.image, `${projectId}/index.png`);
+                    }
+                    await createProjectHtml(projectId, inputData);
+            
+                    // G. プライバシーポリシー生成
+                    if (inputData.master.privacy_html && inputData.master.privacy_html.trim() !== "") {
+                        const privacyPath = `${projectId}/privacy.html`;
+                        let privacySha = null;
+                        try {
+                            const checkPriv = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${privacyPath}`, { headers: { Authorization: `token ${token}` } });
+                            if (checkPriv.ok) privacySha = (await checkPriv.json()).sha;
+                        } catch(e) {}
+
+                        const privacyTemplate = `<!DOCTYPE html>\n<html lang="ja">\n<head>\n    <meta charset="utf-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <style>\n        body { font-family: sans-serif; padding: 20px; line-height: 1.8; color: #333; background: #fff; font-size: 16px; margin: 0; }\n        .lang-ja, .lang-en, .lang-de, .lang-fr, .lang-es { display: none; }\n        @media (max-width: 768px) { body { font-size: 12px; padding: 10px; line-height: 1.6; } }\n    </style>\n</head>\n<body>\n    ${inputData.master.privacy_html}\n    <script>\n        const params = new URLSearchParams(window.location.search);\n        const lang = params.get('lang') || 'ja';\n        const els = document.querySelectorAll('.lang-' + lang);\n        if(els.length > 0) els.forEach(el => el.style.display = 'block');\n        else document.querySelectorAll('.lang-ja').forEach(el => el.style.display = 'block');\n    <\/script>\n</body>\n</html>`;
+                        
+                        const privacyEncoded = btoa(unescape(encodeURIComponent(privacyTemplate)));
+                        await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${privacyPath}`, {
+                            method: "PUT",
+                            headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                            body: JSON.stringify({ message: `Update privacy policy for ${projectId}`, content: privacyEncoded, sha: privacySha })
                         });
-                        if (res.ok) {
-                            const json = await res.json();
-                            sha = json.sha;
-                        }
-                    } catch(e) {} // 新規作成時はエラーになるので無視
+                    }
 
-                    const encoded = btoa(unescape(encodeURIComponent(contentToSave)));
-                    
-                    const putRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
-                        method: "PUT",
-                        headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
-                        body: JSON.stringify({ message: "Update html_manual.js", content: encoded, sha: sha })
-                    });
-                    
-                    if (!putRes.ok) throw new Error(`APIリクエスト失敗`);
-                    alert("✅ 手順書を保存しました！");
+                    document.getElementById('lastEditDatePop').style.display = "none";
+                    startBuildMonitor();
+            
+                } catch (err) {
+                    console.error(err);
+                    alert("❌ 保存中にエラーが発生しました:\n" + err.message);
+                }
+            }
+
+            // 直接編集データの保存（安全対策・サニタイズ強化版）
+            async function saveRawData(filename, textareaId) {
+                const textarea = document.getElementById(textareaId);
+                let parsedData;
+                try {
+                    parsedData = JSON.parse(textarea.value); 
+                } catch (e) {
+                    alert("❌ JSONの書き方にエラーがあります。\n" + e.message);
+                    return; 
+                }
+                if (!Array.isArray(parsedData)) {
+                    alert("❌ エラー: データは全体が[ ] で囲まれた配列形式である必要があります。");
+                    return;
+                }
+                if(!confirm(`${filename} を手動で上書き保存します。よろしいですか？`)) return;
+                
+                try {
+                    textarea.value = JSON.stringify(parsedData, null, 4);
+                    await writeJsFile(filename, parsedData, `Manual edit ${filename}`);
+                    alert("✅ 保存しました！");
                     location.reload();
-                } catch(e) {
-                    alert("❌ 保存に失敗しました。\n" + e.message);
-                }
-            }
-
-            // 5. --- メモ(txt)専用の保存機能 ---
-            async function saveMemoText() {
-                const textarea = document.getElementById('raw-memo');
-                const contentToSave = textarea.value;
-                
-                if(!confirm(`メモを memo.txt としてGitHubに保存します。よろしいですか？`)) return;
-
-                try {
-                    const token = localStorage.getItem("gh_token");
-                    const path = "memo.txt"; // .txtとして保存
-                    
-                    let sha = null;
-                    try {
-                        const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
-                            headers: { Authorization: `token ${token}` }
-                        });
-                        if (res.ok) {
-                            const json = await res.json();
-                            sha = json.sha;
-                        }
-                    } catch(e) {} // 新規作成時は無視
-
-                    const encoded = btoa(unescape(encodeURIComponent(contentToSave)));
-                    
-                    const putRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
-                        method: "PUT",
-                        headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
-                        body: JSON.stringify({ message: "Update memo.txt", content: encoded, sha: sha })
-                    });
-                    
-                    if (!putRes.ok) throw new Error(`APIリクエスト失敗`);
-                    alert("✅ メモを保存しました！");
-                } catch(e) {
-                    alert("❌ 保存に失敗しました。\n" + e.message);
+                } catch (e) {
+                    alert("❌ GitHubへの保存中に通信エラーが発生しました。\n" + e.message);
                 }
             }
 
