@@ -1631,8 +1631,56 @@
                 document.getElementById('calcOutput').innerText = seconds + " 秒";
             }
 
-            // --- ★追加: プライバシーポリシー関連のロジック ---
+            // --- データの収集と整形 ---
+            function getInputData(pid) {
+                const date = document.getElementById('inDate').value;
+                const cat = document.getElementById('inCategory').value;
+                const img = document.getElementById('inImage').value; 
+                const statusRadio = document.querySelector('input[name="appStatus"]:checked');
+                const status = statusRadio ? statusRadio.value : 'coming';
+                
+                // 多言語データの取得
+                const langs =['ja', 'en', 'de', 'fr', 'es'];
+                let names={}, titles={}, bodies={};
+                langs.forEach(l => {
+                    const s = l==='ja' ? '' : l.charAt(0).toUpperCase() + l.slice(1);
+                    names['project_'+l] = document.getElementById('inProject'+s).value;
+                    titles['title_'+l] = document.getElementById('inTitle'+s).value;
+                    bodies['body_'+l] = document.getElementById('inBody'+s).value;
+                });
+            
+                const privacyHtml = document.getElementById('inPrivacyHtml') ? document.getElementById('inPrivacyHtml').value : "";
 
+                // 1. Master用 に privacy_html を追加
+                const master = { project_id: pid, date, category: cat, image: img, status, privacy_html: privacyHtml, ...names, ...titles, ...bodies };
+            
+                // 2. Index用 (お知らせ重視・紹介文なし・画像は固定パス化)
+                const indexItem = {
+                    id: Date.now(), 
+                    date, category: cat,
+                    image: `${pid}/index.png`, 
+                    link: `${pid}/index.html`,
+                    ...names, ...titles
+                };
+            
+                // 3. Catalog用 (紹介文重視・お知らせなし)
+                const catalogItem = {
+                    project_id: pid,
+                    status,
+                    image: `${pid}/index.png`,
+                    ...names, ...bodies
+                };
+            
+                // 4. AppNews用 (お知らせのみ)
+                const newsItem = {
+                    date, category: cat,
+                    ...titles
+                };
+            
+                return { master, indexItem, catalogItem, newsItem };
+            }
+
+            // --- ★追加: プライバシーポリシー関連のロジック ---
             // 1. 入力枠の開閉（ボタンの上に出現）
             function togglePrivacyInput() {
                 const area = document.getElementById('privacyInputArea');
