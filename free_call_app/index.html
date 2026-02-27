@@ -54,6 +54,24 @@
             .show-de .lang-de { display: block; }
             .show-fr .lang-fr { display: block; }
             .show-es .lang-es { display: block; }
+            /* 一枚の紙のスタイル */
+            .privacy-paper {
+                background: #ffffff;
+                border-radius: 4px; /* 紙っぽく、角丸は控えめに */
+                /* 浮き上がるような柔らかい影 */
+                box-shadow: 0 10px 30px rgba(0,0,0,0.15), 0 2px 5px rgba(0,0,0,0.05); 
+                padding: 15px;
+                margin: 15px auto 40px auto; /* 下に余裕を持たせる */
+                max-width: 800px;
+                text-align: left;
+                position: relative;
+                animation: fadeIn 0.4s ease-out;
+            }
+            .privacy-paper-close {
+                display: block; text-align: right; cursor: pointer; 
+                font-size: 1.2rem; font-weight: bold; color: #999; margin-bottom: 5px;
+            }
+            .privacy-paper-close:hover { color: #333; }
         </style>
     </head>
     <body>
@@ -83,26 +101,25 @@
             
             <div style="text-align: right; position: relative;">
                 <a class="history-link" id="history-link" onclick="loadOldNews(event)">▶ すべての更新履歴を見る。</a>
-                
-                <!-- 既存の更新履歴モーダル -->
+                <!-- 既存の更新履歴モーダル（これだけ残す） -->
                 <div id="history-modal" class="history-modal" style="text-align: left;">
                     <span class="modal-close" onclick="document.getElementById('history-modal').style.display='none'">×</span>
                     <h4 id="modal-heading" style="margin-top:0; color:#0056b3;">更新履歴</h4>
                     <div id="modal-content"></div>
                 </div>
-
-
-                <!-- プライバシーポリシー用モーダル -->
-                <div id="privacy-modal" class="history-modal" style="text-align: left; padding-bottom: 0;">
-                    <span class="modal-close" onclick="document.getElementById('privacy-modal').style.display='none'">×</span>
-                    <h4 id="privacy-modal-heading" style="margin-top:0; color:#0056b3;">プライバシーポリシー</h4>
-                    <!-- ここに別ファイルの privacy.html を読み込みます -->
-                    <iframe id="privacy-iframe" src="" style="width:100%; height:300px; border:none; border-top:1px solid #eee; margin-top:10px;"></iframe>
-                </div>
             </div>
-            
+
             <div class="footer">
-                <a href="#" id="privacy-link" onclick="showPrivacy(event)">プライバシーポリシー</a><br><br>
+                <a href="privacy.html" id="privacy-link" onclick="showPrivacy(event)">プライバシーポリシー</a>
+                
+                <!-- ▼▼▼ プライバシーポリシー展開エリア（紙の表現） ▼▼▼ -->
+                <div id="privacy-paper" class="privacy-paper" style="display: none;">
+                    <span class="privacy-paper-close" onclick="closePrivacy()">×</span>
+                    <iframe id="privacy-iframe" src="" style="width:100%; height:350px; border:none;"></iframe>
+                </div>
+                <!-- ▲▲▲ ここまで ▲▲▲ -->
+
+                <br><br>
                 © 2026 啓 App Lab | <a href="../app-ads.txt" target="_blank">app-ads.txt</a>
             </div>
         </div>
@@ -167,12 +184,9 @@
                 }
 
                 // もし「プライバシーモーダル」が開いていたら言語クラスを切り替える
-                const pModal = document.getElementById('privacy-modal');
-                if (pModal && pModal.style.display === 'block') {
+                const pPaper = document.getElementById('privacy-paper');
+                if (pPaper && pPaper.style.display === 'block') {
                     const iframe = document.getElementById('privacy-iframe');
-                    const t = texts[lang] || texts.en;
-                    document.getElementById('privacy-modal-heading').textContent = t.privacy;
-                    // URLパラメータを新しい言語にして開き直す
                     iframe.src = 'privacy.html?lang=' + lang;
                 }
             }
@@ -255,36 +269,45 @@
                 document.body.appendChild(script);
             }
 
-            // --- プライバシーポリシーのモーダル表示 ---
+            // --- プライバシーポリシーの表示（紙の展開） ---
             async function showPrivacy(e) {
                 e.preventDefault();
-                const modal = document.getElementById('privacy-modal');
+                const paper = document.getElementById('privacy-paper');
                 const iframe = document.getElementById('privacy-iframe');
                 const t = texts[currentLang] || texts.en;
                 
                 // すでに開いている場合は閉じる
-                if (modal.style.display === 'block') {
-                    modal.style.display = 'none';
-                    iframe.src = ""; // 閉じた時は中身を消して軽くする
+                if (paper.style.display === 'block') {
+                    closePrivacy();
                     return;
                 }
 
-                // サーバー上に privacy.html というファイルが存在するか確認
                 try {
                     const res = await fetch('privacy.html', { method: 'HEAD' });
                     if (!res.ok) throw new Error('Not Found');
                     
-                    // 存在すれば、URLの末尾に現在の言語（?lang=XX）を付けてiframeで開く！
-                    document.getElementById('privacy-modal-heading').textContent = t.privacy;
+                    // iframeにURLをセットして、紙を表示する
                     iframe.src = 'privacy.html?lang=' + currentLang;
-                    modal.style.display = 'block';
+                    paper.style.display = 'block';
+
+                    // ★魔法：開いた後、紙の下端が画面に入るようにスムーズに自動スクロールする
+                    setTimeout(() => {
+                        paper.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                    }, 100);
 
                 } catch (err) {
-                    // 存在しなければ「準備中」アラート
                     alert(t.privAlert);
                 }
             }
-            
+
+            // --- プライバシーポリシーを閉じる ---
+            function closePrivacy() {
+                const paper = document.getElementById('privacy-paper');
+                const iframe = document.getElementById('privacy-iframe');
+                paper.style.display = 'none';
+                iframe.src = ""; // 中身を消して軽くする
+            }
+
             document.addEventListener("DOMContentLoaded", () => { renderPage(); });
         </script>
     </body>
