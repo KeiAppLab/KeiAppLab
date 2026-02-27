@@ -5,459 +5,559 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Privacy Policy | FreeCallApp</title>
     <style>
-        /* --- 1. デザイン・レイアウトのルール --- */
+        /* 1. デザイン・レイアウトのルール */
         body {
-            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            font-size: 14px;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
             background-color: #f9f9f9;
+            color: #333;
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
         }
         .container {
+            max-width: 800px;
+            margin: 0 auto;
             background-color: #ffffff;
-            padding: 40px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             border-radius: 8px;
-            position: relative;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            padding: 40px;
+            box-sizing: border-box;
         }
+        
+        /* 見出しのルール */
         h1 {
             font-size: 24px;
             border-bottom: 2px solid #F39C12;
             padding-bottom: 10px;
-            margin-bottom: 30px;
             margin-top: 0;
+            color: #333;
         }
         h2 {
             font-size: 18px;
-            background-color: #f0f0f0;
-            padding: 10px;
+            background-color: #f5f5f5;
             border-left: 5px solid #F39C12;
-            margin-top: 30px;
+            padding: 10px 15px;
+            margin-top: 35px;
+            color: #333;
         }
         h3 {
             font-size: 16px;
-            margin-top: 20px;
             color: #555;
+            margin-top: 25px;
+            border-bottom: 1px dashed #eee;
+            padding-bottom: 5px;
         }
-        p {
-            margin-bottom: 15px;
-        }
-        ul, ol {
-            margin-bottom: 15px;
-            padding-left: 20px;
-        }
-        li {
-            margin-bottom: 5px;
-        }
-        .date {
-            text-align: right;
-            font-size: 12px;
-            color: #777;
-            margin-bottom: 40px;
-        }
-        .footer {
-            margin-top: 50px;
-            border-top: 1px solid #ddd;
-            padding-top: 20px;
-            font-size: 12px;
-            text-align: center;
-            color: #777;
+        
+        /* 強調と装飾のルール */
+        strong {
+            font-weight: bold;
         }
         .important {
             color: #d9534f;
             font-weight: bold;
         }
-
-        /* --- 5カ国語切り替え用スタイル --- */
-        .lang-content { display: none; }
-        body[data-lang="ja"] .lang-ja { display: block; }
-        body[data-lang="en"] .lang-en { display: block; }
-        body[data-lang="de"] .lang-de { display: block; }
-        body[data-lang="fr"] .lang-fr { display: block; }
-        body[data-lang="es"] .lang-es { display: block; }
-
-        .lang-selector {
+        
+        /* 文章構成のルール */
+        .date {
             text-align: right;
+            font-size: 12px;
+            color: #888;
             margin-bottom: 20px;
         }
-        select.lang-select {
-            padding: 8px 12px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-            font-size: 14px;
-            cursor: pointer;
-            background-color: #fff;
+        p { margin-bottom: 15px; }
+        ul { padding-left: 20px; margin-bottom: 15px; }
+        li { margin-bottom: 8px; }
+        .footer {
+            border-top: 1px solid #eee;
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+            padding-top: 20px;
+            margin-top: 50px;
+        }
+
+        /* 言語切り替え用の非表示クラス */
+        .lang-content { display: none; }
+
+        @media (max-width: 600px) {
+            .container { padding: 20px; }
         }
     </style>
 </head>
-<body data-lang="ja">
+<body>
 
-    <!-- 言語切り替えプルダウン -->
-    <div class="lang-selector">
-        <select class="lang-select" onchange="changeLanguage(this.value)" id="langSelect">
-            <option value="ja">日本語</option>
-            <option value="en">English</option>
-            <option value="de">Deutsch</option>
-            <option value="fr">Français</option>
-            <option value="es">Español</option>
-        </select>
+<div class="container">
+
+    <!-- ========================================== -->
+    <!-- 日本語 (Japanese) -->
+    <!-- ========================================== -->
+    <div id="content-ja" class="lang-content">
+        <h1>プライバシーポリシー</h1>
+        <div class="date">
+            制定日：2026年2月27日<br>
+            啓 App Lab
+        </div>
+
+        <p>啓 App Lab（以下、「当方」といいます）は、当方が提供するスマートフォン用アプリケーション「FreeCallApp」（以下、「本アプリ」といいます）における、ユーザーの個人情報を含む利用者情報の取扱いについて、以下のとおりプライバシーポリシー（以下、「本ポリシー」といいます）を定めます。</p>
+        <p>本アプリのご利用にあたっては、本ポリシーの内容をご確認いただき、同意された場合のみご利用ください。</p>
+
+        <h2>第1条（収集する情報および収集方法）</h2>
+        <p>本アプリの提供にあたり、当方は以下の情報を取得・利用する場合があります。</p>
+        <h3>1. 音声データ（マイクロフォン）</h3>
+        <p>本アプリは、VoIP（Voice over IP）技術を用いた通話機能を提供するために、端末のマイクロフォンへのアクセス権限を使用します。</p>
+        <ul>
+            <li><strong>利用目的：</strong> ユーザーの音声をリアルタイムで通話相手に送信するため。</li>
+            <li><strong>データの保存：</strong> <span class="important">取得された音声データは、通信回線を通じて通話相手に送信されるのみであり、当方のサーバーに録音・保存されることは一切ありません。</span></li>
+        </ul>
+
+        <h3>2. 連絡先情報（電話帳）</h3>
+        <p>本アプリは、ユーザーの利便性向上のため、端末内の連絡先データへのアクセス権限を使用する場合があります。</p>
+        <ul>
+            <li><strong>利用目的：</strong> アプリ内の発信履歴や発信先選択画面において、電話番号に対応する登録名を表示するため、および連絡先から直接発信操作を行うため。</li>
+            <li><strong>データの送信：</strong> <span class="important">連絡先データ（名前、電話番号等）が当方のサーバーにアップロード・保存されることはありません。処理は端末内でのみ完結して行われます。</span></li>
+        </ul>
+
+        <h3>3. 端末情報・識別子</h3>
+        <p>サービス品質の維持、広告配信、不正利用防止のために以下の情報を自動的に取得します。</p>
+        <ul>
+            <li>IPアドレス、アクセスログ</li>
+            <li>端末のモデル名、OSバージョン</li>
+            <li>広告識別子（Google Advertising ID等）</li>
+            <li>Firebase Installation ID（アプリのインストール識別子）</li>
+        </ul>
+
+        <h3>4. 通話ログ情報</h3>
+        <p>通信の接続およびポイント（通話可能時間）管理のために、以下の情報をサーバーに記録します。</p>
+        <ul>
+            <li>発信日時、通話時間</li>
+            <li>発信先電話番号（国番号を含む）</li>
+            <li>広告視聴によるリワード獲得履歴</li>
+        </ul>
+
+        <h2>第2条（利用目的およびデータの保存場所）</h2>
+        <p>当方は、取得した利用者情報を以下の目的で利用します。</p>
+        <ul>
+            <li><strong>本サービスの提供・維持：</strong> インターネット回線を通じた固定電話網への接続（SIP通信）および通話品質の確保のため。</li>
+            <li><strong>通話可能時間の管理：</strong> 動画広告の視聴実績に基づき、ユーザーに対して無料通話可能時間（秒数）を付与・減算・管理するため。</li>
+            <li><strong>広告の配信：</strong> ユーザーに適した広告を表示するため。</li>
+            <li><strong>不正利用の防止：</strong> 通話可能時間の不正な改ざん、自動化ツールによる広告視聴、サーバーへの攻撃等を検知・防止するため（IPアドレスの取得等を含む）。</li>
+            <li><strong>お問い合わせ対応：</strong> ユーザーからの不具合報告や質問に対応するため。</li>
+            <li><strong>データの保存場所：</strong> 収集されたログ情報や識別子等のデータは、当方が利用するクラウドサービス（Firebase等）のサーバー（主に米国または日本国内に所在）にて安全に保存・処理されます。</li>
+        </ul>
+
+        <h2>第3条（情報収集モジュールとCookieの利用について）</h2>
+        <p>当方は、法令に基づく場合を除き、ユーザーの同意なく個人情報を第三者に提供しません。ただし、本アプリの機能提供に不可欠な以下の提携事業者に対し、必要な範囲で利用者情報が送信されます。</p>
+
+        <h3>1. Google AdMob（広告配信）</h3>
+        <ul>
+            <li><strong>提供者：</strong> Google LLC</li>
+            <li><strong>送信される情報：</strong> 広告識別子、端末情報、アプリの操作履歴</li>
+            <li><strong>Cookieの利用：</strong> 本アプリでは、第三者の広告配信事業者（Googleを含む）が、Cookie（クッキー）や広告識別子を使用して、ユーザーの過去のアクセス情報等に基づいた適切なパーソナライズ広告を配信しています。</li>
+            <li><strong>オプトアウト：</strong> ユーザーは、端末の設定（「広告のパーソナライズをオプトアウト」等）により、パーソナライズ広告を無効にすることができます。詳細については<a href="https://policies.google.com/privacy" target="_blank">Googleのプライバシーポリシー</a>をご確認ください。</li>
+        </ul>
+
+        <h3>2. Firebase（バックエンド・解析）</h3>
+        <ul>
+            <li><strong>提供者：</strong> Google LLC</li>
+            <li><strong>送信される情報：</strong> IPアドレス、認証ID、データベース上の通話可能時間情報、クラッシュログ</li>
+            <li><strong>目的：</strong> ユーザー認証（匿名ログイン）、通話可能時間のデータベース管理、アプリの安定性向上のため。</li>
+        </ul>
+
+        <h3>3. Telnyx 等のSIPプロバイダ（通信キャリア）</h3>
+        <ul>
+            <li><strong>提供者：</strong> Telnyx LLC および接続先の通信事業者</li>
+            <li><strong>送信される情報：</strong> 発信先電話番号、音声データパケット、シグナリング情報</li>
+            <li><strong>目的：</strong> 公衆電話網（PSTN）への接続および通話の確立のため。</li>
+        </ul>
+
+        <h2>第4条（ユーザーの権利：GDPRおよびCCPA等への対応）</h2>
+        <p>当方は、国際的なプライバシー保護規則を尊重し、以下の通り対応します。</p>
+
+        <h3>1. EUおよびEEA圏内のユーザー（GDPR対応）</h3>
+        <p>EU一般データ保護規則（GDPR）に基づき、ユーザーは自身の個人データに対するアクセス、訂正、および<span class="important">「データを削除する権利（忘れられる権利）」</span>を有します。IPアドレス等のデータ処理は、サービス提供および不正利用防止という当方の「正当な利益」を法的根拠として行われます。データの削除をご希望の場合は、第8条のお問い合わせ窓口までご連絡ください。</p>
+
+        <h3>2. 米国カリフォルニア州のユーザー（CCPA対応）</h3>
+        <p>カリフォルニア州消費者プライバシー法（CCPA）に基づき、当方はユーザーの個人情報を第三者に販売することはありません。<span class="important">（Do Not Sell My Personal Information）</span></p>
+
+        <h2>第5条（通話可能時間の管理と有効期限）</h2>
+        <p>本アプリにおいて、広告視聴により獲得された「通話可能時間」は、以下のルールに基づいて管理されます。</p>
+        <ul>
+            <li><strong>権利の性質：</strong> 通話可能時間は、本アプリ内でのみ使用可能なサービス利用権であり、金銭的価値を持つものではありません。<span class="important">換金・返金はできません。</span></li>
+            <li><strong>有効期限とリセット：</strong> サーバーリソースの適正化およびセキュリティの観点から、本アプリへの最終アクセスから30日間経過した場合、<span class="important">保有している通話可能時間は自動的にリセット（または上限設定値まで減算）されます。</span></li>
+            <li><strong>サービスの終了：</strong> 当方が本アプリのサービスを終了する場合、<span class="important">保有している通話可能時間はすべて失効するものとします。</span></li>
+        </ul>
+
+        <h2>第6条（発信者番号通知に関する免責）</h2>
+        <p>本アプリを利用して固定電話等へ発信する場合、技術的仕様および日本の電気通信事業法の規定に基づき、ユーザー自身の携帯電話番号は相手方に通知されません。</p>
+        <ul>
+            <li>発信は「非通知」または「システム共通の電話番号（050番号等）」として行われます。</li>
+            <li>相手方が非通知拒否設定を行っている場合、通話が成立しないことがあります。<span class="important">当方はこれによる損害について一切の責任を負いません。</span></li>
+        </ul>
+
+        <h2>第7条（プライバシーポリシーの変更）</h2>
+        <p>当方は、法令の改正や事業上の必要性等に応じて、本ポリシーを変更することがあります。重要な変更がある場合には、本アプリ内または公式サイト上で告知します。変更後のポリシーは、本アプリ内または公式サイトに掲載された時点で効力を生じるものとします。</p>
+
+        <h2>第8条（お問い合わせ窓口）</h2>
+        <p>本ポリシーおよび利用者情報の取扱い、データの削除要求等に関するお問い合わせは、以下の専用フォームまたはメールアドレスまでご連絡ください。円滑なご案内のため、原則としてお問い合わせフォームのご利用を推奨しております。</p>
+        <p><strong>啓 App Lab (KEI App Lab)</strong></p>
+        <ul>
+            <li><strong>お問い合わせフォーム：</strong><br><a href="https://forms.gle/xxxxxxxxxxxxxxx" target="_blank">https://forms.gle/xxxxxxxxxxxxxxx</a></li>
+            <li><strong>メールアドレス：</strong><br>support@keiapplab.com</li>
+        </ul>
     </div>
 
-    <div class="container">
-        <!-- ==============================================
-             🇯🇵 日本語 (Japanese)
-             ============================================== -->
-        <div class="lang-content lang-ja">
-            <h1>プライバシーポリシー</h1>
-            
-            <div class="date">
-                制定日：2026年3月15日<br>
-                啓 App Lab
-            </div>
-
-            <p>啓 App Lab（以下、「当方」といいます）は、当方が提供するスマートフォン用アプリケーション「FreeCallApp」（以下、「本アプリ」といいます）における、ユーザーの個人情報を含む利用者情報の取扱いについて、以下のとおりプライバシーポリシー（以下、「本ポリシー」といいます）を定めます。</p>
-            <p>本アプリのご利用にあたっては、本ポリシーの内容をご確認いただき、同意された場合のみご利用ください。</p>
-
-            <h2>第1条（収集する情報および収集方法）</h2>
-            <p>本アプリの提供にあたり、当方は以下の情報を取得・利用する場合があります。</p>
-
-            <h3>1. 音声データ（マイクロフォン）</h3>
-            <p>本アプリは、VoIP（Voice over IP）技術を用いた通話機能を提供するために、端末のマイクロフォンへのアクセス権限を使用します。</p>
-            <ul>
-                <li><strong>利用目的：</strong> ユーザーの音声をリアルタイムで通話相手に送信するため。</li>
-                <li><strong>データの保存：</strong> 取得された音声データは、通信回線を通じて通話相手に送信されるのみであり、<span class="important">当方のサーバーに録音・保存されることは一切ありません。</span></li>
-            </ul>
-
-            <h3>2. 連絡先情報（電話帳）</h3>
-            <p>本アプリは、ユーザーの利便性向上のため、端末内の連絡先データへのアクセス権限を使用する場合があります。</p>
-            <ul>
-                <li><strong>利用目的：</strong> アプリ内の発信履歴や発信先選択画面において、電話番号に対応する登録名を表示するため、および連絡先から直接発信操作を行うため。</li>
-                <li><strong>データの送信：</strong> 連絡先データ（名前、電話番号等）が<span class="important">当方のサーバーにアップロード・保存されることはありません。</span>処理は端末内でのみ行われます。</li>
-            </ul>
-
-            <h3>3. 端末情報・識別子</h3>
-            <p>サービス品質の維持、広告配信、不正利用防止のために以下の情報を自動的に取得します。</p>
-            <ul>
-                <li>IPアドレス、アクセスログ</li>
-                <li>端末のモデル名、OSバージョン</li>
-                <li>広告識別子（Google Advertising ID等）</li>
-                <li>Firebase Installation ID（アプリのインストール識別子）</li>
-            </ul>
-
-            <h3>4. 通話ログ情報</h3>
-            <p>通信の接続およびポイント（通話可能時間）管理のために、以下の情報をサーバーに記録します。</p>
-            <ul>
-                <li>発信日時、通話時間</li>
-                <li>発信先電話番号（国番号を含む）</li>
-                <li>広告視聴によるリワード獲得履歴</li>
-            </ul>
-
-            <h2>第2条（利用目的およびデータの保存場所）</h2>
-            <p>当方は、取得した利用者情報を以下の目的で利用します。</p>
-            <ul>
-                <li><strong>本サービスの提供・維持：</strong> インターネット回線を通じた固定電話網への接続（SIP通信）および通話品質の確保のため。</li>
-                <li><strong>通話可能時間の管理：</strong> 動画広告の視聴実績に基づき、ユーザーに対して無料通話可能時間（秒数）を付与・減算・管理するため。</li>
-                <li><strong>広告の配信：</strong> ユーザーに適した広告を表示するため。</li>
-                <li><strong>不正利用の防止：</strong> 通話可能時間の不正な改ざん、自動化ツールによる広告視聴、サーバーへの攻撃等を検知・防止するため。</li>
-                <li><strong>お問い合わせ対応：</strong> ユーザーからの不具合報告や質問に対応するため。</li>
-                <li><strong>データの保存場所：</strong> 収集されたログ情報や識別子等のデータは、当方が利用するクラウドサービス（Firebase等）のサーバー（主に米国または日本国内に所在）にて安全に保存・処理されます。</li>
-            </ul>
-
-            <h2>第3条（情報収集モジュールとCookieの利用について）</h2>
-            <p>当方は、法令に基づく場合を除き、ユーザーの同意なく個人情報を第三者に提供しません。ただし、本アプリの機能提供に不可欠な以下の提携事業者に対し、必要な範囲で利用者情報が送信されます。</p>
-
-            <h3>1. Google AdMob（広告配信）</h3>
-            <ul>
-                <li><strong>提供者：</strong> Google LLC</li>
-                <li><strong>送信される情報：</strong> 広告識別子、端末情報、アプリの操作履歴</li>
-                <li><strong>Cookieの利用：</strong> 本アプリでは、第三者の広告配信事業者（Googleを含む）が、Cookie（クッキー）や広告識別子を使用して、ユーザーの過去のアクセス情報等に基づいた適切な広告を配信しています。</li>
-            </ul>
-
-            <h3>2. Firebase（バックエンド・解析）</h3>
-            <ul>
-                <li><strong>提供者：</strong> Google LLC</li>
-                <li><strong>送信される情報：</strong> IPアドレス、認証ID、データベース上の通話可能時間情報、クラッシュログ</li>
-                <li><strong>目的：</strong> ユーザー認証（匿名ログイン）、通話可能時間のデータベース管理、アプリの安定性向上のため。</li>
-            </ul>
-
-            <h3>3. Telnyx 等のSIPプロバイダ（通信キャリア）</h3>
-            <ul>
-                <li><strong>提供者：</strong> Telnyx LLC および接続先の通信事業者</li>
-                <li><strong>送信される情報：</strong> 発信先電話番号、音声データパケット、シグナリング情報</li>
-                <li><strong>目的：</strong> 公衆電話網（PSTN）への接続および通話の確立のため。</li>
-            </ul>
-
-            <h2>第4条（ユーザーの権利：GDPRおよびCCPA等への対応）</h2>
-            <p>当方は、国際的なプライバシー保護規則を尊重し、以下の通り対応します。</p>
-
-            <h3>1. EUおよびEEA圏内のユーザー（GDPR対応）</h3>
-            <p>EU一般データ保護規則（GDPR）に基づき、ユーザーは自身の個人データに対するアクセス、訂正、および「データを削除する権利（忘れられる権利）」を有します。IPアドレス等のデータ処理は、サービス提供および不正利用防止という当方の「正当な利益」を法的根拠として行われます。データの削除をご希望の場合は、第8条のお問い合わせ窓口までご連絡ください。</p>
-
-            <h3>2. 米国カリフォルニア州のユーザー（CCPA対応）</h3>
-            <p>カリフォルニア州消費者プライバシー法（CCPA）に基づき、当方はユーザーの個人情報を第三者に<span class="important">販売（Sell）することはありません</span>（Do Not Sell My Personal Information）。</p>
-
-            <h2>第5条（通話可能時間の管理と有効期限）</h2>
-            <p>本アプリにおいて、広告視聴により獲得された「通話可能時間」は、以下のルールに基づいて管理されます。</p>
-            <ul>
-                <li><strong>権利の性質：</strong> 通話可能時間は、本アプリ内でのみ使用可能なサービス利用権であり、換金・返金はできません。</li>
-                <li><strong>有効期限：</strong> セキュリティおよびサーバーリソースの観点から、<span class="important">本アプリへの最終アクセスから30日間経過した場合、保有している通話可能時間は自動的にリセットされます。</span></li>
-            </ul>
-
-            <h2>第6条（発信者番号通知に関する免責）</h2>
-            <p>本アプリを利用して固定電話等へ発信する場合、技術的仕様および法令の規定に基づき、ユーザー自身の携帯電話番号は相手方に通知されません。</p>
-            <ul>
-                <li>発信は「非通知」または「システム共通の電話番号（050番号等）」として行われます。</li>
-                <li>相手方が非通知拒否設定を行っている場合、通話が成立しないことがあります。当方はこれによる損害について責任を負いません。</li>
-            </ul>
-
-            <h2>第7条（プライバシーポリシーの変更）</h2>
-            <p>当方は、法令の改正等に応じて、本ポリシーを変更することがあります。重要な変更がある場合には、本アプリ内または公式サイト上で告知します。</p>
-
-            <h2>第8条（お問い合わせ窓口）</h2>
-            <p>本ポリシーに関するお問い合わせは、以下の窓口までご連絡ください。</p>
-            <p>
-                <strong>啓 App Lab (KEI App Lab)</strong><br>
-                Email: support@keiapplab.com
-            </p>
+    <!-- ========================================== -->
+    <!-- 英語 (English) -->
+    <!-- ========================================== -->
+    <div id="content-en" class="lang-content">
+        <h1>Privacy Policy</h1>
+        <div class="date">
+            Effective Date: February 27, 2026<br>
+            KEI App Lab
         </div>
 
-        <!-- ==============================================
-             🇺🇸 英語 (English)
-             ============================================== -->
-        <div class="lang-content lang-en">
-            <h1>Privacy Policy</h1>
-            <div class="date">Effective Date: March 15, 2026<br>KEI App Lab</div>
-            <p>KEI App Lab ("we", "us", or "our") establishes this Privacy Policy ("this Policy") regarding the handling of user information, including personal information, in the smartphone application "FreeCallApp" ("this App") provided by us.</p>
-            
-            <h2>Article 1 (Information Collected and Method of Collection)</h2>
-            <h3>1. Audio Data (Microphone)</h3>
-            <ul>
-                <li><strong>Purpose:</strong> To transmit your voice to the callee in real-time.</li>
-                <li><strong>Storage:</strong> Audio data is only transmitted through the communication line and <span class="important">will never be recorded or stored on our servers.</span></li>
-            </ul>
-            <h3>2. Contact Information (Phonebook)</h3>
-            <ul>
-                <li><strong>Purpose:</strong> To display registered names corresponding to phone numbers in the call history.</li>
-                <li><strong>Transmission:</strong> Contact data is processed locally on your device and <span class="important">is never uploaded or stored on our servers.</span></li>
-            </ul>
-            <h3>3. Device Information and Identifiers</h3>
-            <ul>
-                <li>IP address, OS version, and Advertising ID (Google Advertising ID, etc.).</li>
-                <li><strong>Purpose:</strong> For ad delivery, fraud prevention, and service quality maintenance.</li>
-            </ul>
+        <p>KEI App Lab (hereinafter referred to as "we", "us", or "our") establishes this Privacy Policy regarding the handling of user information, including personal information, in the smartphone application "FreeCallApp" (hereinafter referred to as the "App").</p>
+        <p>Please review this policy and use the App only if you agree to its contents.</p>
 
-            <h2>Article 2 (Purpose of Use and Data Storage Location)</h2>
-            <ul>
-                <li><strong>Service Provision:</strong> To connect to the landline network via internet (SIP) and ensure call quality.</li>
-                <li><strong>Point Management:</strong> To grant and manage free call time based on video ad views.</li>
-                <li><strong>Data Storage Location:</strong> Data such as logs and identifiers are securely stored and processed on cloud servers (e.g., Firebase) mainly located in the United States or Japan.</li>
-            </ul>
+        <h2>Article 1 (Information Collected and Collection Methods)</h2>
+        <p>In providing the App, we may acquire and use the following information:</p>
+        <h3>1. Voice Data (Microphone)</h3>
+        <p>The App requires access to your device's microphone to provide calling features using VoIP (Voice over IP) technology.</p>
+        <ul>
+            <li><strong>Purpose:</strong> To transmit your voice to the call recipient in real time.</li>
+            <li><strong>Data Storage:</strong> <span class="important">The acquired voice data is only transmitted to the recipient via the communication network and is never recorded or stored on our servers.</span></li>
+        </ul>
 
-            <h2>Article 3 (Third-Party Modules and Use of Cookies)</h2>
-            <h3>1. Google AdMob (Ad Delivery)</h3>
-            <ul>
-                <li><strong>Use of Cookies:</strong> In this App, third-party vendors (including Google) use Cookies or advertising identifiers to serve appropriate ads based on your prior visits.</li>
-            </ul>
-            <h3>2. Firebase and SIP Providers</h3>
-            <ul>
-                <li>Used for user authentication, database management, and establishing telephone network connections.</li>
-            </ul>
+        <h3>2. Contact Information (Phonebook)</h3>
+        <p>To improve user convenience, the App may request access to the contact data on your device.</p>
+        <ul>
+            <li><strong>Purpose:</strong> To display registered names corresponding to phone numbers in the call history and selection screens, and to allow direct calling from contacts.</li>
+            <li><strong>Data Transmission:</strong> <span class="important">Contact data (names, phone numbers, etc.) is not uploaded or stored on our servers. All processing is completed entirely within the device.</span></li>
+        </ul>
 
-            <h2>Article 4 (User Rights: GDPR and CCPA Compliance)</h2>
-            <h3>1. EU and EEA Users (GDPR)</h3>
-            <p>You have the right to access, rectify, and request the deletion of your personal data ("right to be forgotten"). Data processing is based on our legitimate interests.</p>
-            <h3>2. California Users (CCPA)</h3>
-            <p>Under the CCPA, we declare that <span class="important">we do not sell your personal information</span> to any third parties.</p>
+        <h3>3. Device Information and Identifiers</h3>
+        <p>We automatically collect the following information to maintain service quality, deliver ads, and prevent fraud:</p>
+        <ul>
+            <li>IP address, access logs</li>
+            <li>Device model, OS version</li>
+            <li>Advertising identifiers (e.g., Google Advertising ID)</li>
+            <li>Firebase Installation ID</li>
+        </ul>
 
-            <h2>Article 5 (Management and Expiration of Call Time)</h2>
-            <ul>
-                <li><strong>Expiration:</strong> For security reasons, <span class="important">your accumulated call time will be automatically reset if you do not access this App for 30 days.</span></li>
-            </ul>
+        <h3>4. Call Log Information</h3>
+        <p>We record the following information on our servers to manage connections and points (available call time):</p>
+        <ul>
+            <li>Call date and time, call duration</li>
+            <li>Destination phone number (including country code)</li>
+            <li>Reward acquisition history via ad views</li>
+        </ul>
 
-            <h2>Article 6 (Disclaimer Regarding Caller ID)</h2>
-            <p>Due to technical and legal constraints, your personal mobile number will not be displayed to the callee. Calls are made as "Anonymous" or via a "shared system number".</p>
+        <h2>Article 2 (Purpose of Use and Data Storage Location)</h2>
+        <p>We use the acquired user information for the following purposes:</p>
+        <ul>
+            <li><strong>Service Provision:</strong> To connect to the public telephone network via the internet (SIP) and ensure call quality.</li>
+            <li><strong>Call Time Management:</strong> To grant, deduct, and manage free call time (seconds) based on video ad views.</li>
+            <li><strong>Ad Delivery:</strong> To display suitable advertisements to the user.</li>
+            <li><strong>Fraud Prevention:</strong> To detect and prevent tampering with call time, automated ad viewing tools, and attacks on servers.</li>
+            <li><strong>Customer Support:</strong> To respond to bug reports and inquiries.</li>
+            <li><strong>Data Storage Location:</strong> Data such as logs and identifiers are securely stored and processed on servers of cloud services we use (e.g., Firebase), located primarily in the US or Japan.</li>
+        </ul>
 
-            <h2>Article 7 (Contact Us)</h2>
-            <p><strong>KEI App Lab</strong><br>Email: support@keiapplab.com</p>
-        </div>
+        <h2>Article 3 (Information Collection Modules and Cookies)</h2>
+        <p>We do not provide personal information to third parties without user consent, except as required by law. However, necessary information is transmitted to the following partners essential for the App's functionality.</p>
 
-        <!-- ==============================================
-             🇩🇪 ドイツ語 (Deutsch)
-             ============================================== -->
-        <div class="lang-content lang-de">
-            <h1>Datenschutzerklärung</h1>
-            <div class="date">Datum des Inkrafttretens: 15. März 2026<br>KEI App Lab</div>
-            <p>KEI App Lab („wir“, „uns“) legt diese Datenschutzerklärung für die Verarbeitung von Nutzerinformationen in der Smartphone-Anwendung „FreeCallApp“ („diese App“) fest.</p>
+        <h3>1. Google AdMob (Ad Delivery)</h3>
+        <ul>
+            <li><strong>Provider:</strong> Google LLC</li>
+            <li><strong>Transmitted Information:</strong> Advertising identifiers, device information, app interaction history.</li>
+            <li><strong>Use of Cookies:</strong> Third-party ad providers (including Google) use cookies and advertising identifiers to deliver personalized ads based on your past access information on this App and other websites/apps.</li>
+            <li><strong>Opt-out:</strong> Users can disable personalized ads through device settings (e.g., "Opt out of Ads Personalization"). For details, check <a href="https://policies.google.com/privacy" target="_blank">Google's Privacy Policy</a>.</li>
+        </ul>
 
-            <h2>Artikel 1 (Gesammelte Informationen)</h2>
-            <h3>1. Audiodaten (Mikrofon)</h3>
-            <ul>
-                <li><strong>Zweck:</strong> Übertragung Ihrer Stimme in Echtzeit.</li>
-                <li><strong>Speicherung:</strong> Audiodaten werden <span class="important">niemals auf unseren Servern aufgezeichnet oder gespeichert.</span></li>
-            </ul>
-            <h3>2. Kontaktinformationen (Telefonbuch)</h3>
-            <ul>
-                <li><strong>Zweck:</strong> Anzeige von registrierten Namen im Anrufverlauf.</li>
-                <li><strong>Übertragung:</strong> Kontaktdaten werden lokal verarbeitet und <span class="important">niemals an unsere Server gesendet.</span></li>
-            </ul>
-            <h3>3. Geräteinformationen und Identifikatoren</h3>
-            <ul>
-                <li>IP-Adresse, Betriebssystemversion und Werbe-ID. Zur Anzeigenbereitstellung und Betrugsprävention.</li>
-            </ul>
+        <h3>2. Firebase (Backend & Analytics)</h3>
+        <ul>
+            <li><strong>Provider:</strong> Google LLC</li>
+            <li><strong>Transmitted Information:</strong> IP address, authentication ID, call time database info, crash logs.</li>
+            <li><strong>Purpose:</strong> User authentication, database management, and app stability improvement.</li>
+        </ul>
 
-            <h2>Artikel 2 (Zweck und Speicherort der Daten)</h2>
-            <ul>
-                <li><strong>Speicherort:</strong> Protokolle und Identifikatoren werden auf Cloud-Servern (z.B. Firebase) gespeichert, die sich hauptsächlich in den USA oder in Japan befinden.</li>
-            </ul>
+        <h3>3. Telnyx / SIP Providers (Carriers)</h3>
+        <ul>
+            <li><strong>Provider:</strong> Telnyx LLC and connecting telecom operators</li>
+            <li><strong>Transmitted Information:</strong> Destination phone number, voice data packets, signaling info.</li>
+            <li><strong>Purpose:</strong> Connecting to the Public Switched Telephone Network (PSTN) to establish calls.</li>
+        </ul>
 
-            <h2>Artikel 3 (Drittanbieter-Module und Verwendung von Cookies)</h2>
-            <h3>1. Google AdMob</h3>
-            <ul>
-                <li><strong>Verwendung von Cookies:</strong> Drittanbieter (einschließlich Google) verwenden Cookies oder Werbe-IDs, um basierend auf früheren Zugriffen geeignete Anzeigen bereitzustellen.</li>
-            </ul>
+        <h2>Article 4 (User Rights: GDPR, CCPA, etc.)</h2>
+        <p>We respect international privacy protection regulations as follows:</p>
 
-            <h2>Artikel 4 (Nutzerrechte: DSGVO und CCPA)</h2>
-            <h3>1. Nutzer in der EU/EWR (DSGVO)</h3>
-            <p>Sie haben das Recht auf Auskunft, Berichtigung und Löschung Ihrer Daten. Die Verarbeitung basiert auf berechtigten Interessen.</p>
-            <h3>2. Nutzer in Kalifornien (CCPA)</h3>
-            <p>Wir erklären, dass wir Ihre personenbezogenen Daten <span class="important">nicht an Dritte verkaufen</span>.</p>
+        <h3>1. EU and EEA Users (GDPR)</h3>
+        <p>Under the General Data Protection Regulation (GDPR), users have the right to access, rectify, and <span class="important">request the deletion of their personal data (Right to be Forgotten)</span>. Data processing (e.g., IP addresses) is based on our "legitimate interests" for service provision and fraud prevention. Contact us via Article 8 to request deletion.</p>
 
-            <h2>Artikel 5 (Ablauf der Anrufzeit)</h2>
-            <ul>
-                <li><strong>Ablauf:</strong> Aus Sicherheitsgründen wird <span class="important">Ihre angesammelte Anrufzeit automatisch zurückgesetzt, wenn Sie 30 Tage lang nicht auf diese App zugreifen.</span></li>
-            </ul>
+        <h3>2. California, USA Users (CCPA)</h3>
+        <p>Under the California Consumer Privacy Act (CCPA), we do not sell users' personal information. <span class="important">(Do Not Sell My Personal Information)</span></p>
 
-            <h2>Artikel 6 (Haftungsausschluss zur Anruferkennung)</h2>
-            <p>Aufgrund technischer Vorgaben wird Ihre private Handynummer dem Angerufenen nicht angezeigt (Anonym oder geteilte Nummer).</p>
+        <h2>Article 5 (Call Time Management and Expiration)</h2>
+        <p>Call time earned via ad views is managed as follows:</p>
+        <ul>
+            <li><strong>Nature of Rights:</strong> Call time is a service usage right with no monetary value. <span class="important">No cash exchanges or refunds are permitted.</span></li>
+            <li><strong>Expiration and Reset:</strong> For security and server optimization, <span class="important">if the App is not accessed for 30 days, held call time will automatically be reset.</span></li>
+            <li><strong>Service Termination:</strong> <span class="important">All held call time will expire and become invalid if we terminate the App service.</span></li>
+        </ul>
 
-            <h2>Artikel 7 (Kontakt)</h2>
-            <p><strong>KEI App Lab</strong><br>E-Mail: support@keiapplab.com</p>
-        </div>
+        <h2>Article 6 (Disclaimer regarding Caller ID)</h2>
+        <p>Due to technical specifications and Japanese telecommunications laws, your mobile phone number will not be notified to the recipient when making calls.</p>
+        <ul>
+            <li>Calls are made as "Anonymous" or using a system-shared number.</li>
+            <li>If the recipient blocks anonymous calls, the call may not connect. <span class="important">We hold no responsibility for any damages arising from this.</span></li>
+        </ul>
 
-        <!-- ==============================================
-             🇫🇷 フランス語 (Français)
-             ============================================== -->
-        <div class="lang-content lang-fr">
-            <h1>Politique de confidentialité</h1>
-            <div class="date">Date d'entrée en vigueur : 15 mars 2026<br>KEI App Lab</div>
-            <p>KEI App Lab (« nous », « notre ») établit cette Politique de confidentialité concernant le traitement des informations des utilisateurs dans l'application mobile « FreeCallApp » (« cette Application »).</p>
+        <h2>Article 7 (Changes to Privacy Policy)</h2>
+        <p>We may change this policy due to legal amendments or business needs. Significant changes will be announced in the App or on our website.</p>
 
-            <h2>Article 1 (Informations collectées)</h2>
-            <h3>1. Données audio (Microphone)</h3>
-            <ul>
-                <li><strong>Objectif :</strong> Transmettre votre voix en temps réel.</li>
-                <li><strong>Stockage :</strong> Les données vocales ne sont <span class="important">jamais enregistrées ni stockées sur nos serveurs.</span></li>
-            </ul>
-            <h3>2. Informations de contact (Répertoire)</h3>
-            <ul>
-                <li><strong>Objectif :</strong> Afficher les noms enregistrés dans l'historique des appels.</li>
-                <li><strong>Transmission :</strong> Les contacts sont traités localement et <span class="important">ne sont jamais téléchargés sur nos serveurs.</span></li>
-            </ul>
-            <h3>3. Informations sur l'appareil</h3>
-            <ul>
-                <li>Adresse IP, version de l'OS et ID publicitaire. Pour la diffusion d'annonces et la prévention de la fraude.</li>
-            </ul>
-
-            <h2>Article 2 (Lieu de stockage des données)</h2>
-            <ul>
-                <li><strong>Lieu :</strong> Les données sont traitées de manière sécurisée sur des serveurs (ex. Firebase) situés principalement aux États-Unis ou au Japon.</li>
-            </ul>
-
-            <h2>Article 3 (Modules tiers et utilisation de Cookies)</h2>
-            <h3>1. Google AdMob</h3>
-            <ul>
-                <li><strong>Utilisation de Cookies :</strong> Des fournisseurs tiers (dont Google) utilisent des cookies ou des identifiants pour diffuser des annonces pertinentes.</li>
-            </ul>
-
-            <h2>Article 4 (Droits des utilisateurs : RGPD et CCPA)</h2>
-            <h3>1. Utilisateurs de l'UE/EEE (RGPD)</h3>
-            <p>Vous avez le droit d'accéder, de rectifier et de demander l'effacement de vos données ("droit à l'oubli").</p>
-            <h3>2. Utilisateurs de Californie (CCPA)</h3>
-            <p>Nous déclarons que <span class="important">nous ne vendons pas</span> vos informations personnelles.</p>
-
-            <h2>Article 5 (Expiration du temps d'appel)</h2>
-            <ul>
-                <li><strong>Expiration :</strong> Pour des raisons de sécurité, <span class="important">votre temps d'appel accumulé sera automatiquement réinitialisé si vous n'accédez pas à cette Application pendant 30 jours.</span></li>
-            </ul>
-
-            <h2>Article 6 (Contact)</h2>
-            <p><strong>KEI App Lab</strong><br>E-mail : support@keiapplab.com</p>
-        </div>
-
-        <!-- ==============================================
-             🇪🇸 スペイン語 (Español)
-             ============================================== -->
-        <div class="lang-content lang-es">
-            <h1>Política de privacidad</h1>
-            <div class="date">Fecha de entrada en vigor: 15 de marzo de 2026<br>KEI App Lab</div>
-            <p>KEI App Lab ("nosotros", "nuestro") establece esta Política con respecto al manejo de la información del usuario en la aplicación móvil "FreeCallApp" ("esta App").</p>
-
-            <h2>Artículo 1 (Información recopilada)</h2>
-            <h3>1. Datos de audio (Micrófono)</h3>
-            <ul>
-                <li><strong>Propósito:</strong> Transmitir su voz en tiempo real.</li>
-                <li><strong>Almacenamiento:</strong> El audio <span class="important">nunca se graba ni se almacena en nuestros servidores.</span></li>
-            </ul>
-            <h3>2. Contactos (Agenda)</h3>
-            <ul>
-                <li><strong>Propósito:</strong> Mostrar nombres en el historial de llamadas.</li>
-                <li><strong>Transmisión:</strong> Se procesan localmente y <span class="important">nunca se suben a nuestros servidores.</span></li>
-            </ul>
-            <h3>3. Información del dispositivo</h3>
-            <ul>
-                <li>Dirección IP, versión del SO e ID de publicidad. Para entrega de anuncios y prevención de fraudes.</li>
-            </ul>
-
-            <h2>Artículo 2 (Ubicación de almacenamiento de datos)</h2>
-            <ul>
-                <li><strong>Ubicación:</strong> Los datos se almacenan de forma segura en servidores en la nube (ej. Firebase) ubicados principalmente en Estados Unidos o Japón.</li>
-            </ul>
-
-            <h2>Artículo 3 (Módulos de terceros y uso de Cookies)</h2>
-            <h3>1. Google AdMob</h3>
-            <ul>
-                <li><strong>Uso de Cookies:</strong> Proveedores externos (incluido Google) utilizan Cookies o identificadores para mostrar anuncios relevantes.</li>
-            </ul>
-
-            <h2>Artículo 4 (Derechos de los usuarios: RGPD y CCPA)</h2>
-            <h3>1. Usuarios de la UE/EEE (RGPD)</h3>
-            <p>Tiene derecho a acceder, rectificar y solicitar la eliminación de sus datos ("derecho al olvido").</p>
-            <h3>2. Usuarios de California (CCPA)</h3>
-            <p>Declaramos que <span class="important">no vendemos</span> su información personal a terceros.</p>
-
-            <h2>Artículo 5 (Expiración del tiempo de llamada)</h2>
-            <ul>
-                <li><strong>Expiración:</strong> Por motivos de seguridad, <span class="important">su tiempo de llamada acumulado se restablecerá automáticamente si no accede a esta App durante 30 días.</span></li>
-            </ul>
-
-            <h2>Artículo 6 (Contacto)</h2>
-            <p><strong>KEI App Lab</strong><br>Correo electrónico: support@keiapplab.com</p>
-        </div>
-
-        <!-- 全言語共通 フッター -->
-        <div class="footer">
-            &copy; 2026 KEI App Lab. All Rights Reserved.
-        </div>
+        <h2>Article 8 (Contact Information)</h2>
+        <p>For inquiries regarding this policy, data handling, or deletion requests, please contact us via the form or email below. We recommend using the form for a smoother process.</p>
+        <p><strong>KEI App Lab</strong></p>
+        <ul>
+            <li><strong>Inquiry Form:</strong><br><a href="https://forms.gle/xxxxxxxxxxxxxxx" target="_blank">https://forms.gle/xxxxxxxxxxxxxxx</a></li>
+            <li><strong>Email Address:</strong><br>support@keiapplab.com</li>
+        </ul>
     </div>
 
-    <script>
-        // --- ブラウザの言語に合わせて初期表示を自動で切り替える ---
-        window.addEventListener('load', () => {
-            const browserLang = (window.navigator.language || window.navigator.userLanguage || 'ja').slice(0, 2).toLowerCase();
-            const supportedLangs = ['ja', 'en', 'de', 'fr', 'es'];
-            const initialLang = supportedLangs.includes(browserLang) ? browserLang : 'en';
-            
-            changeLanguage(initialLang);
-            document.getElementById('langSelect').value = initialLang;
-        });
+    <!-- ========================================== -->
+    <!-- ドイツ語 (German) -->
+    <!-- ========================================== -->
+    <div id="content-de" class="lang-content">
+        <h1>Datenschutzrichtlinie</h1>
+        <div class="date">
+            Inkrafttreten: 27. Februar 2026<br>
+            KEI App Lab
+        </div>
 
-        // --- 言語切り替え機能 ---
-        function changeLanguage(lang) {
-            document.body.setAttribute('data-lang', lang);
+        <p>KEI App Lab (im Folgenden „wir“ oder „uns“) legt diese Datenschutzrichtlinie bezüglich der Verarbeitung von Nutzerinformationen, einschließlich personenbezogener Daten, in der Smartphone-Anwendung „FreeCallApp“ (im Folgenden die „App“) fest.</p>
+        <p>Bitte lesen Sie diese Richtlinie sorgfältig durch und nutzen Sie die App nur, wenn Sie zustimmen.</p>
+
+        <h2>Artikel 1 (Erfasste Informationen und Erhebungsmethoden)</h2>
+        <h3>1. Sprachdaten (Mikrofon)</h3>
+        <p>Die App benötigt Zugriff auf das Mikrofon, um VoIP-Anrufe zu ermöglichen.</p>
+        <ul>
+            <li><strong>Zweck:</strong> Echtzeit-Übertragung Ihrer Stimme an den Gesprächspartner.</li>
+            <li><strong>Datenspeicherung:</strong> <span class="important">Sprachdaten werden ausschließlich über das Netzwerk übertragen und niemals auf unseren Servern aufgezeichnet oder gespeichert.</span></li>
+        </ul>
+
+        <h3>2. Kontaktinformationen (Telefonbuch)</h3>
+        <p>Die App fordert möglicherweise Zugriff auf Ihre Kontakte an, um die Benutzerfreundlichkeit zu verbessern.</p>
+        <ul>
+            <li><strong>Zweck:</strong> Anzeige registrierter Namen in der Anrufliste und direkte Anrufe aus den Kontakten.</li>
+            <li><strong>Datenübertragung:</strong> <span class="important">Kontaktdaten werden nicht auf unsere Server hochgeladen. Die gesamte Verarbeitung erfolgt lokal auf Ihrem Gerät.</span></li>
+        </ul>
+
+        <h3>3. Geräteinformationen und Kennungen</h3>
+        <p>Zur Qualitätssicherung, Werbeauslieferung und Betrugsprävention erfassen wir automatisch:</p>
+        <ul>
+            <li>IP-Adresse, Zugriffsprotokolle</li>
+            <li>Gerätemodell, OS-Version</li>
+            <li>Werbekennungen (z. B. Google Advertising ID)</li>
+        </ul>
+
+        <h3>4. Anrufprotokolle</h3>
+        <p>Zur Verwaltung von Verbindungen und Anrufzeitpunkten speichern wir:</p>
+        <ul>
+            <li>Datum, Uhrzeit und Dauer des Anrufs</li>
+            <li>Zielrufnummer</li>
+            <li>Belohnungsverlauf durch Anzeigenaufrufe</li>
+        </ul>
+
+        <h2>Artikel 2 (Nutzungszweck und Speicherort)</h2>
+        <p>Wir verwenden die Daten zur Bereitstellung des Dienstes, Verwaltung der Anrufzeit, Auslieferung von Werbung und Betrugsprävention. <br><strong>Speicherort:</strong> Daten werden auf sicheren Servern (hauptsächlich in den USA oder Japan) unserer Cloud-Anbieter (z. B. Firebase) verarbeitet.</p>
+
+        <h2>Artikel 3 (Informationserfassungsmodule und Cookies)</h2>
+        <h3>1. Google AdMob (Werbeauslieferung)</h3>
+        <ul>
+            <li><strong>Verwendung von Cookies:</strong> Drittanbieter für Werbung (einschließlich Google) verwenden Cookies und Werbekennungen, um personalisierte Anzeigen basierend auf Ihren früheren Zugriffen bereitzustellen.</li>
+            <li><strong>Opt-out:</strong> Sie können personalisierte Werbung in den Geräteeinstellungen deaktivieren. Details finden Sie in der <a href="https://policies.google.com/privacy" target="_blank">Google-Datenschutzerklärung</a>.</li>
+        </ul>
+        <h3>2. Firebase & 3. Telnyx</h3>
+        <p>Wir nutzen Firebase für Analysen und Datenbankverwaltung sowie Telnyx für SIP-Telefonnetzverbindungen.</p>
+
+        <h2>Artikel 4 (Nutzerrechte: DSGVO, CCPA)</h2>
+        <h3>1. Nutzer in der EU und im EWR (DSGVO)</h3>
+        <p>Gemäß der Datenschutz-Grundverordnung (DSGVO) haben Sie das Recht auf Auskunft, Berichtigung und <span class="important">Löschung Ihrer personenbezogenen Daten (Recht auf Vergessenwerden)</span>. Kontaktieren Sie uns hierfür gemäß Artikel 8.</p>
+        <h3>2. Nutzer in Kalifornien, USA (CCPA)</h3>
+        <p>Wir verkaufen keine persönlichen Informationen von Nutzern. <span class="important">(Do Not Sell My Personal Information)</span></p>
+
+        <h2>Artikel 5 (Anrufzeitverwaltung und Verfall)</h2>
+        <ul>
+            <li><strong>Natur der Rechte:</strong> Anrufzeit hat keinen Geldwert. <span class="important">Keine Rückerstattung oder Barauszahlung möglich.</span></li>
+            <li><strong>Ablauf:</strong> <span class="important">Wenn die App 30 Tage lang nicht genutzt wird, wird die angesammelte Anrufzeit zurückgesetzt.</span></li>
+            <li><strong>Diensteinstellung:</strong> <span class="important">Bei Einstellung des Dienstes verfällt jegliche Anrufzeit.</span></li>
+        </ul>
+
+        <h2>Artikel 6 (Haftungsausschluss zur Anrufer-ID)</h2>
+        <p>Ihre Handynummer wird dem Empfänger nicht angezeigt (Anruf erfolgt "Anonym"). <span class="important">Wir übernehmen keine Haftung für nicht zustande gekommene Anrufe aufgrund von Anonymitäts-Sperren.</span></p>
+
+        <h2>Artikel 7 (Änderungen)</h2>
+        <p>Wir können diese Richtlinie bei Bedarf ändern. Änderungen werden in der App bekannt gegeben.</p>
+
+        <h2>Artikel 8 (Kontaktinformationen)</h2>
+        <p>Für Anfragen oder Löschungsforderungen kontaktieren Sie uns bitte über das Formular (bevorzugt) oder per E-Mail:</p>
+        <ul>
+            <li><strong>Kontaktformular:</strong><br><a href="https://forms.gle/xxxxxxxxxxxxxxx" target="_blank">https://forms.gle/xxxxxxxxxxxxxxx</a></li>
+            <li><strong>E-Mail-Adresse:</strong><br>support@keiapplab.com</li>
+        </ul>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- フランス語 (French) -->
+    <!-- ========================================== -->
+    <div id="content-fr" class="lang-content">
+        <h1>Politique de confidentialité</h1>
+        <div class="date">
+            Date d'entrée en vigueur : 27 février 2026<br>
+            KEI App Lab
+        </div>
+
+        <p>KEI App Lab (ci-après « nous ») établit la présente Politique de confidentialité concernant le traitement des informations des utilisateurs dans l'application mobile « FreeCallApp » (ci-après l'« Application »).</p>
+        <p>Veuillez lire attentivement cette politique et n'utiliser l'Application que si vous en acceptez les termes.</p>
+
+        <h2>Article 1 (Informations collectées)</h2>
+        <h3>1. Données vocales (Microphone)</h3>
+        <p>L'Application nécessite l'accès au microphone pour les appels VoIP.</p>
+        <ul>
+            <li><strong>Stockage des données :</strong> <span class="important">Les données vocales sont uniquement transmises en temps réel au destinataire et ne sont jamais enregistrées ni stockées sur nos serveurs.</span></li>
+        </ul>
+
+        <h3>2. Informations de contact (Carnet d'adresses)</h3>
+        <ul>
+            <li><strong>Transmission des données :</strong> <span class="important">Les contacts (noms, numéros) ne sont pas téléchargés sur nos serveurs. Tout le traitement reste strictement local sur votre appareil.</span></li>
+        </ul>
+
+        <h3>3. Informations sur l'appareil et 4. Journaux d'appels</h3>
+        <p>Nous collectons l'adresse IP, le modèle de l'appareil, les identifiants publicitaires, ainsi que l'historique des appels (durée, numéro de destination) et des récompenses publicitaires.</p>
+
+        <h2>Article 2 (Finalité et Lieu de stockage)</h2>
+        <p>Les données sont utilisées pour fournir le service, gérer le temps d'appel, diffuser des annonces et prévenir la fraude. Les données sont stockées sur des serveurs sécurisés (principalement aux États-Unis ou au Japon) via des services cloud (ex: Firebase).</p>
+
+        <h2>Article 3 (Modules tiers et Cookies)</h2>
+        <h3>1. Google AdMob (Publicité)</h3>
+        <ul>
+            <li><strong>Utilisation des Cookies :</strong> Les fournisseurs tiers (dont Google) utilisent des cookies et des identifiants publicitaires pour diffuser des annonces personnalisées basées sur vos visites antérieures.</li>
+            <li><strong>Désactivation :</strong> Vous pouvez désactiver les annonces personnalisées dans les paramètres de votre appareil. Voir la <a href="https://policies.google.com/privacy" target="_blank">Politique de Google</a>.</li>
+        </ul>
+
+        <h2>Article 4 (Droits des utilisateurs : RGPD et CCPA)</h2>
+        <h3>1. Utilisateurs dans l'UE et l'EEE (RGPD)</h3>
+        <p>En vertu du RGPD, vous avez le droit d'accéder, de rectifier et de <span class="important">demander la suppression de vos données personnelles (Droit à l'oubli)</span>. Contactez-nous via l'Article 8 pour toute demande.</p>
+        <h3>2. Utilisateurs en Californie, États-Unis (CCPA)</h3>
+        <p>Nous ne vendons pas vos informations personnelles. <span class="important">(Do Not Sell My Personal Information)</span></p>
+
+        <h2>Article 5 (Temps d'appel et Expiration)</h2>
+        <ul>
+            <li><span class="important">Aucun échange en espèces ni remboursement n'est possible.</span></li>
+            <li><strong>Expiration :</strong> <span class="important">Si l'Application n'est pas utilisée pendant 30 jours, le temps d'appel accumulé sera réinitialisé.</span></li>
+        </ul>
+
+        <h2>Article 6 (Avis de non-responsabilité - Identifiant d'appelant)</h2>
+        <p>Les appels sont passés de manière "Anonyme". <span class="important">Nous déclinons toute responsabilité en cas d'échec de l'appel dû à un blocage des appels anonymes par le destinataire.</span></p>
+
+        <h2>Article 7 & 8 (Modifications et Contact)</h2>
+        <p>Pour toute demande ou suppression de données, veuillez utiliser le formulaire (recommandé) ou notre e-mail :</p>
+        <ul>
+            <li><strong>Formulaire de contact :</strong><br><a href="https://forms.gle/xxxxxxxxxxxxxxx" target="_blank">https://forms.gle/xxxxxxxxxxxxxxx</a></li>
+            <li><strong>Adresse e-mail :</strong><br>support@keiapplab.com</li>
+        </ul>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- スペイン語 (Spanish) -->
+    <!-- ========================================== -->
+    <div id="content-es" class="lang-content">
+        <h1>Política de Privacidad</h1>
+        <div class="date">
+            Fecha de entrada en vigor: 27 de febrero de 2026<br>
+            KEI App Lab
+        </div>
+
+        <p>KEI App Lab (en adelante, "nosotros") establece esta Política de Privacidad sobre el manejo de la información del usuario en la aplicación móvil "FreeCallApp" (la "Aplicación").</p>
+        <p>Lea esta política y use la Aplicación solo si está de acuerdo con ella.</p>
+
+        <h2>Artículo 1 (Información recopilada)</h2>
+        <h3>1. Datos de voz (Micrófono)</h3>
+        <ul>
+            <li><strong>Almacenamiento de datos:</strong> <span class="important">Los datos de voz se transmiten únicamente en tiempo real al destinatario y nunca se graban ni se almacenan en nuestros servidores.</span></li>
+        </ul>
+
+        <h3>2. Información de contacto (Agenda)</h3>
+        <ul>
+            <li><strong>Transmisión de datos:</strong> <span class="important">Los datos de contacto (nombres, números) no se suben a nuestros servidores. Todo el procesamiento se realiza localmente en el dispositivo.</span></li>
+        </ul>
+
+        <h3>3. Información del dispositivo y 4. Registros de llamadas</h3>
+        <p>Recopilamos direcciones IP, identificadores de publicidad, registros de llamadas (duración y destino) e historial de recompensas para mantener la calidad y prevenir fraudes.</p>
+
+        <h2>Artículo 2 (Propósito y Almacenamiento)</h2>
+        <p>Los datos se utilizan para proporcionar el servicio de llamadas, gestionar el tiempo disponible, mostrar anuncios y prevenir fraudes. Los datos se almacenan en servidores en la nube seguros (principalmente en EE. UU. o Japón).</p>
+
+        <h2>Artículo 3 (Módulos de terceros y Cookies)</h2>
+        <h3>1. Google AdMob (Publicidad)</h3>
+        <ul>
+            <li><strong>Uso de Cookies:</strong> Los proveedores externos (incluido Google) utilizan cookies e identificadores para mostrar anuncios personalizados basados en sus visitas anteriores.</li>
+            <li><strong>Opción de exclusión:</strong> Puede desactivar los anuncios personalizados en la configuración de su dispositivo. Consulte la <a href="https://policies.google.com/privacy" target="_blank">Política de Google</a>.</li>
+        </ul>
+
+        <h2>Artículo 4 (Derechos del usuario: RGPD y CCPA)</h2>
+        <h3>1. Usuarios en la UE y EEE (RGPD)</h3>
+        <p>Según el RGPD, tiene derecho a acceder, rectificar y <span class="important">solicitar la eliminación de sus datos personales (Derecho al olvido)</span>. Contáctenos a través del Artículo 8 para ejercer este derecho.</p>
+        <h3>2. Usuarios en California, EE. UU. (CCPA)</h3>
+        <p>No vendemos su información personal a terceros. <span class="important">(Do Not Sell My Personal Information)</span></p>
+
+        <h2>Artículo 5 (Tiempo de llamada y Caducidad)</h2>
+        <ul>
+            <li><span class="important">No se permiten reembolsos ni canjes por dinero en efectivo.</span></li>
+            <li><strong>Caducidad:</strong> <span class="important">Si no accede a la Aplicación durante 30 días, el tiempo de llamada acumulado se restablecerá automáticamente.</span></li>
+        </ul>
+
+        <h2>Artículo 6 (Descargo de responsabilidad sobre Identificador de llamadas)</h2>
+        <p>Las llamadas se realizan de forma "Anónima". <span class="important">No nos hacemos responsables si la llamada no se conecta porque el destinatario bloquea números ocultos.</span></p>
+
+        <h2>Artículo 7 y 8 (Cambios y Contacto)</h2>
+        <p>Para consultas o solicitudes de eliminación de datos, comuníquese con nosotros mediante el formulario (recomendado) o correo electrónico:</p>
+        <ul>
+            <li><strong>Formulario de contacto:</strong><br><a href="https://forms.gle/xxxxxxxxxxxxxxx" target="_blank">https://forms.gle/xxxxxxxxxxxxxxx</a></li>
+            <li><strong>Correo electrónico:</strong><br>support@keiapplab.com</li>
+        </ul>
+    </div>
+
+    <!-- フッター (全言語共通表示) -->
+    <div class="footer">
+        &copy; 2026 KEI App Lab. All Rights Reserved.
+    </div>
+
+</div>
+
+<!-- 言語切り替えロジック -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // URLパラメータを取得 (?lang=en など)
+        const params = new URLSearchParams(window.location.search);
+        let lang = params.get('lang');
+
+        // サポートしている言語リスト
+        const supportedLangs =['ja', 'en', 'de', 'fr', 'es'];
+
+        // 指定がない、または不正な場合は 'ja' をデフォルトにする
+        if (!supportedLangs.includes(lang)) {
+            lang = 'ja';
         }
-    </script>
+
+        // 該当する言語のブロックだけを表示する
+        const targetContent = document.getElementById('content-' + lang);
+        if (targetContent) {
+            targetContent.style.display = 'block';
+        }
+    });
+</script>
+
 </body>
 </html>
