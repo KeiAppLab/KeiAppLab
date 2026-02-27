@@ -640,11 +640,13 @@
                 previewLang = lang; 
                 updatePreview();
 
-                // ★追加: プライバシープレビュー（iframe）が開いていれば、その中身も更新する
+                // 既存プロジェクトのiframeプレビューも新しい言語で再読み込みさせる
+                if (currentProjectId) checkProjectUrl(currentProjectId);
+                // プライバシープレビュー（iframe）が開いていれば、その中身も更新する
                 const privacyBox = document.getElementById('privacyPreviewBox');
                 if (privacyBox && privacyBox.style.display !== 'none') {
                     privacyBox.style.display = 'none';
-                    togglePrivacyPreview(); // 閉じて開くことで新しい言語で再描画
+                    togglePrivacyPreview(); 
                 }
             }
             
@@ -836,10 +838,11 @@
                 const realPreview = document.getElementById('realPagePreview');
                 const simPreview = document.getElementById('simulatedPagePreview');
                 
-                if (exists) {
+                if (exists && projectId !== "") {
                     realPreview.style.display = 'block';
                     simPreview.style.display = 'none';
-                    iframe.src = `https://${GITHUB_CONFIG.owner.toLowerCase()}.github.io/${GITHUB_CONFIG.repo}/${projectId}/index.html`;
+                    // ▼ URLの末尾に「現在のプレビュー言語」をパラメータとして付与する ▼
+                    iframe.src = `https://${GITHUB_CONFIG.owner.toLowerCase()}.github.io/${GITHUB_CONFIG.repo}/${projectId}/index.html?lang=${previewLang}`;
                 } else {
                     realPreview.style.display = 'none';
                     simPreview.style.display = 'block';
@@ -1285,6 +1288,32 @@
 
             .footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; font-size: 0.85rem; color: #666; }
             .footer a { color: #0056b3; text-decoration: none; font-weight: bold; }
+
+            /* モーダル内の言語切り替え制御 */
+            .lang-content { display: none; }
+            .show-ja .lang-ja { display: block; }
+            .show-en .lang-en { display: block; }
+            .show-de .lang-de { display: block; }
+            .show-fr .lang-fr { display: block; }
+            .show-es .lang-es { display: block; }
+            /* 一枚の紙のスタイル */
+            .privacy-paper {
+                background: #ffffff;
+                border-radius: 4px; /* 紙っぽく、角丸は控えめに */
+                /* 浮き上がるような柔らかい影 */
+                box-shadow: 0 10px 30px rgba(0,0,0,0.15), 0 2px 5px rgba(0,0,0,0.05); 
+                padding: 15px;
+                margin: 15px auto 40px auto; /* 下に余裕を持たせる */
+                max-width: 800px;
+                text-align: left;
+                position: relative;
+                animation: fadeIn 0.4s ease-out;
+            }
+            .privacy-paper-close {
+                display: block; text-align: right; cursor: pointer; 
+                font-size: 1.2rem; font-weight: bold; color: #999; margin-bottom: 5px;
+            }
+            .privacy-paper-close:hover { color: #333; }
         </style>
     </head>
     <body>
@@ -1314,21 +1343,61 @@
             
             <div style="text-align: right; position: relative;">
                 <a class="history-link" id="history-link" onclick="loadOldNews(event)">▶ すべての更新履歴を見る。</a>
-                <!-- ★追加: モーダル領域 -->
+                <!-- 既存の更新履歴モーダル（これだけ残す） -->
                 <div id="history-modal" class="history-modal" style="text-align: left;">
                     <span class="modal-close" onclick="document.getElementById('history-modal').style.display='none'">×</span>
                     <h4 id="modal-heading" style="margin-top:0; color:#0056b3;">更新履歴</h4>
                     <div id="modal-content"></div>
                 </div>
             </div>
+
             <div class="footer">
-                <a href="privacy.html" id="privacy-link" onclick="checkPrivacy(event)">プライバシーポリシー</a><br><br>
+                <a href="privacy.html" id="privacy-link" onclick="showPrivacy(event)">プライバシーポリシー</a>
+                
+                <!-- ▼▼▼ プライバシーポリシー展開エリア（紙の表現） ▼▼▼ -->
+                <div id="privacy-paper" class="privacy-paper" style="display: none;">
+                    <span class="privacy-paper-close" onclick="closePrivacy()">×</span>
+                    <iframe id="privacy-iframe" src="" style="width:100%; height:350px; border:none;"></iframe>
+                </div>
+                <!-- ▲▲▲ ここまで ▲▲▲ -->
+
+                <br><br>
                 © 2026 啓 App Lab | <a href="../app-ads.txt" target="_blank">app-ads.txt</a>
             </div>
         </div>
         <script>
             const appData = ${appDataJson};
-            let currentLang = localStorage.getItem('selectedLang') || 'ja';
+            
+            // --- 最強の言語判定ロジック ---
+            function determineLanguage() {
+                const supportedLangs = ['ja', 'en', 'de', 'fr', 'es'];
+                
+                // 1. URLの末尾（?lang=xx）をチェック（最優先）
+                const urlParams = new URLSearchParams(window.location.search);
+                const langParam = urlParams.get('lang');
+                if (langParam && supportedLangs.includes(langParam)) {
+                    return langParam;
+                }
+                
+                // 2. ブラウザに保存された過去の記憶（preferredLang）をチェック
+                const savedLang = localStorage.getItem('preferredLang');
+                if (savedLang && supportedLangs.includes(savedLang)) {
+                    return savedLang;
+                }
+                
+                // 3. ユーザーの見ている地域（ブラウザ設定言語）をチェック
+                const browserLang = (window.navigator.language || window.navigator.userLanguage || '').slice(0, 2).toLowerCase();
+                if (supportedLangs.includes(browserLang)) {
+                    return browserLang;
+                }
+                
+                // 4. いずれにも該当しない場合は「英語 (en)」
+                return 'en';
+            }
+            
+            // 判定結果を変数に入れ、記憶の箱にも保存しておく
+            let currentLang = determineLanguage();
+            localStorage.setItem('preferredLang', currentLang);
             const texts = {
                 ja: { back: "戻る", backTop: "啓(KEI)App Labへ戻る", news: "最新のニュース", history: "▶ すべての更新履歴を見る。", loading: "読み込み中...", noNews: "現在お知らせはありません。", privacy: "プライバシーポリシー", privAlert: "プライバシーポリシーは現在準備中（実装予定）です。" },
                 en: { back: "Back", backTop: "Back to KEI App Lab", news: "Latest News", history: "▶ View all history", loading: "Loading...", noNews: "No news available.", privacy: "Privacy Policy", privAlert: "Privacy Policy is currently under preparation." },
@@ -1338,7 +1407,31 @@
             };
             function goBack(e) { e.preventDefault(); if (history.length <= 1 || document.referrer === "") window.location.href = "../index.html"; else history.back(); }
             function toggleLangMenu() { document.getElementById('langMenu').classList.toggle('open'); }
-            function changeLang(lang) { currentLang = lang; localStorage.setItem('selectedLang', lang); document.getElementById('langMenu').classList.remove('open'); renderPage(); }
+            function changeLang(lang) { 
+                currentLang = lang; 
+                localStorage.setItem('preferredLang', lang); 
+                document.getElementById('langMenu').classList.remove('open'); 
+                
+                // URLパラメータも変更して、後でリロードしても維持されるようにする
+                const url = new URL(window.location);
+                url.searchParams.set('lang', lang);
+                window.history.replaceState({}, '', url);
+
+                renderPage(); 
+                
+                // もし「更新履歴モーダル」が開いていたら中身を再描画する
+                const hModal = document.getElementById('history-modal');
+                if (hModal.style.display === 'block' && typeof oldNewsData !== 'undefined') {
+                    renderHistoryList();
+                }
+
+                // もし「プライバシーモーダル」が開いていたら言語クラスを切り替える
+                const pPaper = document.getElementById('privacy-paper');
+                if (pPaper && pPaper.style.display === 'block') {
+                    const iframe = document.getElementById('privacy-iframe');
+                    iframe.src = 'privacy.html?lang=' + lang;
+                }
+            }
             function renderPage(targetData = null) {
                 const suffix = currentLang === 'ja' ? '' : '_' + currentLang;
                 const t = texts[currentLang] || texts.en;
@@ -1369,12 +1462,29 @@
                     });
                 } else { container.innerHTML = '<p>' + t.noNews + '</p>'; }
             }
-// --- 動的ロード：全履歴データを別窓（モーダル）に表示 ---
+
+            // 履歴リストのHTMLを生成・流し込む専用の関数
+            function renderHistoryList() {
+                const modalContent = document.getElementById('modal-content');
+                modalContent.innerHTML = '';
+                const suffix = currentLang === 'ja' ? '' : '_' + currentLang;
+                const t = texts[currentLang] || texts.en;
+
+                if (typeof oldNewsData !== 'undefined' && oldNewsData.length > 0) {
+                    oldNewsData.forEach(item => {
+                        const title = item['title' + suffix] || item.title_ja || item.title_en || '';
+                        modalContent.innerHTML += \`<div class="history-list-item"><div class="history-date">\${item.date}</div><div class="history-title">\${title}</div></div>\`;
+                    });
+                } else {
+                    modalContent.innerHTML = '<p>' + t.noNews + '</p>';
+                }
+            }
+
+            // --- 動的ロード：全履歴データを別窓（モーダル）に表示 ---
             function loadOldNews(e) {
                 e.preventDefault(); 
                 const link = document.getElementById('history-link'); 
                 const modal = document.getElementById('history-modal');
-                const modalContent = document.getElementById('modal-content');
                 const t = texts[currentLang] || texts.en;
                 
                 // すでに開いている場合は閉じる
@@ -1384,43 +1494,62 @@
                 }
 
                 link.textContent = t.loading; link.style.pointerEvents = 'none';
-                const script = document.createElement('script'); script.src = 'old_news.js';
                 
+                // 通信してデータを取得
+                const script = document.createElement('script'); 
+                script.src = 'old_news.js';
                 script.onload = () => { 
-                    link.textContent = t.history; // テキストを元に戻す
+                    link.textContent = t.history;
                     link.style.pointerEvents = 'auto';
-                    modal.style.display = 'block'; // モーダルを表示
-                    
-                    modalContent.innerHTML = '';
-                    if(typeof oldNewsData !== 'undefined' && oldNewsData.length > 0) {
-                        const suffix = currentLang === 'ja' ? '' : '_' + currentLang;
-                        oldNewsData.forEach(item => {
-                            const title = item['title' + suffix] || item.title_ja || item.title_en || '';
-                            // ★修正: 日付とタイトルを横に並べるレイアウト
-                            modalContent.innerHTML += \`<div class="history-list-item"><div class="history-date">\${item.date}</div><div class="history-title">\${title}</div></div>\`;
-                        });
-                    } else {
-                        modalContent.innerHTML = '<p>' + t.noNews + '</p>';
-                    }
+                    modal.style.display = 'block';
+                    document.getElementById('modal-heading').textContent = t.history.replace('▶ ', '');
+                    renderHistoryList(); // 独立させた関数を呼ぶ
                 };
                 script.onerror = () => { 
                     link.textContent = 'Data Load Error'; link.style.pointerEvents = 'auto'; 
                 };
                 document.body.appendChild(script);
             }
-            // --- プライバシーポリシーの存在確認 (HEADリクエスト) ---
-            async function checkPrivacy(e) {
+
+            // --- プライバシーポリシーの表示（紙の展開） ---
+            async function showPrivacy(e) {
                 e.preventDefault();
+                const paper = document.getElementById('privacy-paper');
+                const iframe = document.getElementById('privacy-iframe');
                 const t = texts[currentLang] || texts.en;
+                
+                // すでに開いている場合は閉じる
+                if (paper.style.display === 'block') {
+                    closePrivacy();
+                    return;
+                }
+
                 try {
-                    // 同じフォルダ内の privacy.html を探す
                     const res = await fetch('privacy.html', { method: 'HEAD' });
-                    if (res.ok) window.location.href = 'privacy.html';
-                    else throw new Error('Not Found');
+                    if (!res.ok) throw new Error('Not Found');
+                    
+                    // iframeにURLをセットして、紙を表示する
+                    iframe.src = 'privacy.html?lang=' + currentLang;
+                    paper.style.display = 'block';
+
+                    // ★魔法：開いた後、紙の下端が画面に入るようにスムーズに自動スクロールする
+                    setTimeout(() => {
+                        paper.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                    }, 100);
+
                 } catch (err) {
-                    alert(t.privAlert); // 存在しない場合は実装予定のPOPを出す
+                    alert(t.privAlert);
                 }
             }
+
+            // --- プライバシーポリシーを閉じる ---
+            function closePrivacy() {
+                const paper = document.getElementById('privacy-paper');
+                const iframe = document.getElementById('privacy-iframe');
+                paper.style.display = 'none';
+                iframe.src = ""; // 中身を消して軽くする
+            }
+
             document.addEventListener("DOMContentLoaded", () => { renderPage(); });
         <\/script>
     </body>
