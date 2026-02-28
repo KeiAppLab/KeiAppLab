@@ -293,7 +293,8 @@
                         
                         <!-- エディタ (左側) -->
                         <div class="editor-area">
-                            <h2 style="display: flex; align-items: center; justify-content: space-between;">
+                            <!-- ▼ margin-top: -15px; を追加して上の余白を詰める ▼ -->
+                            <h2 style="display: flex; align-items: center; justify-content: space-between; margin-top: -15px;">
                                 <span>📝 記事・プロジェクト作成</span>
                                 <span id="lastEditDatePop" style="display:none; font-size: 0.8rem; background: #e67e22; color: white; padding: 4px 12px; border-radius: 12px; font-weight: normal; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">前回編集日: ----.--.--</span>
                             </h2>
@@ -323,14 +324,15 @@
                                 </div>
                             </div>
 
-                            <hr style="border:0; border-top:1px dashed #555; margin: 20px 0;">
+                            <hr style="border:0; border-top:1px dashed #555; margin: 10px 0;">
 
+                            <!-- ▼ ボタンのテキストを変更 ▼ -->
                             <div class="editor-lang-tabs">
-                                <button class="edit-tab active" onclick="switchEditorLang('ja')">🇯🇵 JP</button>
-                                <button class="edit-tab" onclick="switchEditorLang('en')">🇺🇸 EN</button>
-                                <button class="edit-tab" onclick="switchEditorLang('de')">🇩🇪 DE</button>
-                                <button class="edit-tab" onclick="switchEditorLang('fr')">🇫🇷 FR</button>
-                                <button class="edit-tab" onclick="switchEditorLang('es')">🇪🇸 ES</button>
+                                <button class="edit-tab active" onclick="switchEditorLang('ja')">🇯🇵 日本</button>
+                                <button class="edit-tab" onclick="switchEditorLang('en')">🇺🇸 ｱﾒﾘｶ</button>
+                                <button class="edit-tab" onclick="switchEditorLang('de')">🇩🇪 ﾄﾞｲﾂ</button>
+                                <button class="edit-tab" onclick="switchEditorLang('fr')">🇫🇷 ﾌﾗﾝｽ</button>
+                                <button class="edit-tab" onclick="switchEditorLang('es')">🇪🇸 ｽﾍﾟｲﾝ</button>
                             </div>
 
                             <!-- 日本語 -->
