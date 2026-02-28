@@ -44,7 +44,8 @@
         .spacer { flex-grow: 1; min-height: 20px; border-bottom: 1px solid #333; margin-bottom: 10px; }
 
         .main-content { position: relative; overflow: hidden; height: 100%; }
-        .panel { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; overflow-y: auto; padding: 30px; box-sizing: border-box; }
+        /* paddingの値を 上15px 右15px 下15px 左30px に変更します */
+        .panel { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; overflow-y: auto; padding: 15px 15px 15px 30px; box-sizing: border-box; }
         .panel.active { display: block; }
 
         /* --- CMSレイアウト (40:60) --- */
@@ -175,7 +176,19 @@
             display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
         }
 
-        .page-preview { font-family: 'Noto Serif JP', serif; line-height: 1.8; margin-top: 20px; background: white; padding: 20px; border-radius: 8px; }
+        /* 詳細ページ */
+        .page-preview { 
+            font-family: 'Noto Serif JP', serif; 
+            line-height: 1.8; 
+            margin-top: 20px; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            height: 700px;          /* ▼ iframe側と高さを統一 ▼ */
+            overflow-y: auto;       /* ▼ はみ出た場合は枠内でスクロール ▼ */
+            border: 1px solid #ccc; /* ▼ iframe側と枠線のデザインを統一 ▼ */
+            box-sizing: border-box; /* ▼ paddingを含めて700pxに収める ▼ */
+        }
         .page-preview h1 { border-bottom: 3px solid #0056b3; display: inline-block; padding-bottom: 5px; margin-bottom: 20px; font-size: 1.5rem; }
         .page-preview img { max-width: 100%; border-radius: 10px; margin: 20px 0; }
         #prevBody, .news-link { white-space: pre-wrap; }
@@ -184,6 +197,25 @@
         .btn-save { background: #27ae60; color: white; }
         .btn-copy { background: #e67e22; color: white; margin-top: 20px; }
 
+        /* （プレビュー上下移動ボタン） */
+        .scroll-toggle-btn {
+            background-color: #0056b3;
+            color: #ffffff;
+            border: none;
+            border-radius: 20px; /* 角丸指定 */
+            padding: 5px 40px; /* 横長にする */
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2); /* 浮き出る影 */
+            transition: all 0.3s;
+            display: inline-block;
+        }
+        .scroll-toggle-btn:hover {
+            background-color: #003d82;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+        
         /* --- ビルド監視用トースト通知 --- */
         #build-toast {
             position: fixed; bottom: 20px; right: 20px;
@@ -323,14 +355,15 @@
                                 </div>
                             </div>
 
-                            <hr style="border:0; border-top:1px dashed #555; margin: 20px 0;">
+                            <hr style="border:0; border-top:1px dashed #555; margin: 10px 0;">
 
+                            <!-- ▼ ボタンのテキストを変更 ▼ -->
                             <div class="editor-lang-tabs">
-                                <button class="edit-tab active" onclick="switchEditorLang('ja')">🇯🇵 JP</button>
-                                <button class="edit-tab" onclick="switchEditorLang('en')">🇺🇸 EN</button>
-                                <button class="edit-tab" onclick="switchEditorLang('de')">🇩🇪 DE</button>
-                                <button class="edit-tab" onclick="switchEditorLang('fr')">🇫🇷 FR</button>
-                                <button class="edit-tab" onclick="switchEditorLang('es')">🇪🇸 ES</button>
+                                <button class="edit-tab active" onclick="switchEditorLang('ja')">🇯🇵 日本</button>
+                                <button class="edit-tab" onclick="switchEditorLang('en')">🇺🇸 ｱﾒﾘｶ</button>
+                                <button class="edit-tab" onclick="switchEditorLang('de')">🇩🇪 ﾄﾞｲﾂ</button>
+                                <button class="edit-tab" onclick="switchEditorLang('fr')">🇫🇷 ﾌﾗﾝｽ</button>
+                                <button class="edit-tab" onclick="switchEditorLang('es')">🇪🇸 ｽﾍﾟｲﾝ</button>
                             </div>
 
                             <!-- 日本語 -->
@@ -359,16 +392,11 @@
                                 <div class="form-group" style="background:#2d2d30; padding:15px; border-radius:8px; margin-top:20px;">
                                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                                         <label style="margin:0; color:#e67e22; font-size:1rem;">🛡️ プライバシーポリシー</label>
-                                        <div>
-                                            <button type="button" onclick="togglePrivacyPreview()" style="background:#27ae60; color:white; padding:5px 10px; border:none; border-radius:4px; font-size:0.8rem; cursor:pointer; width:auto; margin:0; margin-left:5px;">👁️ プレビュー</button>
-                                        </div>
+                                        <button type="button" onclick="togglePrivacyPreview()" style="background:#27ae60; color:white; padding:5px 10px; border:none; border-radius:4px; font-size:0.8rem; cursor:pointer; width:auto; margin:0;">👁️ プレビュー</button>
                                     </div>
                                     
-                                    <div id="privacyInputArea" style="display:none; margin-bottom:10px;">
-                                        <textarea id="inPrivacyHtml" class="input-white" style="height:300px; font-family:monospace; font-size:0.85rem;" placeholder="ここに生成した5言語対応のプライバシーポリシーHTMLを貼り付けてください。"></textarea>
-                                    </div>
-
-                                    <button type="button" onclick="togglePrivacyInput()" style="background:#444; color:#fff; border:1px solid #666; width:100%; text-align:left; margin:0;">▶ (JP, EN, DE, FR, ES) 5言語対応HTMLを入力して下さい。</button>
+                                    <!-- ▼ 1行の入力欄にスッキリ変更 ▼ -->
+                                    <input type="text" id="inPrivacyHtml" class="input-white" style="font-family:monospace; font-size:0.85rem;" placeholder="▶ (JP, EN, DE, FR, ES) 5言語対応HTMLを入力して下さい。">
                                 </div>
                             </div>
 
@@ -448,6 +476,11 @@
                                     </div>
                                 </div>
 
+                                 <!-- センタリングされたトグルボタン -->
+                                <div style="text-align: center; margin: 20px 0;">
+                                    <button id="previewScrollBtn" type="button" class="scroll-toggle-btn" onclick="togglePreviewScroll()">▼</button>
+                                </div>
+                                
                                 <span class="preview-label">▼ 詳細ページ (Project Page)</span>
                                 <div id="realPagePreview" style="display:none; width:100%; height:700px; border:1px solid #ccc; background:#fff;">
                                     <iframe id="prevIframe" style="width:100%; height:100%; border:none;"></iframe>
@@ -846,13 +879,7 @@
                     simPreview.style.display = 'block';
                 }
             }
-
-            // --- プライバシーポリシーUI制御 ---
-            function togglePrivacyInput() {
-                const area = document.getElementById('privacyInputArea');
-                area.style.display = (area.style.display === 'none') ? 'block' : 'none';
-            }
-    
+ 
             // ★修正: iframe対応のプレビュー切り替え
             function togglePrivacyPreview() {
                 const previewBox = document.getElementById('privacyPreviewBox');
@@ -1031,7 +1058,6 @@
                     if (inputData.master.privacy_html && inputData.master.privacy_html.trim() !== "") {
                         const privacyPath = `${projectId}/privacy.html`;
                         
-                        // 既存のprivacy.htmlがあるか確認（上書き用SHA取得）
                         let privacySha = null;
                         try {
                             const checkPriv = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${privacyPath}`, {
@@ -1275,9 +1301,11 @@
             .history-link { display: inline-block; margin-top: 15px; color: #0056b3; text-decoration: none; font-weight:bold; cursor: pointer; padding: 10px; border-radius: 5px; background: #f0f8ff; }
             .history-link:hover { text-decoration: underline; background: #e0f0ff; }
             
-            /* ★追加: 履歴モーダル（別窓風）のスタイル */
-            .history-modal { display: none; margin-top: 10px; padding: 20px; background: #fff; border: 2px solid #0056b3; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); max-height: 400px; overflow-y: auto; position: relative; animation: fadeIn 0.3s; }
-            .modal-close { position: absolute; top: 10px; right: 15px; cursor: pointer; font-size: 1.5rem; font-weight: bold; color: #999; }
+            /* 履歴モーダル（別窓風）のスタイル */
+            .history-modal { display: none; margin-top: 10px; padding: 15px; background: #fff; border: 2px solid #0056b3; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); max-height: 400px; overflow-y: auto; position: relative; animation: fadeIn 0.3s; }
+            /* 色を #999（グレー）にし、位置を右上にスッキリ配置 */
+            .modal-close { position: absolute; top: 5px; right: 15px; cursor: pointer; font-size: 1.5rem; font-weight: bold; color: #999; user-select: none; }
+            /* マウスを乗せた時は #333（濃いグレー）にする */
             .modal-close:hover { color: #333; }
             .history-list-item { display: flex; align-items: flex-start; gap: 15px; border-bottom: 1px solid #eee; padding: 10px 0; }
             .history-list-item:last-child { border-bottom: none; }
@@ -1341,10 +1369,8 @@
             
             <div style="text-align: right; position: relative;">
                 <a class="history-link" id="history-link" onclick="loadOldNews(event)">▶ すべての更新履歴を見る。</a>
-                <!-- 既存の更新履歴モーダル（これだけ残す） -->
                 <div id="history-modal" class="history-modal" style="text-align: left;">
                     <span class="modal-close" onclick="document.getElementById('history-modal').style.display='none'">×</span>
-                    <h4 id="modal-heading" style="margin-top:0; color:#0056b3;">更新履歴</h4>
                     <div id="modal-content"></div>
                 </div>
             </div>
@@ -1500,7 +1526,6 @@
                     link.textContent = t.history;
                     link.style.pointerEvents = 'auto';
                     modal.style.display = 'block';
-                    document.getElementById('modal-heading').textContent = t.history.replace('▶ ', '');
                     renderHistoryList(); // 独立させた関数を呼ぶ
                 };
                 script.onerror = () => { 
@@ -1869,6 +1894,61 @@
                     }
                 }, 10000); // 10,000ミリ秒 = 10秒間隔でチェック
             }
+
+            // プレビューエリアのスクロール制御
+            let isPreviewScrolledDown = false;
+
+            function togglePreviewScroll() {
+                const previewArea = document.querySelector('.preview-area');
+                const btn = document.getElementById('previewScrollBtn');
+                
+                if (!isPreviewScrolledDown) {
+                    // 一番下へスクロール
+                    previewArea.scrollTo({ top: previewArea.scrollHeight, behavior: 'smooth' });
+                    btn.textContent = '▲';
+                    isPreviewScrolledDown = true;
+                } else {
+                    // 一番上へスクロール
+                    previewArea.scrollTo({ top: 0, behavior: 'smooth' });
+                    btn.textContent = '▼';
+                    isPreviewScrolledDown = false;
+
+                    // 詳細ページプレビューの中身もトップに戻す
+                    // 1. 新規作成プレビュー(div)の場合：スムーズに上へスクロール
+                    const simPreview = document.getElementById('simulatedPagePreview');
+                    if (simPreview && simPreview.style.display !== 'none') {
+                        simPreview.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                    
+                    // 2. 既存プロジェクトプレビュー(iframe)の場合：リロードさせて上に戻す
+                    const realPreview = document.getElementById('realPagePreview');
+                    if (realPreview && realPreview.style.display !== 'none') {
+                        const iframe = document.getElementById('prevIframe');
+                        if (iframe && iframe.src) {
+                            // ※ブラウザのセキュリティ制限を回避するため、srcを再代入してリロードします
+                            iframe.src = iframe.src; 
+                        }
+                    }
+                }
+            }
+
+            // 手動でスクロールした時も、現在位置を判定してボタンの矢印を同期させる
+            window.addEventListener('DOMContentLoaded', () => {
+                const previewArea = document.querySelector('.preview-area');
+                previewArea.addEventListener('scroll', () => {
+                    const btn = document.getElementById('previewScrollBtn');
+                    if (!btn) return;
+                    
+                    // スクロール位置が全体の半分より下なら「上向き矢印」にする
+                    if (previewArea.scrollTop > (previewArea.scrollHeight - previewArea.clientHeight) / 2) {
+                        btn.textContent = '▲';
+                        isPreviewScrolledDown = true;
+                    } else {
+                        btn.textContent = '▼';
+                        isPreviewScrolledDown = false;
+                    }
+                });
+            });
         </script>
     </body>
     </html>
