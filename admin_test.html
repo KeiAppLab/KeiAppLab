@@ -1367,7 +1367,6 @@
             
             <div style="text-align: right; position: relative;">
                 <a class="history-link" id="history-link" onclick="loadOldNews(event)">▶ すべての更新履歴を見る。</a>
-                <!-- 既存の更新履歴モーダル（これだけ残す） -->
                 <div id="history-modal" class="history-modal" style="text-align: left;">
                     <span class="modal-close" onclick="document.getElementById('history-modal').style.display='none'">×</span>
                     <div id="modal-content"></div>
@@ -1525,7 +1524,6 @@
                     link.textContent = t.history;
                     link.style.pointerEvents = 'auto';
                     modal.style.display = 'block';
-                    document.getElementById('modal-heading').textContent = t.history.replace('▶ ', '');
                     renderHistoryList(); // 独立させた関数を呼ぶ
                 };
                 script.onerror = () => { 
