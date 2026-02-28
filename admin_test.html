@@ -293,8 +293,7 @@
                         
                         <!-- エディタ (左側) -->
                         <div class="editor-area">
-                            <!-- ▼ margin-top: -15px; を追加して上の余白を詰める ▼ -->
-                            <h2 style="display: flex; align-items: center; justify-content: space-between; margin-top: -15px;">
+                            <h2 style="display: flex; align-items: center; justify-content: space-between;">
                                 <span>📝 記事・プロジェクト作成</span>
                                 <span id="lastEditDatePop" style="display:none; font-size: 0.8rem; background: #e67e22; color: white; padding: 4px 12px; border-radius: 12px; font-weight: normal; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">前回編集日: ----.--.--</span>
                             </h2>
@@ -361,16 +360,11 @@
                                 <div class="form-group" style="background:#2d2d30; padding:15px; border-radius:8px; margin-top:20px;">
                                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                                         <label style="margin:0; color:#e67e22; font-size:1rem;">🛡️ プライバシーポリシー</label>
-                                        <div>
-                                            <button type="button" onclick="togglePrivacyPreview()" style="background:#27ae60; color:white; padding:5px 10px; border:none; border-radius:4px; font-size:0.8rem; cursor:pointer; width:auto; margin:0; margin-left:5px;">👁️ プレビュー</button>
-                                        </div>
+                                        <button type="button" onclick="togglePrivacyPreview()" style="background:#27ae60; color:white; padding:5px 10px; border:none; border-radius:4px; font-size:0.8rem; cursor:pointer; width:auto; margin:0;">👁️ プレビュー</button>
                                     </div>
                                     
-                                    <div id="privacyInputArea" style="display:none; margin-bottom:10px;">
-                                        <textarea id="inPrivacyHtml" class="input-white" style="height:300px; font-family:monospace; font-size:0.85rem;" placeholder="ここに生成した5言語対応のプライバシーポリシーHTMLを貼り付けてください。"></textarea>
-                                    </div>
-
-                                    <button type="button" onclick="togglePrivacyInput()" style="background:#444; color:#fff; border:1px solid #666; width:100%; text-align:left; margin:0;">▶ (JP, EN, DE, FR, ES) 5言語対応HTMLを入力して下さい。</button>
+                                    <!-- ▼ 1行の入力欄にスッキリ変更 ▼ -->
+                                    <input type="text" id="inPrivacyHtml" class="input-white" style="font-family:monospace; font-size:0.85rem;" placeholder="▶ (JP, EN, DE, FR, ES) 5言語対応HTMLを入力して下さい。">
                                 </div>
                             </div>
 
@@ -848,13 +842,7 @@
                     simPreview.style.display = 'block';
                 }
             }
-
-            // --- プライバシーポリシーUI制御 ---
-            function togglePrivacyInput() {
-                const area = document.getElementById('privacyInputArea');
-                area.style.display = (area.style.display === 'none') ? 'block' : 'none';
-            }
-    
+ 
             // ★修正: iframe対応のプレビュー切り替え
             function togglePrivacyPreview() {
                 const previewBox = document.getElementById('privacyPreviewBox');
