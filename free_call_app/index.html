@@ -37,8 +37,10 @@
             
             /* 履歴モーダル（別窓風）のスタイル */
             .history-modal { display: none; margin-top: 10px; padding: 15px; background: #fff; border: 2px solid #0056b3; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); max-height: 400px; overflow-y: auto; position: relative; animation: fadeIn 0.3s; }
-            .modal-close { position: absolute; top: 0; right: 0; padding: 10px 15px; cursor: pointer; font-size: 1.5rem; font-weight: bold; color: transparent; user-select: none; }
-            .modal-close:hover { color: rgba(0,0,0,0.1); }
+            /* 色を #999（グレー）にし、位置を右上にスッキリ配置 */
+            .modal-close { position: absolute; top: 5px; right: 15px; cursor: pointer; font-size: 1.5rem; font-weight: bold; color: #999; user-select: none; }
+            /* マウスを乗せた時は #333（濃いグレー）にする */
+            .modal-close:hover { color: #333; }
             .history-list-item { display: flex; align-items: flex-start; gap: 15px; border-bottom: 1px solid #eee; padding: 10px 0; }
             .history-list-item:last-child { border-bottom: none; }
             .history-date { font-family: 'Roboto', sans-serif; font-size: 0.85rem; color: #666; white-space: nowrap; padding-top: 3px; }
