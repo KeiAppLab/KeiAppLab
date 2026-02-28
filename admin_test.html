@@ -185,6 +185,25 @@
         .btn-save { background: #27ae60; color: white; }
         .btn-copy { background: #e67e22; color: white; margin-top: 20px; }
 
+        /* （プレビュー上下移動ボタン） */
+        .scroll-toggle-btn {
+            background-color: #0056b3;
+            color: #ffffff;
+            border: none;
+            border-radius: 20px; /* 角丸指定 */
+            padding: 5px 40px; /* 横長にする */
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2); /* 浮き出る影 */
+            transition: all 0.3s;
+            display: inline-block;
+        }
+        .scroll-toggle-btn:hover {
+            background-color: #003d82;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+        
         /* --- ビルド監視用トースト通知 --- */
         #build-toast {
             position: fixed; bottom: 20px; right: 20px;
@@ -445,6 +464,11 @@
                                     </div>
                                 </div>
 
+                                 <!-- センタリングされたトグルボタン -->
+                                <div style="text-align: center; margin: 20px 0;">
+                                    <button id="previewScrollBtn" type="button" class="scroll-toggle-btn" onclick="togglePreviewScroll()">▼</button>
+                                </div>
+                                
                                 <span class="preview-label">▼ 詳細ページ (Project Page)</span>
                                 <div id="realPagePreview" style="display:none; width:100%; height:700px; border:1px solid #ccc; background:#fff;">
                                     <iframe id="prevIframe" style="width:100%; height:100%; border:none;"></iframe>
@@ -1859,6 +1883,44 @@
                     }
                 }, 10000); // 10,000ミリ秒 = 10秒間隔でチェック
             }
+
+            // プレビューエリアのスクロール制御
+            let isPreviewScrolledDown = false;
+
+            function togglePreviewScroll() {
+                const previewArea = document.querySelector('.preview-area');
+                const btn = document.getElementById('previewScrollBtn');
+                
+                if (!isPreviewScrolledDown) {
+                    // 一番下へスクロール
+                    previewArea.scrollTo({ top: previewArea.scrollHeight, behavior: 'smooth' });
+                    btn.textContent = '▲';
+                    isPreviewScrolledDown = true;
+                } else {
+                    // 一番上へスクロール
+                    previewArea.scrollTo({ top: 0, behavior: 'smooth' });
+                    btn.textContent = '▼';
+                    isPreviewScrolledDown = false;
+                }
+            }
+
+            // 手動でスクロールした時も、現在位置を判定してボタンの矢印を同期させる
+            window.addEventListener('DOMContentLoaded', () => {
+                const previewArea = document.querySelector('.preview-area');
+                previewArea.addEventListener('scroll', () => {
+                    const btn = document.getElementById('previewScrollBtn');
+                    if (!btn) return;
+                    
+                    // スクロール位置が全体の半分より下なら「上向き矢印」にする
+                    if (previewArea.scrollTop > (previewArea.scrollHeight - previewArea.clientHeight) / 2) {
+                        btn.textContent = '▲';
+                        isPreviewScrolledDown = true;
+                    } else {
+                        btn.textContent = '▼';
+                        isPreviewScrolledDown = false;
+                    }
+                });
+            });
         </script>
     </body>
     </html>
