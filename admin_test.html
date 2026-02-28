@@ -176,7 +176,19 @@
             display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
         }
 
-        .page-preview { font-family: 'Noto Serif JP', serif; line-height: 1.8; margin-top: 20px; background: white; padding: 20px; border-radius: 8px; }
+        /* 詳細ページ */
+        .page-preview { 
+            font-family: 'Noto Serif JP', serif; 
+            line-height: 1.8; 
+            margin-top: 20px; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            height: 700px;          /* ▼ iframe側と高さを統一 ▼ */
+            overflow-y: auto;       /* ▼ はみ出た場合は枠内でスクロール ▼ */
+            border: 1px solid #ccc; /* ▼ iframe側と枠線のデザインを統一 ▼ */
+            box-sizing: border-box; /* ▼ paddingを含めて700pxに収める ▼ */
+        }
         .page-preview h1 { border-bottom: 3px solid #0056b3; display: inline-block; padding-bottom: 5px; margin-bottom: 20px; font-size: 1.5rem; }
         .page-preview img { max-width: 100%; border-radius: 10px; margin: 20px 0; }
         #prevBody, .news-link { white-space: pre-wrap; }
