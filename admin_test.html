@@ -1913,6 +1913,23 @@
                     previewArea.scrollTo({ top: 0, behavior: 'smooth' });
                     btn.textContent = '▼';
                     isPreviewScrolledDown = false;
+
+                    // 詳細ページプレビューの中身もトップに戻す
+                    // 1. 新規作成プレビュー(div)の場合：スムーズに上へスクロール
+                    const simPreview = document.getElementById('simulatedPagePreview');
+                    if (simPreview && simPreview.style.display !== 'none') {
+                        simPreview.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                    
+                    // 2. 既存プロジェクトプレビュー(iframe)の場合：リロードさせて上に戻す
+                    const realPreview = document.getElementById('realPagePreview');
+                    if (realPreview && realPreview.style.display !== 'none') {
+                        const iframe = document.getElementById('prevIframe');
+                        if (iframe && iframe.src) {
+                            // ※ブラウザのセキュリティ制限を回避するため、srcを再代入してリロードします
+                            iframe.src = iframe.src; 
+                        }
+                    }
                 }
             }
 
