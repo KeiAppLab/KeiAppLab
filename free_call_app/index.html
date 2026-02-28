@@ -35,10 +35,10 @@
             .history-link { display: inline-block; margin-top: 15px; color: #0056b3; text-decoration: none; font-weight:bold; cursor: pointer; padding: 10px; border-radius: 5px; background: #f0f8ff; }
             .history-link:hover { text-decoration: underline; background: #e0f0ff; }
             
-            /* ★追加: 履歴モーダル（別窓風）のスタイル */
-            .history-modal { display: none; margin-top: 10px; padding: 20px; background: #fff; border: 2px solid #0056b3; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); max-height: 400px; overflow-y: auto; position: relative; animation: fadeIn 0.3s; }
-            .modal-close { position: absolute; top: 10px; right: 15px; cursor: pointer; font-size: 1.5rem; font-weight: bold; color: #999; }
-            .modal-close:hover { color: #333; }
+            /* 履歴モーダル（別窓風）のスタイル */
+            .history-modal { display: none; margin-top: 10px; padding: 15px; background: #fff; border: 2px solid #0056b3; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); max-height: 400px; overflow-y: auto; position: relative; animation: fadeIn 0.3s; }
+            .modal-close { position: absolute; top: 0; right: 0; padding: 10px 15px; cursor: pointer; font-size: 1.5rem; font-weight: bold; color: transparent; user-select: none; }
+            .modal-close:hover { color: rgba(0,0,0,0.1); }
             .history-list-item { display: flex; align-items: flex-start; gap: 15px; border-bottom: 1px solid #eee; padding: 10px 0; }
             .history-list-item:last-child { border-bottom: none; }
             .history-date { font-family: 'Roboto', sans-serif; font-size: 0.85rem; color: #666; white-space: nowrap; padding-top: 3px; }
@@ -101,10 +101,8 @@
             
             <div style="text-align: right; position: relative;">
                 <a class="history-link" id="history-link" onclick="loadOldNews(event)">▶ すべての更新履歴を見る。</a>
-                <!-- 既存の更新履歴モーダル（これだけ残す） -->
                 <div id="history-modal" class="history-modal" style="text-align: left;">
                     <span class="modal-close" onclick="document.getElementById('history-modal').style.display='none'">×</span>
-                    <h4 id="modal-heading" style="margin-top:0; color:#0056b3;">更新履歴</h4>
                     <div id="modal-content"></div>
                 </div>
             </div>
@@ -260,7 +258,6 @@
                     link.textContent = t.history;
                     link.style.pointerEvents = 'auto';
                     modal.style.display = 'block';
-                    document.getElementById('modal-heading').textContent = t.history.replace('▶ ', '');
                     renderHistoryList(); // 独立させた関数を呼ぶ
                 };
                 script.onerror = () => { 
