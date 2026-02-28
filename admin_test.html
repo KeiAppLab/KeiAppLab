@@ -11,7 +11,6 @@
     <script src="apps_catalog.js"></script>
     
     <script src="allowed_users.js"></script>
-    <script src="index_phot.js"></script>
     <script src="html_manual.js"></script>
 
     <style>
@@ -799,14 +798,39 @@
                 updatePreview();
             });
             
-            // --- 画像選択ロジック ---
-            
-            // ★修正: プロジェクト画像とindex_phot画像を両方リストに出す
+            // --- 画像選択ロジック（GitHub APIでフォルダを自動取得） ---
+
+            let cachedIndexPhotos = null; // 何度も通信しないように記憶しておく変数
+
+            // index_phot フォルダの中身を自動取得する関数
+            async function getIndexPhotos() {
+                if (cachedIndexPhotos !== null) return cachedIndexPhotos; // 記憶があればそれを返す
+                
+                const token = localStorage.getItem('gh_token');
+                if (!token) return[];
+                
+                try {
+                    const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/index_phot`, {
+                        headers: { Authorization: `token ${token}` }
+                    });
+                    if (res.ok) {
+                        const files = await res.json();
+                        // フォルダ内の画像ファイル(.png, .jpgなど)だけを抽出してリスト化
+                        cachedIndexPhotos = files
+                            .filter(f => f.type === "file" && /\.(png|jpe?g|gif|svg|webp)$/i.test(f.name))
+                            .map(f => ({ path: "index_phot/" + f.name, name: f.name }));
+                        return cachedIndexPhotos;
+                    }
+                } catch (e) { console.warn("index_phot folder not found or empty."); }
+                
+                return[];
+            }
+
+            // プロジェクト画像とindex_phot画像を両方リストに出す
             async function checkProjectImages(projectId) {
                 const token = localStorage.getItem('gh_token');
-                let projectList = [];
+                let projectList =[];
                 
-                // 1. プロジェクトフォルダの画像をチェック
                 if (token && projectId) {
                     try {
                         const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${projectId}`, {
@@ -814,22 +838,21 @@
                         });
                         if (res.ok) {
                             const files = await res.json();
-                            // projectId/xxx.png というパス情報を持つオブジェクトにする
-                            projectList = files.filter(f => f.name.endsWith('.png')).map(f => ({ path: projectId + "/" + f.name, name: f.name }));
+                            projectList = files.filter(f => f.type === "file" && /\.(png|jpe?g|gif|svg|webp)$/i.test(f.name))
+                                             .map(f => ({ path: projectId + "/" + f.name, name: f.name }));
                         }
-                    } catch (e) { /* フォルダがない場合は無視 */ }
+                    } catch (e) { /* 無視 */ }
                 }
                 
-                // 2. デフォルト(index_phot)の画像をリスト化
-                const defaultList = (typeof photoList !== 'undefined') ? photoList.map(n => ({ path: "index_phot/" + n, name: n })) : [];
-                
-                // 3. 両方のリストを合体させて表示
+                // GitHubから自動取得したデフォルト画像リストと合体
+                const defaultList = await getIndexPhotos();
                 const combinedList = [...projectList, ...defaultList];
                 renderImageSelectorCombined(combinedList);
             }
             
-            function initImageSelector() {
-                const defaultList = (typeof photoList !== 'undefined') ? photoList.map(n => ({ path: "index_phot/" + n, name: n })) : [];
+            // 起動時の初期化
+            async function initImageSelector() {
+                const defaultList = await getIndexPhotos();
                 renderImageSelectorCombined(defaultList);
             }
             
