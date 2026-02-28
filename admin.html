@@ -1325,21 +1325,16 @@
             /* 一枚の紙のスタイル */
             .privacy-paper {
                 background: #ffffff;
-                border-radius: 4px; /* 紙っぽく、角丸は控えめに */
-                /* 浮き上がるような柔らかい影 */
+                border-radius: 4px;
                 box-shadow: 0 10px 30px rgba(0,0,0,0.15), 0 2px 5px rgba(0,0,0,0.05); 
-                padding: 15px;
-                margin: 15px auto 40px auto; /* 下に余裕を持たせる */
+                padding: 0;
+                overflow: hidden;
+                margin: 15px auto 20px auto; /* ▼ 下の余白を 40px から 20px に減らす ▼ */
                 max-width: 800px;
                 text-align: left;
                 position: relative;
                 animation: fadeIn 0.4s ease-out;
             }
-            .privacy-paper-close {
-                display: block; text-align: right; cursor: pointer; 
-                font-size: 1.2rem; font-weight: bold; color: #999; margin-bottom: 5px;
-            }
-            .privacy-paper-close:hover { color: #333; }
         </style>
     </head>
     <body>
@@ -1376,17 +1371,20 @@
             </div>
 
             <div class="footer">
-                <a href="privacy.html" id="privacy-link" onclick="showPrivacy(event)">プライバシーポリシー</a>
+                <!-- ▼ リンクをdivで囲み、下に20pxの余白を固定で作る ▼ -->
+                <div style="margin-bottom: 20px;">
+                    <a href="privacy.html" id="privacy-link" onclick="showPrivacy(event)">プライバシーポリシー</a>
+                </div>
                 
-                <!-- プライバシーポリシー展開エリア（紙の表現） -->
                 <div id="privacy-paper" class="privacy-paper" style="display: none;">
-                    <span class="privacy-paper-close" onclick="closePrivacy()">×</span>
-                    <!-- ▼ 高さを 80vh (画面の80%) に変更 ▼ -->
-                    <iframe id="privacy-iframe" src="" style="width:100%; height:80vh; border:none;"></iframe>
+                    <span class="modal-close" style="z-index: 10;" onclick="closePrivacy()">×</span>
+                    <iframe id="privacy-iframe" src="" style="width:100%; height:75vh; border:none; display:block;"></iframe>
                 </div>
 
-                <br><br>
-                © 2026 啓 App Lab | <a href="../app-ads.txt" target="_blank">app-ads.txt</a>
+                <!-- ▼ brを消し、divで囲む ▼ -->
+                <div>
+                    © 2026 啓 App Lab | <a href="../app-ads.txt" target="_blank">app-ads.txt</a>
+                </div>
             </div>
         </div>
         <script>
