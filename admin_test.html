@@ -84,40 +84,62 @@
         .status-label { color: #fff; font-size: 0.8rem; display: flex; align-items: center; gap: 5px; cursor: pointer; font-weight: normal; margin: 0; }
         .status-label input { width: auto; margin: 0; }
 
-        /* 画像選択 (グリッド表示) */
+        /* --- 画像選択 (2段フォルダ＆グリッド表示) --- */
         .custom-select-wrapper { position: relative; user-select: none; width: 100%; }
         .custom-select { position: relative; display: flex; flex-direction: column; }
-        .custom-select__trigger { position: relative; display: flex; align-items: center; justify-content: space-between; padding: 10px; font-size: 1rem; font-weight: bold; color: #333; background: #ffffff; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; }
+        .custom-select__trigger { 
+            position: relative; display: flex; align-items: center; justify-content: space-between; 
+            padding: 10px; font-size: 1rem; font-weight: bold; color: #333; background: #ffffff; 
+            border: 1px solid #ccc; border-radius: 4px; cursor: pointer; 
+        }
         
+        /* プルダウンの大枠 */
         .custom-options { 
             position: absolute; display: block; top: 100%; left: 0; right: 0; 
             border: 1px solid #ccc; border-top: 0; background: #fff; 
             transition: all 0.3s; opacity: 0; visibility: hidden; pointer-events: none; z-index: 100; 
-            max-height: 400px; overflow-y: auto; border-radius: 0 0 4px 4px;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-            gap: 10px;
-            padding: 10px;
+            max-height: 450px; overflow-y: auto; border-radius: 0 0 4px 4px;
+            padding: 10px; /* 全体の余白 */
         }
         .custom-select.open .custom-options { opacity: 1; visibility: visible; pointer-events: all; }
+
+        /* ▼ 追加: フォルダごとの枠組み ▼ */
+        .folder-section { 
+            margin-bottom: 15px; border: 2px dashed transparent; padding: 10px; 
+            border-radius: 6px; transition: background-color 0.2s, border-color 0.2s; min-height: 80px; 
+        }
+        .folder-section.dragover { border-color: #007acc; background-color: rgba(0, 122, 204, 0.1); }
+        .folder-title { font-size: 0.9rem; font-weight: bold; color: #555; margin-bottom: 10px; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
         
+        /* [project]フォルダが未選択の時のスタイル */
+        #folder-project.disabled { background-color: #f5f5f5; opacity: 0.7; }
+        #folder-project.disabled .custom-option { pointer-events: none; }
+
+        /* グリッドレイアウト（各フォルダの中に適用） */
+        .folder-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); 
+            gap: 10px; 
+        }
+        
+        /* 画像アイコン1つ分のスタイル */
         .custom-option { 
             position: relative; display: flex; flex-direction: column; align-items: center; text-align: center;
             padding: 5px; border: 1px solid #eee; border-radius: 4px;
             cursor: pointer; transition: all 0.2s; color: #333; 
         }
         .custom-option:hover { background-color: #f2f9fc; border-color: #0056b3; color: #0056b3; }
-        
-        .option-img { 
-            width: 75px; height: 75px; 
-            object-fit: cover; border-radius: 4px; 
-            margin-bottom: 5px;
-            border: 1px solid #ddd; 
+        .option-img { width: 75px; height: 75px; object-fit: cover; border-radius: 4px; margin-bottom: 5px; border: 1px solid #ddd; }
+        .option-text { font-size: 0.75rem; font-weight: bold; word-break: break-all; }
+
+        /* ▼ 追加: 右クリックメニュー用のスタイル ▼ */
+        #contextMenu {
+            display: none; position: fixed; background: #fff; border: 1px solid #ccc;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.2); border-radius: 4px; z-index: 10000;
+            padding: 5px 0; font-size: 0.9rem; font-family: sans-serif;
         }
-        .option-text { 
-            font-size: 0.8rem; font-weight: bold; 
-            word-break: break-all;
-        }
+        .context-item { padding: 8px 15px; cursor: pointer; color: #333; }
+        .context-item:hover { background-color: #007acc; color: white; }
 
         /* --- プレビューエリア --- */
         .preview-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-bottom: 10px; }
@@ -343,13 +365,38 @@
                                 </div>
                             </div>
 
+                            <!-- 画像ファイル選択 (2段フォルダD&D対応) -->
                             <div class="form-group">
-                                <label>画像ファイル (index_photフォルダ)</label>
+                                <label>画像ファイル (D&D / Paste 対応)</label>
                                 <input type="hidden" id="inImage" onchange="updatePreview()">
                                 <div class="custom-select-wrapper">
                                     <div class="custom-select">
-                                        <div class="custom-select__trigger" onclick="toggleImageSelect()"><span id="selectedImageText">画像を選択...</span><span>▼</span></div>
-                                        <div class="custom-options" id="imageOptions"></div>
+                                        <div class="custom-select__trigger" onclick="toggleImageSelect()">
+                                            <span id="selectedImageText">画像を選択...</span>
+                                            <span>▼</span>
+                                        </div>
+                                        
+                                        <!-- プルダウンの中身を2つのフォルダに分割 -->
+                                        <div class="custom-options" id="imageOptions">
+                                            
+                                            <!-- 1. index_phot フォルダエリア -->
+                                            <!-- ※後でここにD&Dのイベント(ondragover等)を付けます -->
+                                            <div class="folder-section" id="folder-index-phot">
+                                                <div class="folder-title">📂 index_phot /</div>
+                                                <div class="folder-grid" id="grid-index-phot">
+                                                    <!-- JSでここに共通画像が入る -->
+                                                </div>
+                                            </div>
+
+                                            <!-- 2. プロジェクト専用エリア (初期はdisabled) -->
+                                            <div class="folder-section disabled" id="folder-project">
+                                                <div class="folder-title">📂 <span id="current-project-folder-name">[project]</span> /</div>
+                                                <div class="folder-grid" id="grid-project">
+                                                    <div id="project-folder-msg" style="font-size:0.8rem; color:#999; grid-column: 1 / -1; padding: 10px;">※プロジェクト名を入力すると利用可能になります</div>
+                                                </div>
+                                            </div>
+
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -573,6 +620,13 @@
         </div>
     </div>
 
+    <!-- 右クリックメニュー -->
+    <div id="contextMenu">
+        <!-- 後ほどここに機能を持たせます -->
+        <div class="context-item" id="menuPaste">📋 Paste Image (貼り付け)</div>
+        <div class="context-item" id="menuRename">✏️ Rename (名前変更)</div>
+    </div>
+    
     <script>
             // ▼▼▼ 設定 ▼▼▼
             const GITHUB_CONFIG = { owner: "KeiAppLab", repo: "KeiAppLab" };
