@@ -144,11 +144,12 @@
         /* 画像が並ぶグリッドエリア */
         .folder-grid {
             display: grid;
-            grid-template-columns: repeat(5, 1fr); /* 常に横5つ分に固定 */
-            gap: 8px;
-            padding: 8px; /* 内側の余白だけ残す */
-            align-items: start;
-            overflow-y: auto;
+            grid-template-columns: repeat(5, 1fr); 
+            gap: 8px; 
+            padding: 8px; 
+            /* ▼ align-items を消して、align-content に変更します ▼ */
+            align-content: start; 
+            overflow-y: auto; 
             transition: background 0.2s;
         }
 
