@@ -746,11 +746,11 @@
                 if(!val) { 
                     clearFieldsExcept('inProject');
                     document.getElementById('inDate').value = getTodayString();
-                    document.getElementById('lastEditDatePop').style.display = "none"; // ★追加: POPを消す
+                    document.getElementById('lastEditDatePop').style.display = "none"; 
                     currentProjectId = "";
                     setImageValue("");
-                    initImageSelector(); // 画像リストをデフォルトに戻す
-                    checkProjectUrl(""); // iframeプレビューを非表示に戻す
+                    checkProjectImages(""); // ← ★「下段のプロジェクトフォルダをロックする」処理に変更
+                    checkProjectUrl(""); 
                     updatePreview(); 
                     return; 
                 }
@@ -758,16 +758,14 @@
                 if (typeof adminMasterData !== 'undefined') {
                     const post = adminMasterData.find(p => p.project_ja === val);
                     if (post) {
-                        // 履歴と完全に一致すれば、そのデータを自動入力
                         fillForm(post);
                     } else {
-                        // 履歴に存在しない文字が打たれた場合 =「新規作成」と判断して他をクリア
                         clearFieldsExcept('inProject');
                         document.getElementById('inDate').value = getTodayString();
-                        document.getElementById('lastEditDatePop').style.display = "none"; // ★追加: POPを消す
+                        document.getElementById('lastEditDatePop').style.display = "none"; 
                         currentProjectId = "";
                         setImageValue("");
-                        initImageSelector();
+                        checkProjectImages(""); // ← ★「下段のプロジェクトフォルダをロックする」処理に変更
                         checkProjectUrl(""); 
                     }
                 }
@@ -798,78 +796,98 @@
                 updatePreview();
             });
             
-            // --- 画像選択ロジック（GitHub APIでフォルダを自動取得） ---
-
-            let cachedIndexPhotos = null; // 何度も通信しないように記憶しておく変数
-
-            // index_phot フォルダの中身を自動取得する関数
-            async function getIndexPhotos() {
-                if (cachedIndexPhotos !== null) return cachedIndexPhotos; // 記憶があればそれを返す
-                
+            // --- 画像選択ロジック（API自動取得 ＋ 上下分割表示） ---
+            let cachedIndexPhotos = null; // index_photのキャッシュ
+    
+            // 1. index_phot フォルダの画像をAPIで取得
+            async function fetchIndexPhotos() {
+                if (cachedIndexPhotos !== null) return cachedIndexPhotos;
                 const token = localStorage.getItem('gh_token');
                 if (!token) return[];
-                
                 try {
                     const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/index_phot`, {
                         headers: { Authorization: `token ${token}` }
                     });
                     if (res.ok) {
                         const files = await res.json();
-                        // フォルダ内の画像ファイル(.png, .jpgなど)だけを抽出してリスト化
-                        cachedIndexPhotos = files
-                            .filter(f => f.type === "file" && /\.(png|jpe?g|gif|svg|webp)$/i.test(f.name))
-                            .map(f => ({ path: "index_phot/" + f.name, name: f.name }));
+                        cachedIndexPhotos = files.filter(f => f.type === "file" && /\.(png|jpe?g|gif|webp)$/i.test(f.name));
                         return cachedIndexPhotos;
                     }
-                } catch (e) { console.warn("index_phot folder not found or empty."); }
-                
+                } catch (e) { console.warn("index_phot fetch error"); }
                 return[];
             }
-
-            // プロジェクト画像とindex_phot画像を両方リストに出す
-            async function checkProjectImages(projectId) {
+    
+            // 2. project フォルダの画像をAPIで取得
+            async function fetchProjectImages(projectId) {
                 const token = localStorage.getItem('gh_token');
-                let projectList =[];
-                
-                if (token && projectId) {
-                    try {
-                        const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${projectId}`, {
-                            headers: { Authorization: `token ${token}` }
-                        });
-                        if (res.ok) {
-                            const files = await res.json();
-                            projectList = files.filter(f => f.type === "file" && /\.(png|jpe?g|gif|svg|webp)$/i.test(f.name))
-                                             .map(f => ({ path: projectId + "/" + f.name, name: f.name }));
-                        }
-                    } catch (e) { /* 無視 */ }
-                }
-                
-                // GitHubから自動取得したデフォルト画像リストと合体
-                const defaultList = await getIndexPhotos();
-                const combinedList = [...projectList, ...defaultList];
-                renderImageSelectorCombined(combinedList);
+                if (!token || !projectId) return[];
+                try {
+                    const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${projectId}`, {
+                        headers: { Authorization: `token ${token}` }
+                    });
+                    if (res.ok) {
+                        const files = await res.json();
+                        return files.filter(f => f.type === "file" && /\.(png|jpe?g|gif|webp)$/i.test(f.name));
+                    }
+                } catch (e) { /* フォルダがない場合は空配列を返す */ }
+                return[];
             }
-            
-            // 起動時の初期化
+    
+            // 3. 画像リストの描画（初期化とプロジェクト選択時）
             async function initImageSelector() {
-                const defaultList = await getIndexPhotos();
-                renderImageSelectorCombined(defaultList);
-            }
-            
-            // 合体リスト用の描画関数
-            function renderImageSelectorCombined(listObj) {
-                const c = document.getElementById('imageOptions'); 
-                c.innerHTML='';
-                listObj.forEach(item => {
-                    const d = document.createElement('div'); 
-                    d.className = 'custom-option';
-                    d.onclick = () => { selectImage(item.path, item.name) }; 
-                    // エラー時はプレースホルダーを表示
-                    d.innerHTML = `<img src="${item.path}" class="option-img" onerror="this.src='https://via.placeholder.com/75'"><span class="option-text">${item.name}</span>`;
-                    c.appendChild(d);
+                // index_phot の画像を上段に描画
+                const indexFiles = await fetchIndexPhotos();
+                const indexGrid = document.getElementById('grid-index-phot');
+                indexGrid.innerHTML = '';
+                indexFiles.forEach(file => {
+                    indexGrid.appendChild(createImageElement(file.path, file.name));
                 });
             }
-            
+    
+            // プロジェクト名が入力・選択された時に下段を更新する
+            async function checkProjectImages(projectId) {
+                const projectGrid = document.getElementById('grid-project');
+                const projectMsg = document.getElementById('project-folder-msg');
+                const folderNameSpan = document.getElementById('current-project-folder-name');
+    
+                if (!projectId) {
+                    // プロジェクト名が空の場合、下段をロック状態にする
+                    projectGrid.innerHTML = '<div id="project-folder-msg" style="font-size:0.7rem; color:#999; grid-column: 1 / -1; padding: 10px;">※プロジェクト名を入力すると利用可能になります</div>';
+                    folderNameSpan.textContent = "[project]";
+                    document.getElementById('folder-project').classList.remove('active');
+                    return;
+                }
+    
+                // プロジェクト名がある場合、APIで画像を取ってきて下段に描画
+                folderNameSpan.textContent = projectId;
+                document.getElementById('folder-project').classList.add('active');
+                projectGrid.innerHTML = '<div style="font-size:0.7rem; color:#666; grid-column:1/-1;">読込中...</div>';
+    
+                const projectFiles = await fetchProjectImages(projectId);
+                projectGrid.innerHTML = ''; // ロード文字を消す
+                
+                if (projectFiles.length === 0) {
+                    projectGrid.innerHTML = '<div style="font-size:0.7rem; color:#999; grid-column: 1 / -1; padding: 10px;">画像がありません。ここにドラッグ＆ドロップしてください。</div>';
+                } else {
+                    projectFiles.forEach(file => {
+                        projectGrid.appendChild(createImageElement(file.path, file.name));
+                    });
+                }
+            }
+    
+            // 4. 個別の画像要素(div)を作成するヘルパー関数
+            function createImageElement(path, name) {
+                const div = document.createElement('div');
+                div.className = 'custom-option';
+                div.onclick = () => { selectImage(path, name); };
+                div.innerHTML = `
+                    <img src="${path}" class="option-img" onerror="this.src='https://via.placeholder.com/75'">
+                    <span class="option-text">${name}</span>
+                `;
+                return div;
+            }
+    
+            // プルダウンの開閉と選択処理
             function toggleImageSelect(){ document.querySelector('.custom-select').classList.toggle('open'); }
             function selectImage(p, n){ 
                 document.getElementById('inImage').value = p; 
@@ -881,8 +899,10 @@
                 document.getElementById('inImage').value = p; 
                 document.getElementById('selectedImageText').textContent = p.split('/').pop() || "画像を選択..."; 
             }
-            window.onclick=e=>{ if(!e.target.closest('.custom-select')) document.querySelector('.custom-select').classList.remove('open'); }
-            
+            window.addEventListener('click', function(e) {
+                const select = document.querySelector('.custom-select');
+                if (select && !select.contains(e.target)) select.classList.remove('open');
+            });
             
             // --- プレビューロジック ---
             function checkProjectUrl(projectId) {
