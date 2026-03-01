@@ -214,6 +214,80 @@
             transform: translateY(-2px);
             box-shadow: 0 6px 12px rgba(0,0,0,0.3);
         }
+
+        /* カスタム画像選択UIと右クリックメニュー */
+        /* フォルダ枠のデザイン */
+        .folder-section {
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            background: #fff;
+            position: relative;
+        }
+        .folder-title {
+            background: #e6e6e6;
+            padding: 5px 10px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #333;
+            border-bottom: 1px solid #ccc;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        /* ドラッグ＆ドロップ時のハイライト */
+        .folder-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+            padding: 10px;
+            min-height: 100px;
+            max-height: 250px;
+            overflow-y: auto;
+            transition: background 0.2s;
+        }
+        .folder-grid.dragover {
+            background: #e6f7ff;
+            border: 2px dashed #007acc;
+        }
+        
+        /* 選択不可（[project]）エリアのスタイル */
+        .folder-grid.readonly {
+            background: #f9f9f9;
+        }
+        .folder-grid.readonly .custom-option {
+            cursor: default; /* ポインターを矢印に */
+        }
+        .folder-grid.readonly .custom-option:hover {
+            background-color: transparent;
+            border-color: #eee;
+        }
+
+        /* 右クリックメニュー（コンテキストメニュー） */
+        #contextMenu {
+            display: none;
+            position: fixed;
+            background: white;
+            border: 1px solid #ccc;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+            border-radius: 4px;
+            z-index: 10000;
+            padding: 5px 0;
+            min-width: 150px;
+        }
+        .context-item {
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            color: #333;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .context-item:hover {
+            background: #007acc;
+            color: white;
+        }
         
         /* --- ビルド監視用トースト通知 --- */
         #build-toast {
@@ -344,12 +418,36 @@
                             </div>
 
                             <div class="form-group">
-                                <label>画像ファイル (index_photフォルダ)</label>
+                                <label>画像ファイル管理 (ドラッグ＆ドロップ・右クリック対応)</label>
                                 <input type="hidden" id="inImage" onchange="updatePreview()">
-                                <div class="custom-select-wrapper">
+                                
+                                <div class="custom-select-wrapper" id="imageManagerWrapper" tabindex="0"> <!-- ペースト検知用 -->
                                     <div class="custom-select">
-                                        <div class="custom-select__trigger" onclick="toggleImageSelect()"><span id="selectedImageText">画像を選択...</span><span>▼</span></div>
-                                        <div class="custom-options" id="imageOptions"></div>
+                                        <div class="custom-select__trigger" onclick="toggleImageSelect()">
+                                            <span id="selectedImageText">画像を選択してください...</span>
+                                            <span>▼</span>
+                                        </div>
+                                        
+                                        <!-- 展開されるエリア -->
+                                        <div class="custom-options" id="imageOptionsContainer" style="padding: 10px; background: #f0f0f0; cursor: default;">
+                                            
+                                            <!-- 1. index_phot フォルダ (選択可能エリア) -->
+                                            <div class="folder-section">
+                                                <div class="folder-title">📂 index_phot <span style="font-weight:normal; font-size:0.75rem;">(選択・追加可能)</span></div>
+                                                <div class="folder-grid" id="grid-index-phot">
+                                                    <!-- JSでここに画像が入る -->
+                                                </div>
+                                            </div>
+
+                                            <!-- 2. [project] フォルダ (確認・追加専用エリア) -->
+                                            <div class="folder-section">
+                                                <div class="folder-title">📂 <span id="label-project-folder">[project]</span> <span style="font-weight:normal; font-size:0.75rem;">(閲覧・追加専用)</span></div>
+                                                <div class="folder-grid readonly" id="grid-project">
+                                                    <!-- JSでここに画像が入る -->
+                                                </div>
+                                            </div>
+
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -573,6 +671,13 @@
         </div>
     </div>
 
+    <!-- ▼▼▼ 右クリックメニューのHTML ▼▼▼ -->
+    <div id="contextMenu">
+        <div class="context-item" id="menuPaste">📋 Paste image (貼り付け)</div>
+        <div class="context-item" id="menuRename">✏️ Rename (名前変更)</div>
+        <div class="context-item" id="menuDelete" style="color:#c0392b;">🗑️ Delete (削除)</div>
+    </div>
+
     <script>
             // ▼▼▼ 設定 ▼▼▼
             const GITHUB_CONFIG = { owner: "KeiAppLab", repo: "KeiAppLab" };
@@ -746,11 +851,11 @@
                 if(!val) { 
                     clearFieldsExcept('inProject');
                     document.getElementById('inDate').value = getTodayString();
-                    document.getElementById('lastEditDatePop').style.display = "none"; 
+                    document.getElementById('lastEditDatePop').style.display = "none"; // ★追加: POPを消す
                     currentProjectId = "";
                     setImageValue("");
-                    checkProjectImages(""); // ← ★「下段のプロジェクトフォルダをロックする」処理に変更
-                    checkProjectUrl(""); 
+                    initImageSelector(); // 画像リストをデフォルトに戻す
+                    checkProjectUrl(""); // iframeプレビューを非表示に戻す
                     updatePreview(); 
                     return; 
                 }
@@ -758,14 +863,16 @@
                 if (typeof adminMasterData !== 'undefined') {
                     const post = adminMasterData.find(p => p.project_ja === val);
                     if (post) {
+                        // 履歴と完全に一致すれば、そのデータを自動入力
                         fillForm(post);
                     } else {
+                        // 履歴に存在しない文字が打たれた場合 =「新規作成」と判断して他をクリア
                         clearFieldsExcept('inProject');
                         document.getElementById('inDate').value = getTodayString();
-                        document.getElementById('lastEditDatePop').style.display = "none"; 
+                        document.getElementById('lastEditDatePop').style.display = "none"; // ★追加: POPを消す
                         currentProjectId = "";
                         setImageValue("");
-                        checkProjectImages(""); // ← ★「下段のプロジェクトフォルダをロックする」処理に変更
+                        initImageSelector();
                         checkProjectUrl(""); 
                     }
                 }
@@ -796,113 +903,355 @@
                 updatePreview();
             });
             
-            // --- 画像選択ロジック（API自動取得 ＋ 上下分割表示） ---
-            let cachedIndexPhotos = null; // index_photのキャッシュ
+            // --- 🖼️ 超進化版：画像ファイル管理ロジック ---
+            let cachedIndexPhotos =[];
+            let currentProjectPhotos =[];
+            
+            // 右クリックで選択中の対象を保持する変数
+            let contextTarget = { folder: null, path: null, name: null };
     
-            // 1. index_phot フォルダの画像をAPIで取得
-            async function fetchIndexPhotos() {
-                if (cachedIndexPhotos !== null) return cachedIndexPhotos;
+            // 1. 画像リストの取得と描画
+            async function fetchAndRenderImages() {
                 const token = localStorage.getItem('gh_token');
-                if (!token) return[];
+                if (!token) return;
+    
+                const gridIndex = document.getElementById('grid-index-phot');
+                const gridProject = document.getElementById('grid-project');
+                const projId = currentProjectId; // 現在のプロジェクトID
+    
+                // フォルダ名のラベル更新
+                document.getElementById('label-project-folder').textContent = projId ? projId : "[project未選択]";
+    
+                // --- index_phot の取得 ---
                 try {
-                    const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/index_phot`, {
-                        headers: { Authorization: `token ${token}` }
-                    });
+                    const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/index_phot`, { headers: { Authorization: `token ${token}` }});
                     if (res.ok) {
                         const files = await res.json();
                         cachedIndexPhotos = files.filter(f => f.type === "file" && /\.(png|jpe?g|gif|webp)$/i.test(f.name));
-                        return cachedIndexPhotos;
                     }
-                } catch (e) { console.warn("index_phot fetch error"); }
-                return[];
+                } catch (e) { console.warn(e); }
+    
+                // --- [project] の取得 ---
+                currentProjectPhotos =[];
+                if (projId) {
+                    try {
+                        const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${projId}`, { headers: { Authorization: `token ${token}` }});
+                        if (res.ok) {
+                            const files = await res.json();
+                            currentProjectPhotos = files.filter(f => f.type === "file" && /\.(png|jpe?g|gif|webp)$/i.test(f.name));
+                        }
+                    } catch (e) { /* フォルダがない場合は無視 */ }
+                }
+    
+                // 描画実行
+                renderGrid(gridIndex, cachedIndexPhotos, 'index_phot', true);
+                renderGrid(gridProject, currentProjectPhotos, projId, false);
             }
     
-            // 2. project フォルダの画像をAPIで取得
-            async function fetchProjectImages(projectId) {
-                const token = localStorage.getItem('gh_token');
-                if (!token || !projectId) return[];
-                try {
-                    const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${projectId}`, {
-                        headers: { Authorization: `token ${token}` }
-                    });
-                    if (res.ok) {
-                        const files = await res.json();
-                        return files.filter(f => f.type === "file" && /\.(png|jpe?g|gif|webp)$/i.test(f.name));
+            // グリッド描画関数 (isSelectable: クリックで入力欄にセットできるか)
+            function renderGrid(container, files, folderName, isSelectable) {
+                container.innerHTML = '';
+                files.forEach(f => {
+                    const div = document.createElement('div');
+                    div.className = 'custom-option';
+                    const fullPath = `${folderName}/${f.name}`;
+                    
+                    // 左クリック：index_photのみ選択可能
+                    if (isSelectable) {
+                        div.onclick = (e) => {
+                            // 右クリック時は反応させない
+                            if (e.button === 2) return;
+                            selectImage(fullPath, f.name);
+                        };
                     }
-                } catch (e) { /* フォルダがない場合は空配列を返す */ }
-                return[];
-            }
     
-            // 3. 画像リストの描画（初期化とプロジェクト選択時）
-            async function initImageSelector() {
-                // index_phot の画像を上段に描画
-                const indexFiles = await fetchIndexPhotos();
-                const indexGrid = document.getElementById('grid-index-phot');
-                indexGrid.innerHTML = '';
-                indexFiles.forEach(file => {
-                    indexGrid.appendChild(createImageElement(file.path, file.name));
+                    // 右クリックイベントの設定
+                    div.oncontextmenu = (e) => {
+                        e.preventDefault();
+                        e.stopPropagation(); // 親への伝播を止める
+                        showContextMenu(e.clientX, e.clientY, folderName, fullPath, f.name);
+                    };
+    
+                    // キャッシュ回避のためパブリックURLではなくAPIから直接描画するか、RawURLを使用
+                    const rawUrl = `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/main/${fullPath}`;
+                    
+                    div.innerHTML = `
+                        <img src="${rawUrl}" class="option-img" onerror="this.src='https://via.placeholder.com/75'">
+                        <span class="option-text">${f.name}</span>
+                    `;
+                    container.appendChild(div);
                 });
             }
     
-            // プロジェクト名が入力・選択された時に下段を更新する
-            async function checkProjectImages(projectId) {
-                const projectGrid = document.getElementById('grid-project');
-                const projectMsg = document.getElementById('project-folder-msg');
-                const folderNameSpan = document.getElementById('current-project-folder-name');
+            // 開閉制御
+            function toggleImageSelect() { 
+                const wrapper = document.querySelector('.custom-select');
+                wrapper.classList.toggle('open'); 
+                if (wrapper.classList.contains('open')) {
+                    fetchAndRenderImages(); // 開くたびに最新状態をチェック
+                }
+            }
     
-                if (!projectId) {
-                    // プロジェクト名が空の場合、下段をロック状態にする
-                    projectGrid.innerHTML = '<div id="project-folder-msg" style="font-size:0.7rem; color:#999; grid-column: 1 / -1; padding: 10px;">※プロジェクト名を入力すると利用可能になります</div>';
-                    folderNameSpan.textContent = "[project]";
-                    document.getElementById('folder-project').classList.remove('active');
+            function selectImage(fullPath, fileName) {
+                document.getElementById('inImage').value = fullPath;
+                document.getElementById('selectedImageText').textContent = fileName;
+                document.querySelector('.custom-select').classList.remove('open');
+                updatePreview();
+            }
+    
+            function setImageValue(fullPath) {
+                document.getElementById('inImage').value = fullPath;
+                const fileName = fullPath.split('/').pop() || "画像を選択...";
+                document.getElementById('selectedImageText').textContent = fileName;
+            }
+    
+            window.addEventListener('click', function(e) {
+                const select = document.querySelector('.custom-select');
+                // 右クリックメニュー等が出ている時は閉じない
+                if (!select.contains(e.target) && e.target.id !== 'contextMenu' && !e.target.classList.contains('context-item')) {
+                    select.classList.remove('open');
+                }
+                hideContextMenu(); // 左クリックでメニューを消す
+            });
+    
+            // --- 右クリックメニュー (コンテキストメニュー) の制御 ---
+            function showContextMenu(x, y, folder, path, name) {
+                contextTarget = { folder, path, name };
+                const menu = document.getElementById('contextMenu');
+                menu.style.display = 'block';
+                menu.style.left = x + 'px';
+                menu.style.top = y + 'px';
+            }
+            function hideContextMenu() {
+                document.getElementById('contextMenu').style.display = 'none';
+            }
+    
+            // 余白を右クリックした時はPaste用メニューを出す
+            document.getElementById('imageManagerWrapper').addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                // どのフォルダの上で右クリックしたかを判定
+                let targetFolder = null;
+                if (e.target.closest('#grid-index-phot')) targetFolder = 'index_phot';
+                else if (e.target.closest('#grid-project') && currentProjectId) targetFolder = currentProjectId;
+                
+                if (targetFolder) {
+                    contextTarget = { folder: targetFolder, path: null, name: null };
+                    const menu = document.getElementById('contextMenu');
+                    menu.style.display = 'block';
+                    menu.style.left = e.clientX + 'px';
+                    menu.style.top = e.clientY + 'px';
+                }
+            });
+    
+            // リネーム処理 (GitHub API使用)
+            document.getElementById('menuRename').addEventListener('click', async () => {
+                hideContextMenu();
+                if (!contextTarget.path) return;
+    
+                const oldName = contextTarget.name;
+                const newName = prompt(`「${oldName}」の新しい名前を入力してください（半角英数字、.png等含む）`, oldName);
+                
+                if (!newName || newName === oldName) return;
+                if (!/^[a-zA-Z0-9_\-\.]+$/.test(newName)) {
+                    alert("エラー：ファイル名は半角英数字、アンダースコア(_)、ハイフン(-)、ドット(.)のみ使用できます。");
                     return;
                 }
     
-                // プロジェクト名がある場合、APIで画像を取ってきて下段に描画
-                folderNameSpan.textContent = projectId;
-                document.getElementById('folder-project').classList.add('active');
-                projectGrid.innerHTML = '<div style="font-size:0.7rem; color:#666; grid-column:1/-1;">読込中...</div>';
+                const token = localStorage.getItem("gh_token");
+                const newPath = `${contextTarget.folder}/${newName}`;
     
-                const projectFiles = await fetchProjectImages(projectId);
-                projectGrid.innerHTML = ''; // ロード文字を消す
-                
-                if (projectFiles.length === 0) {
-                    projectGrid.innerHTML = '<div style="font-size:0.7rem; color:#999; grid-column: 1 / -1; padding: 10px;">画像がありません。ここにドラッグ＆ドロップしてください。</div>';
-                } else {
-                    projectFiles.forEach(file => {
-                        projectGrid.appendChild(createImageElement(file.path, file.name));
+                try {
+                    // 1. 古いファイルの中身とSHAを取得
+                    const getRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${contextTarget.path}`, { headers: { Authorization: `token ${token}` }});
+                    const fileData = await getRes.json();
+                    
+                    // 2. 新しい名前で作成
+                    const putRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${newPath}`, {
+                        method: "PUT",
+                        headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                        body: JSON.stringify({ message: `Rename ${oldName} to ${newName}`, content: fileData.content }) // base64そのまま
                     });
+                    
+                    if (!putRes.ok) throw new Error("新しいファイルの作成に失敗");
+    
+                    // 3. 古いファイルを削除
+                    await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${contextTarget.path}`, {
+                        method: "DELETE",
+                        headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                        body: JSON.stringify({ message: `Delete old file ${oldName}`, sha: fileData.sha })
+                    });
+    
+                    alert("名前を変更しました！");
+                    fetchAndRenderImages(); // 再描画
+                } catch (err) {
+                    alert("リネームに失敗しました:\n" + err.message);
                 }
-            }
-    
-            // 4. 個別の画像要素(div)を作成するヘルパー関数
-            function createImageElement(path, name) {
-                const div = document.createElement('div');
-                div.className = 'custom-option';
-                div.onclick = () => { selectImage(path, name); };
-                div.innerHTML = `
-                    <img src="${path}" class="option-img" onerror="this.src='https://via.placeholder.com/75'">
-                    <span class="option-text">${name}</span>
-                `;
-                return div;
-            }
-    
-            // プルダウンの開閉と選択処理
-            function toggleImageSelect(){ document.querySelector('.custom-select').classList.toggle('open'); }
-            function selectImage(p, n){ 
-                document.getElementById('inImage').value = p; 
-                document.getElementById('selectedImageText').textContent = n; 
-                document.querySelector('.custom-select').classList.remove('open'); 
-                updatePreview(); 
-            }
-            function setImageValue(p){ 
-                document.getElementById('inImage').value = p; 
-                document.getElementById('selectedImageText').textContent = p.split('/').pop() || "画像を選択..."; 
-            }
-            window.addEventListener('click', function(e) {
-                const select = document.querySelector('.custom-select');
-                if (select && !select.contains(e.target)) select.classList.remove('open');
             });
+    
+            // 削除処理
+            document.getElementById('menuDelete').addEventListener('click', async () => {
+                hideContextMenu();
+                if (!contextTarget.path) return;
+                if (!confirm(`本当に「${contextTarget.name}」を削除しますか？\nこの操作は取り消せません。`)) return;
+    
+                const token = localStorage.getItem("gh_token");
+                try {
+                    const getRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${contextTarget.path}`, { headers: { Authorization: `token ${token}` }});
+                    const fileData = await getRes.json();
+    
+                    const delRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${contextTarget.path}`, {
+                        method: "DELETE",
+                        headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                        body: JSON.stringify({ message: `Delete ${contextTarget.name}`, sha: fileData.sha })
+                    });
+    
+                    if (delRes.ok) {
+                        alert("削除しました。");
+                        fetchAndRenderImages();
+                    } else throw new Error("削除失敗");
+                } catch(e) { alert(e.message); }
+            });
+    
+            // --- ドラッグ＆ドロップ＆ペーストによる画像アップロード処理 ---
+            
+            const wrapper = document.getElementById('imageManagerWrapper');
+    
+            // ペースト対応
+            wrapper.addEventListener('paste', (e) => {
+                hideContextMenu();
+                const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+                for (let index in items) {
+                    const item = items[index];
+                    if (item.kind === 'file') {
+                        const blob = item.getAsFile();
+                        // 貼り付け先は最後に右クリックしたフォルダ、またはデフォルトで index_phot
+                        const targetFolder = contextTarget.folder || 'index_phot';
+                        processAndUploadImage(blob, targetFolder);
+                    }
+                }
+            });
+    
+            // D&D対応
+            const gridIndex = document.getElementById('grid-index-phot');
+            const gridProj = document.getElementById('grid-project');
+    
+            function setupDragAndDrop(targetElement, targetFolder) {
+                targetElement.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    targetElement.classList.add('dragover');
+                });
+                targetElement.addEventListener('dragleave', () => {
+                    targetElement.classList.remove('dragover');
+                });
+                targetElement.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    targetElement.classList.remove('dragover');
+                    const file = e.dataTransfer.files[0];
+                    if (file) {
+                        if (targetFolder === 'project' && !currentProjectId) {
+                            alert("先にプロジェクト名を入力してください。");
+                            return;
+                        }
+                        const actualFolder = targetFolder === 'project' ? currentProjectId : targetFolder;
+                        processAndUploadImage(file, actualFolder);
+                    }
+                });
+            }
+            setupDragAndDrop(gridIndex, 'index_phot');
+            setupDragAndDrop(gridProj, 'project');
+    
+            // 画像の検証・リサイズチェックとアップロード
+            function processAndUploadImage(file, targetFolder) {
+                if (!file.type.startsWith('image/')) {
+                    alert("画像ファイルのみアップロード可能です。");
+                    return;
+                }
+    
+                const img = new Image();
+                const url = URL.createObjectURL(file);
+                
+                img.onload = async () => {
+                    URL.revokeObjectURL(url);
+                    // 400x400のチェック
+                    if (img.width !== 400 || img.height !== 400) {
+                        alert(`エラー：画像サイズが ${img.width}x${img.height} です。\n400px × 400px の画像のみアップロード可能です。`);
+                        return;
+                    }
+    
+                    // ファイル名の決定ロジック
+                    let finalName = file.name;
+                    
+                    // [project]フォルダへの追加の場合の特殊ルール
+                    if (targetFolder !== 'index_phot') {
+                        const existingIndexes = currentProjectPhotos
+                            .map(p => p.name)
+                            .filter(n => n.startsWith('index') && n.endsWith('.png'));
+                        
+                        if (existingIndexes.length === 0) {
+                            finalName = "index.png";
+                        } else {
+                            let maxNum = 0;
+                            existingIndexes.forEach(n => {
+                                const match = n.match(/index\((\d+)\)\.png/);
+                                if (match) {
+                                    const num = parseInt(match[1], 10);
+                                    if (num > maxNum) maxNum = num;
+                                } else if (n === 'index.png') {
+                                    if (0 >= maxNum) maxNum = 0;
+                                }
+                            });
+                            const nextNum = (maxNum + 1).toString().padStart(2, '0');
+                            finalName = `index(${nextNum}).png`;
+                        }
+                    } else {
+                        // index_phot への追加の場合：重複を避けるロジック
+                        let baseName = finalName.substring(0, finalName.lastIndexOf('.')) || finalName;
+                        let ext = finalName.substring(finalName.lastIndexOf('.'));
+                        baseName = baseName.replace(/[^a-zA-Z0-9_\-]/g, '');
+                        if(!baseName) baseName = "image_" + Date.now();
+    
+                        let count = 1;
+                        finalName = baseName + ext;
+                        const existingNames = cachedIndexPhotos.map(p => p.name);
+                        while (existingNames.includes(finalName)) {
+                            finalName = `${baseName}(${count})${ext}`;
+                            count++;
+                        }
+                    }
+    
+                    uploadToGitHub(file, targetFolder, finalName);
+                };
+                img.src = url;
+            }
+    
+            // GitHub APIへの書き込み
+            function uploadToGitHub(file, folder, fileName) {
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    const base64Content = e.target.result.split(',')[1];
+                    const path = `${folder}/${fileName}`;
+                    const token = localStorage.getItem("gh_token");
+    
+                    try {
+                        const putRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
+                            method: "PUT",
+                            headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                            body: JSON.stringify({ message: `Upload image ${fileName}`, content: base64Content })
+                        });
+    
+                        if (putRes.ok) {
+                            alert(`「${fileName}」をアップロードしました！`);
+                            fetchAndRenderImages(); // 再描画
+                        } else {
+                            throw new Error("アップロード失敗");
+                        }
+                    } catch (err) {
+                        alert("エラー: " + err.message);
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+            
             
             // --- プレビューロジック ---
             function checkProjectUrl(projectId) {
