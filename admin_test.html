@@ -105,12 +105,45 @@
 
         .custom-option { 
             position: relative; display: flex; flex-direction: column; align-items: center; text-align: center;
-            padding: 5px; border: 1px solid #eee; border-radius: 4px;
+            padding: 4px; border: 1px solid #eee; border-radius: 4px;
             cursor: pointer; transition: all 0.2s; color: #333; 
         }
         .custom-option:hover { background-color: #f2f9fc; border-color: #0056b3; color: #0056b3; }
-        .option-img { width: 75px; height: 75px; object-fit: cover; border-radius: 4px; margin-bottom: 5px; border: 1px solid #ddd; }
+        .option-img { width: 80px; height: 80px; object-fit: cover; border-radius: 4px; margin-bottom: 5px; border: 1px solid #ddd; }
         .option-text { font-size: 0.8rem; font-weight: bold; word-break: break-all; }
+        /* カスタム画像選択UIと右クリックメニュー */
+        /* フォルダ枠のデザイン（上下に分割） */
+        .folder-section {
+            border-bottom: 1px solid #ccc;
+            background: #fff;
+            position: relative;
+            margin: 0; /* 外側の余白を削除 */
+        }
+        .folder-section:last-child {
+            border-bottom: none; /* 一番下の線は消す */
+        }
+        .folder-title {
+            background: #e6e6e6;
+            padding: 8px 15px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #333;
+            border-bottom: 1px solid #ccc;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        /* 画像が並ぶグリッドエリア */
+        .folder-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr); /* 常に横5つ分に固定 */
+            gap: 8px;
+            padding: 8px; /* 内側の余白だけ残す */
+            align-items: start; /* ▼ これで画像枠が下まで伸びるのを防ぎます ▼ */
+            overflow-y: auto;
+            transition: background 0.2s;
+        }
 
         /* --- プレビューエリア --- */
         .preview-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-bottom: 10px; }
@@ -206,39 +239,6 @@
             background-color: #003d82;
             transform: translateY(-2px);
             box-shadow: 0 6px 12px rgba(0,0,0,0.3);
-        }
-
-        /* カスタム画像選択UIと右クリックメニュー */
-        /* フォルダ枠のデザイン（上下に分割） */
-        .folder-section {
-            border-bottom: 1px solid #ccc;
-            background: #fff;
-            position: relative;
-            margin: 0; /* 外側の余白を削除 */
-        }
-        .folder-section:last-child {
-            border-bottom: none; /* 一番下の線は消す */
-        }
-        .folder-title {
-            background: #e6e6e6;
-            padding: 8px 15px;
-            font-size: 0.85rem;
-            font-weight: bold;
-            color: #333;
-            border-bottom: 1px solid #ccc;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        /* 画像が並ぶグリッドエリア */
-        .folder-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr); /* 常に横5つ分に固定 */
-            gap: 10px;
-            padding: 15px; /* 内側の余白だけ残す */
-            overflow-y: auto;
-            transition: background 0.2s;
         }
 
         /* ご要望の高さ指定 */
@@ -433,7 +433,8 @@
                                         </div>
                                         
                                         <!-- 展開されるエリア -->
-                                        <div class="custom-options" id="imageOptionsContainer" style="padding: 10px; background: #f0f0f0; cursor: default;">
+                                        <!-- ▼ padding: 0; に変更して外側の余白を完全に消す ▼ -->
+                                        <div class="custom-options" id="imageOptionsContainer" style="padding: 0; background: #f0f0f0; cursor: default;">
                                             
                                             <!-- 1. index_phot フォルダ (選択可能エリア) -->
                                             <div class="folder-section">
