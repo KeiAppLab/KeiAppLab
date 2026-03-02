@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ページタイトル | FreeCallApp</title>
+    <!-- ここに同じ<style>〜</style>を入れます -->
+</head>
+<body>
+
+<div class="container">
+    <!-- 大見出し -->
+    <h1>利用規約</h1>
+    
+    <!-- 制定日 -->
+    <div class="date">
+        制定日：2026年X月X日<br>
+        啓 App Lab
+    </div>
+
+    <!-- 前文 -->
+    <p>この利用規約（以下、「本規約」といいます）は、啓 App Lab（以下、「当方」といいます）が提供する...（前文を書く）</p>
+
+    <!-- 中見出し（条文） -->
+    <h2>第1条（適用）</h2>
+    <p>本文を書きます。</p>
+
+    <!-- 小見出しとリスト -->
+    <h3>1. 小項目のタイトル</h3>
+    <p>説明文を書きます。</p>
+    <ul>
+        <li><strong>項目名：</strong> 内容を書きます。</li>
+        <li><strong>注意事項：</strong> <span class="important">絶対に読んでほしい赤い文字</span>を書きます。</li>
+    </ul>
+    
+    // フォーム追加：お問い合わせの変更
+    <!-- お問い合わせ -->
+    <h2>第X条（お問い合わせ窓口）</h2>
+    <p>
+        本ポリシーおよび利用者情報の取扱い、データの削除要求に関するお問い合わせは、以下のフォームよりご連絡ください。
+    </p>
+
+    <!-- ▼ ここからお問い合わせフォーム ▼ -->
+    <div style="background: #f4f6f8; padding: 20px; border-radius: 8px; margin-top: 15px; border: 1px solid #ccc;">
+        <form id="contactForm" onsubmit="submitContact(event)">
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px; color: #333;">連絡先メールアドレス <span style="color:#d9534f;">*</span></label>
+                <input type="email" id="contactEmail" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 14px;" placeholder="例: your@email.com">
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px; color: #333;">件名（プロジェクト名）</label>
+                <!-- ※JavaScriptで現在のプロジェクト名を自動入力し、readonly（変更不可）にする -->
+                <input type="text" id="contactSubject" readonly style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 14px; background-color: #e9ecef; color: #555;">
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px; color: #333;">お問い合わせ内容 <span style="color:#d9534f;">*</span></label>
+                <textarea id="contactBody" required rows="5" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 14px;" placeholder="ご質問やデータ削除のご依頼内容をご記入ください。"></textarea>
+            </div>
+
+            <button type="submit" id="contactSubmitBtn" style="background-color: #F39C12; color: #fff; border: none; padding: 12px 20px; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%;">
+                送信する
+            </button>
+            <div id="contactMsg" style="margin-top: 10px; font-weight: bold; text-align: center; display: none;"></div>
+        </form>
+    </div>
+
+
+    <!-- フッター -->
+    <div class="footer">
+        &copy; 2026 KEI App Lab. All Rights Reserved.
+    </div>
+</div>
+
+</body>
+</html>
