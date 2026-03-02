@@ -72,6 +72,51 @@
         &copy; 2026 KEI App Lab. All Rights Reserved.
     </div>
 </div>
-
+<script>
+ async function submitContact(e) {
+              e.preventDefault();
+              const btn = document.getElementById('contactSubmitBtn');
+              const msg = document.getElementById('contactMsg');
+              
+              const email = document.getElementById('contactEmail').value;
+              const subject = document.getElementById('contactSubject').value;
+              const body = document.getElementById('contactBody').value;
+          
+              btn.textContent = "送信中...";
+              btn.disabled = true;
+          
+              try {
+                  // ★ここに先ほどコピーしたGASのURLを貼り付けます★
+                  const gasUrl = "https://script.google.com/macros/s/AKfycbxfMcUpWjoiFUu3vO2IoKgB2vPDzxhgIxZwECjN3Ra0VNl4EX5yclYRGTNIIfpEw7trow/exec"; 
+                  
+                  const response = await fetch(gasUrl, {
+                      method: "POST",
+                      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                      // action: "send" を送ることでGASが「受信処理」だと認識します
+                      body: new URLSearchParams({ email: email, subject: subject, body: body, action: "send" })
+                  });
+          
+                  // GASはCORSリダイレクトを返すため、response.ok が true なら成功とみなす
+                  if (response.ok || response.type === 'opaque') {
+                      msg.textContent = "✅ お問い合わせを送信しました。確認メールをお送りしました。";
+                      msg.style.color = "#27ae60";
+                      msg.style.display = "block";
+                      document.getElementById('contactForm').reset();
+                      // 件名だけは再度セットし直す
+                      document.getElementById('contactSubject').value = document.getElementById('app-title').textContent;
+                  } else {
+                      throw new Error("通信エラー");
+                  }
+              } catch (err) {
+                  msg.textContent = "❌ エラーが発生しました。時間をおいて再試行してください。";
+                  msg.style.color = "#d9534f";
+                  msg.style.display = "block";
+              } finally {
+                  btn.textContent = "送信する";
+                  btn.disabled = false;
+              }
+          }
+    
+</script>
 </body>
 </html>
