@@ -988,7 +988,6 @@
                     // 左クリック：index_photのみ選択可能
                     if (isSelectable) {
                         div.onclick = (e) => {
-                            // 右クリック時は反応させない
                             if (e.button === 2) return;
                             selectImage(fullPath, f.name);
                         };
@@ -996,11 +995,16 @@
     
                     // 右クリックイベントの設定
                     div.oncontextmenu = (e) => {
-                    e.preventDefault();
-                    e.stopPropagation(); // 親への伝播を止める
-                    // ▼ 修正: クリック座標ではなく、画像枠(div)そのものを渡す ▼
-                    showContextMenu(div, folderName, fullPath, f.name);
-                }
+                        e.preventDefault();
+                        e.stopPropagation(); // 親への伝播を止める
+                        
+                        // [project]フォルダの index.png はマスターなのでメニューを出さない
+                        if (!isSelectable && f.name === 'index.png') {
+                            return; // 何もせずに処理を終了する
+                        }
+    
+                        showContextMenu(div, folderName, fullPath, f.name);
+                    };
     
                     // キャッシュ回避のためパブリックURLではなくAPIから直接描画するか、RawURLを使用
                     const rawUrl = `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/main/${fullPath}`;
@@ -1044,60 +1048,59 @@
                 hideContextMenu(); // 左クリックでメニューを消す
             });
         
-            // --- 右クリックメニュー (コンテキストメニュー) の制御 ---
-            // 画像の上で右クリックした時 (Paste と Delete の両方を出す)
+        // --- 右クリックメニュー (コンテキストメニュー) の制御 ---
+        
             // 画像の上で右クリックした時 (画像枠の右上にメニューを出す)
-        function showContextMenu(element, folder, path, name) {
-            contextTarget = { folder, path, name };
-            const menu = document.getElementById('contextMenu');
-            const separator = document.getElementById('menuSeparator');
-            
-            // Deleteと区切り線を表示し、ペースト専用モードを解除
-            document.getElementById('menuDelete').style.display = 'block'; 
-            separator.style.display = 'block';
-            menu.classList.remove('paste-only'); 
-            
-            // 画像枠(element)の画面上の座標を取得
-            const rect = element.getBoundingClientRect();
-            
-            menu.style.display = 'block';
-            // 画像枠の「右端 (rect.right)」と「上端 (rect.top)」に合わせて配置
-            menu.style.left = rect.right + 'px';
-            menu.style.top = rect.top + 'px';
-        }
-
-        function hideContextMenu() {
-            document.getElementById('contextMenu').style.display = 'none';
-        }
-
-        // フォルダの「余白」で右クリックした時 (マウス位置に出す、Pasteのみ)
-        document.getElementById('imageManagerWrapper').addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-            
-            // すでに画像の上(custom-option)で右クリックされている場合は何もしない
-            if (e.target.closest('.custom-option')) return;
-
-            let targetFolder = null;
-            if (e.target.closest('#grid-index-phot')) targetFolder = 'index_phot';
-            else if (e.target.closest('#grid-project') && currentProjectId) targetFolder = currentProjectId;
-            
-            if (targetFolder) {
-                contextTarget = { folder: targetFolder, path: null, name: null };
+            function showContextMenu(element, folder, path, name) {
+                contextTarget = { folder, path, name };
                 const menu = document.getElementById('contextMenu');
                 const separator = document.getElementById('menuSeparator');
                 
-                // Deleteと区切り線を隠し、ペースト専用モード(中央揃え＆低め)にする
-                document.getElementById('menuDelete').style.display = 'none'; 
-                separator.style.display = 'none';
-                menu.classList.add('paste-only'); 
+                document.getElementById('menuDelete').style.display = 'block'; 
+                separator.style.display = 'block';
+                menu.classList.remove('paste-only'); 
                 
+                const rect = element.getBoundingClientRect();
                 menu.style.display = 'block';
-                // 余白の場合はマウスのクリック位置に出す
-                menu.style.left = e.clientX + 'px';
-                menu.style.top = e.clientY + 'px';
+                menu.style.left = rect.right + 'px';
+                menu.style.top = rect.top + 'px';
             }
-        });
-            // --- リネーム処理は廃止のため削除済 ---
+    
+            function hideContextMenu() {
+                document.getElementById('contextMenu').style.display = 'none';
+            }
+    
+            // メニューからマウスが外れたらメニューを消す
+            document.getElementById('contextMenu').addEventListener('mouseleave', () => {
+                hideContextMenu();
+            });
+    
+            // フォルダの「余白」や「タイトル枠」で右クリックした時 (Pasteのみ)
+            document.getElementById('imageManagerWrapper').addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                
+                if (e.target.closest('.custom-option')) return;
+    
+                let targetFolder = null;
+                // 枠全体(タイトル含む)で判定するため、親の folder-section 単位で探す
+                if (e.target.closest('.folder-section:nth-child(1)')) targetFolder = 'index_phot';
+                else if (e.target.closest('.folder-section:nth-child(2)') && currentProjectId) targetFolder = currentProjectId;
+                
+                if (targetFolder) {
+                    contextTarget = { folder: targetFolder, path: null, name: null };
+                    const menu = document.getElementById('contextMenu');
+                    const separator = document.getElementById('menuSeparator');
+                    
+                    document.getElementById('menuDelete').style.display = 'none'; 
+                    separator.style.display = 'none';
+                    menu.classList.add('paste-only'); 
+                    
+                    menu.style.display = 'block';
+                    // マウス位置から左上に 8px ずらして表示
+                    menu.style.left = (e.clientX - 8) + 'px';
+                    menu.style.top = (e.clientY - 8) + 'px';
+                }
+            });
     
             // 削除処理
             document.getElementById('menuDelete').addEventListener('click', async () => {
@@ -1169,16 +1172,26 @@
             // --- ドラッグ＆ドロップ＆ペーストによる画像アップロード処理 ---      
             const wrapper = document.getElementById('imageManagerWrapper');
     
-            // ペースト対応
+            // ペースト対応 (Ctrl+V)
             wrapper.addEventListener('paste', (e) => {
                 hideContextMenu();
                 const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+                
+                // ▼▼▼ 修正：現在マウスが乗っているフォルダ(hover)を優先して判定する ▼▼▼
+                let hoverFolder = null;
+                const hoveredElements = document.querySelectorAll(':hover');
+                for (let el of hoveredElements) {
+                    if (el.closest('.folder-section:nth-child(2)') && currentProjectId) hoverFolder = currentProjectId;
+                    else if (el.closest('.folder-section:nth-child(1)')) hoverFolder = 'index_phot';
+                }
+                // 右クリックで指定したフォルダか、マウスが乗っているフォルダか、デフォルト
+                let targetFolder = contextTarget.folder || hoverFolder || 'index_phot';
+                // ▲▲▲ 修正ここまで ▲▲▲
+    
                 for (let index in items) {
                     const item = items[index];
                     if (item.kind === 'file') {
                         const blob = item.getAsFile();
-                        // 貼り付け先は最後に右クリックしたフォルダ、またはデフォルトで index_phot
-                        const targetFolder = contextTarget.folder || 'index_phot';
                         processAndUploadImage(blob, targetFolder);
                     }
                 }
