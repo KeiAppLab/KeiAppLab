@@ -1078,25 +1078,24 @@
                 const menu = document.getElementById('contextMenu');
                 if (menu.style.display === 'block') {
                     
-                    // 1. マウスがメニュー(contextMenu)の上、またはその子要素の上にあるか？
+                    // 1. マウスがメニュー(contextMenu)の上に乗っているか？
                     const isOnMenu = e.target.closest('#contextMenu') !== null;
                     
-                    // 2. マウスが「現在選択中の画像枠(active-menu)」、またはその子要素(img, span等)の上にあるか？
-                    const activeOption = document.querySelector('.custom-option.active-menu');
-                    const isOnActiveOption = activeOption && (e.target === activeOption || activeOption.contains(e.target));
+                    // 2. マウスが「青く確定された画像枠(.active-menu)」の上に乗っているか？
+                    // (closestを使うことで、文字の上でも画像の上でも絶対に誤認しなくなります)
+                    const isOnActiveOption = e.target.closest('.custom-option.active-menu') !== null;
                     
-                    // 3. マウスが「画像管理エリア全体(imageManagerWrapper)」の上にあるか？ (余白で右クリックした場合の保護)
-                    const isOnWrapper = e.target.closest('#imageManagerWrapper') !== null;
-
-                    // 画像枠から右クリックした場合
-                    if (activeOption) {
+                    // 3. 現在、青く確定された枠が存在するかどうか（画像枠モードか余白モードかの判定）
+                    const isActiveOptionExists = document.querySelector('.custom-option.active-menu') !== null;
+    
+                    if (isActiveOptionExists) {
+                        // 【画像枠で右クリックした時】メニューと青い画像枠の両方から外れたら消す
                         if (!isOnMenu && !isOnActiveOption) {
                             hideContextMenu();
                         }
-                    } 
-                    // 余白から右クリックした場合（paste-onlyモード）
-                    else {
-                        if (!isOnMenu && !isOnWrapper) {
+                    } else {
+                        // 【余白で右クリックした時】メニューから外れたらすぐ消す
+                        if (!isOnMenu) {
                             hideContextMenu();
                         }
                     }
