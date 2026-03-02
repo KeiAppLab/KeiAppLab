@@ -300,6 +300,22 @@
             background: #007acc;
             color: white;
         }
+
+        /* 区切り線 */
+        .context-separator {
+            margin: 4px 0;
+            border: none;
+            border-top: 1px solid #ddd;
+        }
+
+        /* ペースト専用モード（余白クリック時）のスタイル */
+        #contextMenu.paste-only {
+            min-width: 130px;
+        }
+        #contextMenu.paste-only .context-item {
+            justify-content: center; /* センター揃え */
+            padding: 6px 15px;       /* 高さを少し低くする */
+        }
         
         /* --- ビルド監視用トースト通知 --- */
         #build-toast {
@@ -687,9 +703,9 @@
     <!-- ▼▼▼ 右クリックメニューのHTML ▼▼▼ -->
     <div id="contextMenu">
         <div class="context-item" id="menuPaste">📋 Paste image (貼り付け)</div>
-        <div class="context-item" id="menuRename">✏️ Rename (名前変更)</div>
+        <hr class="context-separator" id="menuSeparator"> <!-- 区切り線 -->
         <div class="context-item" id="menuDelete" style="color:#c0392b;">🗑️ Delete (削除)</div>
-    </div>
+    </div>>
 
     <script>
             // ▼▼▼ 設定 ▼▼▼
@@ -980,10 +996,11 @@
     
                     // 右クリックイベントの設定
                     div.oncontextmenu = (e) => {
-                        e.preventDefault();
-                        e.stopPropagation(); // 親への伝播を止める
-                        showContextMenu(e.clientX, e.clientY, folderName, fullPath, f.name);
-                    };
+                    e.preventDefault();
+                    e.stopPropagation(); // 親への伝播を止める
+                    // ▼ 修正: クリック座標ではなく、画像枠(div)そのものを渡す ▼
+                    showContextMenu(div, folderName, fullPath, f.name);
+                }
     
                     // キャッシュ回避のためパブリックURLではなくAPIから直接描画するか、RawURLを使用
                     const rawUrl = `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/main/${fullPath}`;
@@ -1026,80 +1043,61 @@
                 }
                 hideContextMenu(); // 左クリックでメニューを消す
             });
-    
+        
             // --- 右クリックメニュー (コンテキストメニュー) の制御 ---
-            function showContextMenu(x, y, folder, path, name) {
-                contextTarget = { folder, path, name };
+            // 画像の上で右クリックした時 (Paste と Delete の両方を出す)
+            // 画像の上で右クリックした時 (画像枠の右上にメニューを出す)
+        function showContextMenu(element, folder, path, name) {
+            contextTarget = { folder, path, name };
+            const menu = document.getElementById('contextMenu');
+            const separator = document.getElementById('menuSeparator');
+            
+            // Deleteと区切り線を表示し、ペースト専用モードを解除
+            document.getElementById('menuDelete').style.display = 'block'; 
+            separator.style.display = 'block';
+            menu.classList.remove('paste-only'); 
+            
+            // 画像枠(element)の画面上の座標を取得
+            const rect = element.getBoundingClientRect();
+            
+            menu.style.display = 'block';
+            // 画像枠の「右端 (rect.right)」と「上端 (rect.top)」に合わせて配置
+            menu.style.left = rect.right + 'px';
+            menu.style.top = rect.top + 'px';
+        }
+
+        function hideContextMenu() {
+            document.getElementById('contextMenu').style.display = 'none';
+        }
+
+        // フォルダの「余白」で右クリックした時 (マウス位置に出す、Pasteのみ)
+        document.getElementById('imageManagerWrapper').addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            
+            // すでに画像の上(custom-option)で右クリックされている場合は何もしない
+            if (e.target.closest('.custom-option')) return;
+
+            let targetFolder = null;
+            if (e.target.closest('#grid-index-phot')) targetFolder = 'index_phot';
+            else if (e.target.closest('#grid-project') && currentProjectId) targetFolder = currentProjectId;
+            
+            if (targetFolder) {
+                contextTarget = { folder: targetFolder, path: null, name: null };
                 const menu = document.getElementById('contextMenu');
+                const separator = document.getElementById('menuSeparator');
+                
+                // Deleteと区切り線を隠し、ペースト専用モード(中央揃え＆低め)にする
+                document.getElementById('menuDelete').style.display = 'none'; 
+                separator.style.display = 'none';
+                menu.classList.add('paste-only'); 
+                
                 menu.style.display = 'block';
-                menu.style.left = x + 'px';
-                menu.style.top = y + 'px';
+                // 余白の場合はマウスのクリック位置に出す
+                menu.style.left = e.clientX + 'px';
+                menu.style.top = e.clientY + 'px';
             }
-            function hideContextMenu() {
-                document.getElementById('contextMenu').style.display = 'none';
-            }
-    
-            // 余白を右クリックした時はPaste用メニューを出す
-            document.getElementById('imageManagerWrapper').addEventListener('contextmenu', (e) => {
-                e.preventDefault();
-                // どのフォルダの上で右クリックしたかを判定
-                let targetFolder = null;
-                if (e.target.closest('#grid-index-phot')) targetFolder = 'index_phot';
-                else if (e.target.closest('#grid-project') && currentProjectId) targetFolder = currentProjectId;
-                
-                if (targetFolder) {
-                    contextTarget = { folder: targetFolder, path: null, name: null };
-                    const menu = document.getElementById('contextMenu');
-                    menu.style.display = 'block';
-                    menu.style.left = e.clientX + 'px';
-                    menu.style.top = e.clientY + 'px';
-                }
-            });
-    
-            // リネーム処理 (GitHub API使用)
-            document.getElementById('menuRename').addEventListener('click', async () => {
-                hideContextMenu();
-                if (!contextTarget.path) return;
-    
-                const oldName = contextTarget.name;
-                const newName = prompt(`「${oldName}」の新しい名前を入力してください（半角英数字、.png等含む）`, oldName);
-                
-                if (!newName || newName === oldName) return;
-                if (!/^[a-zA-Z0-9_\-\.]+$/.test(newName)) {
-                    alert("エラー：ファイル名は半角英数字、アンダースコア(_)、ハイフン(-)、ドット(.)のみ使用できます。");
-                    return;
-                }
-    
-                const token = localStorage.getItem("gh_token");
-                const newPath = `${contextTarget.folder}/${newName}`;
-    
-                try {
-                    // 1. 古いファイルの中身とSHAを取得
-                    const getRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${contextTarget.path}`, { headers: { Authorization: `token ${token}` }});
-                    const fileData = await getRes.json();
-                    
-                    // 2. 新しい名前で作成
-                    const putRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${newPath}`, {
-                        method: "PUT",
-                        headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
-                        body: JSON.stringify({ message: `Rename ${oldName} to ${newName}`, content: fileData.content }) // base64そのまま
-                    });
-                    
-                    if (!putRes.ok) throw new Error("新しいファイルの作成に失敗");
-    
-                    // 3. 古いファイルを削除
-                    await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${contextTarget.path}`, {
-                        method: "DELETE",
-                        headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
-                        body: JSON.stringify({ message: `Delete old file ${oldName}`, sha: fileData.sha })
-                    });
-    
-                    alert("名前を変更しました！");
-                    fetchAndRenderImages(); // 再描画
-                } catch (err) {
-                    alert("リネームに失敗しました:\n" + err.message);
-                }
-            });
+        });
+            // --- リネーム処理は廃止のため削除済 ---
     
             // 削除処理
             document.getElementById('menuDelete').addEventListener('click', async () => {
@@ -1125,8 +1123,7 @@
                 } catch(e) { alert(e.message); }
             });
     
-            // --- ドラッグ＆ドロップ＆ペーストによる画像アップロード処理 ---
-            
+            // --- ドラッグ＆ドロップ＆ペーストによる画像アップロード処理 ---      
             const wrapper = document.getElementById('imageManagerWrapper');
     
             // ペースト対応
