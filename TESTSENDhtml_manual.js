@@ -168,7 +168,7 @@ Email: keiapplab@gmail.com
         <li><strong>注意事項：</strong> <span class="important">絶対に読んでほしい赤い文字</span>を書きます。</li>
     </ul>
     
-    // フォーム追加：お問い合わせの変更
+    <!-- フォーム追加：お問い合わせの変更 -->
     <!-- お問い合わせ -->
     <h2>第X条（お問い合わせ窓口）</h2>
     <p>
