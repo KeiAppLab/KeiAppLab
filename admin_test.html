@@ -1077,14 +1077,13 @@
             window.addEventListener('mousemove', (e) => {
                 const menu = document.getElementById('contextMenu');
                 if (menu.style.display === 'block') {
-                    const activeOption = document.querySelector('.custom-option.active-menu');
+                    // 1. マウスが右クリックメニュー自体の上にあるか
+                    const isOnMenu = e.target.closest('#contextMenu') !== null;
                     
-                    // マウスがメニューの上にあるか？
-                    const isOnMenu = menu.contains(e.target);
-                    // マウスが色付きの画像枠の上にあるか？
-                    const isOnOption = activeOption && activeOption.contains(e.target);
+                    // 2. マウスが「現在選択中の画像枠（active-menu）」の上（またはその子要素の上）にあるか
+                    const isOnOption = e.target.closest('.custom-option.active-menu') !== null;
                     
-                    // メニューの上でもなく、画像枠の上でもなければ消す
+                    // どちらにも乗っていなければ、メニューを消して枠の色も戻す
                     if (!isOnMenu && !isOnOption) {
                         hideContextMenu();
                     }
