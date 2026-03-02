@@ -1,6 +1,6 @@
 const newsData = [
     {
-        "date": "2026.03.02",
+        "date": "2026.03.03",
         "category": "update",
         "title_ja": "広告を力に、通話を自由に。",
         "title_en": "Powered by ads, call freely.",
@@ -9,7 +9,7 @@ const newsData = [
         "title_es": "Llamadas libres impulsadas por anuncios."
     },
     {
-        "date": "2026.02.12",
+        "date": "2026.03.02",
         "category": "update",
         "title_ja": "広告を力に、通話を自由に。",
         "title_en": "Powered by ads, call freely.",
