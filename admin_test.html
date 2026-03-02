@@ -111,6 +111,7 @@
             cursor: pointer; transition: all 0.2s; color: #333; 
         }
         .custom-option:hover { background-color: #f2f9fc; border-color: #0056b3; color: #0056b3; }
+        .custom-option.active-menu { background-color: #f2f9fc; border-color: #0056b3; color: #0056b3; }
         .option-img { width: 80px; height: 80px; object-fit: cover; border-radius: 4px; margin-bottom: 4px; border: 1px solid #ddd; }
         
         .option-text { 
@@ -1067,12 +1068,27 @@
             }
     
             function hideContextMenu() {
-                document.getElementById('contextMenu').style.display = 'none';
+            document.getElementById('contextMenu').style.display = 'none';
+            // メニューが消える時、画像枠の維持色(active-menu)も消す
+            document.querySelectorAll('.custom-option').forEach(el => el.classList.remove('active-menu'));
             }
     
-            // メニューからマウスが外れたらメニューを消す
-            document.getElementById('contextMenu').addEventListener('mouseleave', () => {
-                hideContextMenu();
+            // マウスの動きを監視して、枠とメニューの両方から離れたら消す
+            window.addEventListener('mousemove', (e) => {
+                const menu = document.getElementById('contextMenu');
+                if (menu.style.display === 'block') {
+                    const activeOption = document.querySelector('.custom-option.active-menu');
+                    
+                    // マウスがメニューの上にあるか？
+                    const isOnMenu = menu.contains(e.target);
+                    // マウスが色付きの画像枠の上にあるか？
+                    const isOnOption = activeOption && activeOption.contains(e.target);
+                    
+                    // メニューの上でもなく、画像枠の上でもなければ消す
+                    if (!isOnMenu && !isOnOption) {
+                        hideContextMenu();
+                    }
+                }
             });
     
             // フォルダの「余白」や「タイトル枠」で右クリックした時 (Pasteのみ)
