@@ -1055,10 +1055,16 @@
             function showContextMenu(element, folder, path, name) {
                 contextTarget = { folder, path, name };
                 const menu = document.getElementById('contextMenu');
-                const separator = document.getElementById('menuSeparator');
+                const separator = document.getElementById('menuSeparator'); // 存在しなくてもエラーにならないよう対策済
                 
-                document.getElementById('menuDelete').style.display = 'block'; 
-                separator.style.display = 'block';
+                document.querySelectorAll('.custom-option').forEach(el => el.classList.remove('active-menu'));
+                if (element) {
+                    element.classList.add('active-menu');
+                }
+    
+                const delBtn = document.getElementById('menuDelete');
+                if(delBtn) delBtn.style.display = 'block'; 
+                if(separator) separator.style.display = 'block';
                 menu.classList.remove('paste-only'); 
                 
                 const rect = element.getBoundingClientRect();
@@ -1068,33 +1074,34 @@
             }
     
             function hideContextMenu() {
-            document.getElementById('contextMenu').style.display = 'none';
-            // メニューが消える時、画像枠の維持色(active-menu)も消す
-            document.querySelectorAll('.custom-option').forEach(el => el.classList.remove('active-menu'));
+                const menu = document.getElementById('contextMenu');
+                if (menu) menu.style.display = 'none';
+                // メニューが消える時、青い枠も一緒に消す
+                document.querySelectorAll('.custom-option').forEach(el => el.classList.remove('active-menu'));
             }
     
-            // マウスの動きを監視して、枠とメニューの両方から離れたら消す
+            // 「青い枠」か「メニュー」に乗っていれば消さないロジック
             window.addEventListener('mousemove', (e) => {
                 const menu = document.getElementById('contextMenu');
-                if (menu.style.display === 'block') {
+                
+                if (menu && menu.style.display === 'block') {
                     
-                    // 1. マウスがメニュー(contextMenu)の上に乗っているか？
+                    // 1. マウスが「メニュー」の上にあるか？
                     const isOnMenu = e.target.closest('#contextMenu') !== null;
                     
-                    // 2. マウスが「青く確定された画像枠(.active-menu)」の上に乗っているか？
-                    // (closestを使うことで、文字の上でも画像の上でも絶対に誤認しなくなります)
+                    // 2. マウスが「青い枠（active-menu）」の上にあるか？
                     const isOnActiveOption = e.target.closest('.custom-option.active-menu') !== null;
                     
-                    // 3. 現在、青く確定された枠が存在するかどうか（画像枠モードか余白モードかの判定）
+                    // 3. 今、青い枠が存在しているか？（画像で右クリックしたのか、余白で右クリックしたのかの違い）
                     const isActiveOptionExists = document.querySelector('.custom-option.active-menu') !== null;
     
                     if (isActiveOptionExists) {
-                        // 【画像枠で右クリックした時】メニューと青い画像枠の両方から外れたら消す
+                        // 画像の右クリック時：「メニュー」にも「青い枠」にも乗っていなければ消す！
                         if (!isOnMenu && !isOnActiveOption) {
                             hideContextMenu();
                         }
                     } else {
-                        // 【余白で右クリックした時】メニューから外れたらすぐ消す
+                        // 余白の右クリック時：「メニュー」から外れたら消す！
                         if (!isOnMenu) {
                             hideContextMenu();
                         }
@@ -1102,32 +1109,34 @@
                 }
             });
     
-            // フォルダの「余白」や「タイトル枠」で右クリックした時 (Pasteのみ)
-            document.getElementById('imageManagerWrapper').addEventListener('contextmenu', (e) => {
-                e.preventDefault();
-                
-                if (e.target.closest('.custom-option')) return;
+            // フォルダの「余白」や「タイトル枠」で右クリックした時 (Pasteのみ出す処理)
+            const wrapperEl = document.getElementById('imageManagerWrapper');
+            if (wrapperEl) {
+                wrapperEl.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    
+                    // すでに青い画像枠の上なら何もしない
+                    if (e.target.closest('.custom-option')) return;
     
-                let targetFolder = null;
-                // 枠全体(タイトル含む)で判定するため、親の folder-section 単位で探す
-                if (e.target.closest('.folder-section:nth-child(1)')) targetFolder = 'index_phot';
-                else if (e.target.closest('.folder-section:nth-child(2)') && currentProjectId) targetFolder = currentProjectId;
-                
-                if (targetFolder) {
-                    contextTarget = { folder: targetFolder, path: null, name: null };
-                    const menu = document.getElementById('contextMenu');
-                    const separator = document.getElementById('menuSeparator');
+                    let targetFolder = null;
+                    if (e.target.closest('.folder-section:nth-child(1)')) targetFolder = 'index_phot';
+                    else if (e.target.closest('.folder-section:nth-child(2)') && currentProjectId) targetFolder = currentProjectId;
                     
-                    document.getElementById('menuDelete').style.display = 'none'; 
-                    separator.style.display = 'none';
-                    menu.classList.add('paste-only'); 
-                    
-                    menu.style.display = 'block';
-                    // マウス位置から左上に 8px ずらして表示
-                    menu.style.left = (e.clientX - 8) + 'px';
-                    menu.style.top = (e.clientY - 8) + 'px';
-                }
-            });
+                    if (targetFolder) {
+                        contextTarget = { folder: targetFolder, path: null, name: null };
+                        const menu = document.getElementById('contextMenu');
+                        const separator = document.getElementById('menuSeparator');
+                        const delBtn = document.getElementById('menuDelete');
+                        
+                        if(delBtn) delBtn.style.display = 'none'; 
+                        if(separator) separator.style.display = 'none';
+                        menu.classList.add('paste-only'); 
+                        
+                        menu.style.display = 'block';
+                        menu.style.left = (e.clientX - 8) + 'px';
+                        menu.style.top = (e.clientY - 8) + 'px';
+                    }
+                });
     
             // 削除処理
             document.getElementById('menuDelete').addEventListener('click', async () => {
