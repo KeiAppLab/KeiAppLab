@@ -67,10 +67,11 @@ const adminMasterData = [
     },
     {
         "project_id": "gorila",
-        "date": "2026.02.12",
+        "date": "2026.03.02",
         "category": "update",
-        "image": "index_phot/index_play.png",
+        "image": "index_phot/index_about.png",
         "status": "coming",
+        "privacy_html": "",
         "project_ja": "GORIRA",
         "project_en": "GORILA",
         "project_de": "Gratis Anruf-App",
