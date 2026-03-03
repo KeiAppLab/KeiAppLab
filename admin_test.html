@@ -1407,48 +1407,41 @@
                         alert(`エラー：画像サイズが ${img.width}x${img.height} です。\n400px × 400px の画像のみアップロード可能です。`);
                         return;
                     }
-    
-                    // ファイル名の決定ロジック
+        
+                    // ▼▼▼ ファイル名の決定ロジック (超進化版) ▼▼▼
                     let finalName = file.name;
+                    // 拡張子を取得（.png, .jpg など）
+                    let ext = finalName.substring(finalName.lastIndexOf('.'));
+                    if (!ext.includes('.')) ext = '.png'; // 拡張子不明時の安全装置
                     
-                    // [project]フォルダへの追加の場合の特殊ルール
                     if (targetFolder !== 'index_phot') {
-                        const existingIndexes = currentProjectPhotos
-                            .map(p => p.name)
-                            .filter(n => n.startsWith('index') && n.endsWith('.png'));
+                        // 1. [project]フォルダの場合：強制的にタイムスタンプ(YYYYMMDD_HHMMSS)でリネーム
+                        const now = new Date();
+                        const pad = (n) => n.toString().padStart(2, '0'); // 1桁の数字を0埋めする魔法
+                        const timeStr = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
                         
-                        if (existingIndexes.length === 0) {
-                            finalName = "index.png";
-                        } else {
-                            let maxNum = 0;
-                            existingIndexes.forEach(n => {
-                                const match = n.match(/index\((\d+)\)\.png/);
-                                if (match) {
-                                    const num = parseInt(match[1], 10);
-                                    if (num > maxNum) maxNum = num;
-                                } else if (n === 'index.png') {
-                                    if (0 >= maxNum) maxNum = 0;
-                                }
-                            });
-                            const nextNum = (maxNum + 1).toString().padStart(2, '0');
-                            finalName = `index(${nextNum}).png`;
-                        }
-                    } else {
-                        // index_phot への追加の場合：重複を避けるロジック
-                        let baseName = finalName.substring(0, finalName.lastIndexOf('.')) || finalName;
-                        let ext = finalName.substring(finalName.lastIndexOf('.'));
-                        baseName = baseName.replace(/[^a-zA-Z0-9_\-]/g, '');
-                        if(!baseName) baseName = "image_" + Date.now();
+                        finalName = `img_${timeStr}${ext}`; // 例: img_20260302_153022.png
     
+                    } else {
+                        // 2. index_phot フォルダの場合：そのままの名前（被ったら 01〜99 を付与）
+                        let baseName = finalName.substring(0, finalName.lastIndexOf('.')) || finalName;
+                        
+                        // WindowsやMacでファイル名に使えない記号(\ / : * ? " < > |)だけ安全に削除（日本語はそのまま）
+                        baseName = baseName.replace(/[\\/:*?"<>|]/g, '_'); 
+        
                         let count = 1;
                         finalName = baseName + ext;
                         const existingNames = cachedIndexPhotos.map(p => p.name);
-                        while (existingNames.includes(finalName)) {
-                            finalName = `${baseName}(${count})${ext}`;
+                        
+                        // すでに同じ名前が存在するなら、01〜99の番号を付ける
+                        while (existingNames.includes(finalName) && count <= 99) {
+                            const numStr = count.toString().padStart(2, '0'); // 01, 02... にする
+                            finalName = `${baseName}${numStr}${ext}`;
                             count++;
                         }
                     }
-    
+                    // ▲▲▲ ファイル名決定ロジックここまで ▲▲▲
+        
                     uploadToGitHub(file, targetFolder, finalName);
                 };
                 img.src = url;
