@@ -1191,16 +1191,44 @@
             document.getElementById('menuDelete').addEventListener('click', async () => {
                 hideContextMenu();
                 if (!contextTarget.path) return;
+    
+                // ▼▼▼ 超・安全装置（フェイルセーフ） ▼▼▼
+                if (contextTarget.folder === 'index_phot') {
+                    // 1. index_phot内の画像：プロジェクトで使用中かチェックする
+                    let isUsed = false;
+                    
+                    // A: 保存済みのマスターデータをチェック
+                    if (typeof adminMasterData !== 'undefined') {
+                        isUsed = adminMasterData.some(item => item.image === contextTarget.path);
+                    }
+                    // B: 現在エディタで一時保存(リストに追加)しているデータもチェック
+                    if (!isUsed && typeof allPosts !== 'undefined') {
+                        isUsed = allPosts.some(item => item.image === contextTarget.path);
+                    }
+    
+                    if (isUsed) {
+                        alert(`⚠️ ブロックされました\n\n「${contextTarget.name}」はいずれかのプロジェクトで使用中のため、削除できません。`);
+                        return; // 削除処理をここで強制終了
+                    }
+    
+                } else {
+                    // 2. [project]フォルダ内の画像：マスター画像(index.png)かチェックする
+                    if (contextTarget.name === 'index.png') {
+                        alert(`⚠️ ブロックされました\n\n「index.png」はサイトの表示に必要なマスター画像のため、削除不可に設定されています。`);
+                        return; // 削除処理をここで強制終了
+                    }
+                }
+    
+                // 安全チェックを通過したものだけ、最終確認を出す
                 if (!confirm(`本当に「${contextTarget.name}」を削除しますか？\nこの操作は取り消せません。`)) return;
     
                 const token = localStorage.getItem("gh_token");
                 
                 // ▼ 画面をロック ▼
                 showEditorLoading("保存中...");
-
+                
                 try {
-                    const getRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${contextTarget.path}`, { headers: { Authorization: `token ${token}` }});
-                    const fileData = await getRes.json();
+                    const getRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${contextTarget.path}`, { headers: { Authorization: `token ${token}` }});                    const fileData = await getRes.json();
     
                     const delRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${contextTarget.path}`, {
                         method: "DELETE",
