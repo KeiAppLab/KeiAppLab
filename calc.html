@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>収益・秒数計算 | KEI Lab Cockpit</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap');
+
+        /* --- 全体レイアウト --- */
+        body { 
+            margin: 0; padding: 30px; 
+            font-family: 'Helvetica Neue', Arial, sans-serif; 
+            background: #1e1e1e; /* 親のメインエリアに合わせた色 */
+            color: #ddd; 
+        }
+
+        .calc-container { 
+            max-width: 900px; 
+            margin: 0 auto; 
+            background: #2d2d30; 
+            padding: 40px; 
+            border-radius: 12px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+            border: 1px solid #444;
+        }
+
+        h2 { 
+            border-bottom: 2px solid #007acc; 
+            padding-bottom: 15px; 
+            margin-top: 0; 
+            color: #fff;
+            font-size: 1.8rem;
+        }
+
+        p { color: #aaa; margin-bottom: 30px; }
+
+        /* --- 入力グリッド --- */
+        .calc-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 30px; 
+            margin-bottom: 30px; 
+        }
+
+        .form-group { margin-bottom: 20px; }
+
+        label { 
+            display: block; 
+            margin-bottom: 8px; 
+            font-weight: bold; 
+            font-size: 0.95rem; 
+            color: #ccc; 
+        }
+
+        input[type="number"] { 
+            width: 100%; 
+            padding: 12px; 
+            background: #3c3c3c; 
+            border: 1px solid #555; 
+            color: white; 
+            border-radius: 6px; 
+            font-size: 1.1rem;
+            box-sizing: border-box;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+            margin: 15px 0;
+        }
+
+        /* --- 結果表示エリア --- */
+        .calc-result-box { 
+            background: #18181a; 
+            padding: 30px; 
+            border-radius: 10px; 
+            text-align: center; 
+            margin-top: 30px; 
+            border: 2px solid #e67e22; /* オレンジのアクセント */
+            box-shadow: 0 5px 15px rgba(230, 126, 34, 0.2);
+        }
+
+        .calc-label { color: #888; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.1em; }
+
+        .calc-number { 
+            font-size: 4.5rem; 
+            color: #e67e22; 
+            font-weight: 900; 
+            font-family: 'Roboto', sans-serif;
+            margin: 10px 0;
+            text-shadow: 0 0 20px rgba(230, 126, 34, 0.4);
+        }
+
+        .calc-sub { 
+            color: #27ae60; 
+            font-size: 1.2rem; 
+            font-weight: bold;
+            background: rgba(39, 174, 96, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            display: inline-block;
+        }
+
+        button { 
+            width: 100%; 
+            padding: 15px; 
+            background: #007acc; 
+            color: white; 
+            border: none; 
+            border-radius: 6px; 
+            font-weight: bold; 
+            font-size: 1.2rem; 
+            cursor: pointer; 
+            transition: 0.3s; 
+            margin-top: 10px;
+        }
+        button:hover { background: #005fa3; transform: translateY(-2px); }
+
+        /* 将来の統計エリア用プレースホルダー */
+        .stats-placeholder {
+            margin-top: 50px;
+            border: 2px dashed #444;
+            padding: 40px;
+            text-align: center;
+            color: #666;
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="calc-container">
+        <h2>💰 収益・秒数 シミュレーター</h2>
+        <p>「FreeCallApp」の広告収益を分析し、最適なユーザー還元秒数を算出します。</p>
+        
+        <div class="calc-grid">
+            <div class="form-group">
+                <label>動画広告単価 (1再生あたりの推定収益)</label>
+                <input type="number" id="adPrice" value="1.5" step="0.1">
+            </div>
+            <div class="form-group">
+                <label>通話原価 (固定電話宛・1分あたり)</label>
+                <input type="number" id="callCost" value="3.0" step="0.1">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>運営が確保したい利益率 (%) : <span id="marginDisplay" style="color:#007acc; font-size:1.2rem;">20%</span></label>
+            <input type="range" id="margin" min="0" max="50" value="20" oninput="document.getElementById('marginDisplay').innerText = this.value + '%'">
+        </div>
+
+        <button onclick="calcSeconds()">シミュレーション実行</button>
+
+        <div class="calc-result-box">
+            <div class="calc-label">アプリに設定すべき付与秒数</div>
+            <div id="calcOutput" class="calc-number">--- 秒</div>
+            <div id="profitOutput" class="calc-sub">(広告1回あたりの純利益: --- 円)</div>
+        </div>
+
+        <!-- 将来のグラフ表示エリア -->
+        <div class="stats-placeholder">
+            📈 将来ここに「広告収入の推移グラフ」や「地域別単価表」が表示されます。<br>
+            (現在、統計データの収集ロジックを設計中)
+        </div>
+    </div>
+
+    <script>
+        // ロジック自体は以前の admin.html のものを継承
+        function calcSeconds() {
+            // 入力値の取得
+            const adPrice = parseFloat(document.getElementById('adPrice').value);
+            const callCostPerMin = parseFloat(document.getElementById('callCost').value);
+            const marginPercent = parseFloat(document.getElementById('margin').value);
+
+            // 1秒あたりの通話コストを計算
+            const costPerSec = callCostPerMin / 60;
+            
+            // 利益分を計算
+            const profitPerAd = adPrice * (marginPercent / 100);
+            
+            // 利益を引いた、ユーザーへの還元予算
+            const userBudget = adPrice - profitPerAd;
+
+            // 何秒話せるか (小数点以下は切り捨て)
+            const seconds = Math.floor(userBudget / costPerSec);
+
+            // 画面に反映
+            document.getElementById('calcOutput').innerText = seconds + " 秒";
+            document.getElementById('profitOutput').innerText = "(広告1回あたりの純利益: " + profitPerAd.toFixed(2) + " 円)";
+        }
+
+        // 初回読み込み時にも一度計算を実行しておく
+        window.onload = calcSeconds;
+    </script>
+</body>
+</html>
