@@ -1,3 +1,4 @@
+// html_manual.js の内容
 const privacyManualText = `**プライバシーポリシー**
 
 **制定日：2026年3月15日**
@@ -171,7 +172,7 @@ Email: support@keiapplab.com
     <h2>第X条（お問い合わせ）</h2>
     <p>
         <strong>啓 App Lab (KEI App Lab)</strong><br>
-        Email: keiapplab@gmail.com
+        Email: support@keiapplab.com
     </p>
 
     <!-- フッター -->
