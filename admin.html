@@ -5,19 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KEI Lab マスター・コックピット</title>
 
-    <!-- 認証用リストの読み込み -->
+    <!-- 認証用リスト・手順書の読み込み -->
     <script src="allowed_users.js"></script>
+    <script src="html_manual.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700;900&family=Roboto:wght@400;500;900&display=swap');
 
         /* --- 全体レイアウト --- */
         body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Arial, sans-serif; background: #1e1e1e; color: #ddd; height: 100vh; overflow: hidden; }
+        
+        /* 認証前の表示制御 */
         #mainWrapper { display: none; height: 100%; }
 
-        /* --- ログイン画面 --- */
+        /* ログイン画面 */
         #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #2c3e50; z-index: 9999; display: flex; justify-content: center; align-items: center; }
-        .login-container-split { display: flex; width: 850px; height: 550px; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .login-container-split { display: flex; width: 850px; height: 500px; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
         .login-left { width: 40%; padding: 40px; display: flex; flex-direction: column; justify-content: center; background: #f9f9f9; border-right: 1px solid #eee; }
         .login-left input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ccc; border-radius: 5px; color: #333; }
         .login-left button { width: 100%; padding: 12px; background: #0056b3; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
@@ -26,14 +29,16 @@
         .login-right h3 { border-bottom: 2px solid #0056b3; padding-bottom: 10px; margin-top: 0; }
         .login-right ol { padding-left: 20px; margin-bottom: 20px; }
         .login-right li { margin-bottom: 8px; font-size: 0.9rem; }
+        .warning-box { background: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 10px; border-radius: 5px; font-size: 0.85rem; margin-top: 15px; }
 
-        /* --- メイン画面 --- */
+        /* メインレイアウト */
         .dashboard { display: grid; grid-template-columns: 250px 1fr; height: 100%; }
         
-        /* サイドバー */
+        /* サイドバー（固定） */
         .sidebar { background: #252526; border-right: 1px solid #333; display: flex; flex-direction: column; padding: 10px; box-sizing: border-box; }
         .sidebar h1 { font-size: 1.2rem; color: #fff; margin: 20px 10px; border-bottom: 2px solid #007acc; padding-bottom: 10px; }
         
+        /* リンク用ボタン */
         .menu-link { 
             padding: 15px; margin-bottom: 5px; cursor: pointer; border-radius: 5px; color: #aaa; font-weight: bold; text-decoration: none;
             display: flex; align-items: center; gap: 10px; transition: 0.2s;
@@ -42,7 +47,8 @@
         .menu-link.active { background: #007acc; color: white; }
 
         /* サブメニュー用（JSファイル直接編集系） */
-        .menu-sub { font-size: 0.8rem; padding: 10px 15px; }
+        .menu-sub { font-size: 0.85rem; padding: 10px 20px; color: #888; margin-bottom: 2px; }
+        .menu-sub:hover { color: #fff; }
 
         .spacer { flex-grow: 1; min-height: 20px; border-bottom: 1px solid #333; margin-bottom: 10px; }
 
@@ -69,20 +75,27 @@
                     <li><a href="https://github.com/settings/tokens" target="_blank" style="color:#007acc; font-weight:bold;">GitHub Token設定ページへ移動 ↗</a></li>
                     <li>[Generate new token (classic)] を選択</li>
                     <li>Noteに「KEI-Admin」等と入力</li>
-                    <li><strong>[repo]</strong> にチェックを入れる</li>
+                    <li>Expiration（期限）を設定（90 days推奨）</li>
+                    <li><strong>[repo]</strong> にチェックを入れる（必須）</li>
                     <li>一番下の [Generate token] を押してコピー</li>
                 </ol>
+                <div class="warning-box">
+                    <strong>⚠️ 警告：</strong><br>
+                    トークンが漏洩した場合は、直ちにGitHub設定ページで該当トークンを削除（Revoke）してください。
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- 2. メイン画面（サイドバー完全復元） -->
+    <!-- 2. メイン画面（サイドバー） -->
     <div id="mainWrapper">
         <div class="dashboard">
+            
+            <!-- ▼▼ 完璧に復元されたサイドバー ▼▼ -->
             <div class="sidebar">
                 <h1>🚀 KEI Lab Cockpit</h1>
                 
-                <!-- 1. 収益・秒数計算（初期アクティブ） -->
+                <!-- 1. 収益・秒数計算（初期起動） -->
                 <a href="calc.html" target="main_monitor" class="menu-link active" onclick="updateActive(this)">💰 収益・秒数計算</a>
                 
                 <!-- 2. コンテンツ編集 -->
@@ -91,36 +104,48 @@
                 <!-- 3. 全プロジェクト情報 -->
                 <a href="projects.html" target="main_monitor" class="menu-link" onclick="updateActive(this)">📂 全プロジェクト情報</a>
 
-                <!-- 4. JSファイル直接編集・プレビュー系 -->
-                <a href="data_cms_master.html" target="main_monitor" class="menu-link menu-sub" onclick="updateActive(this)">📄 cms_master.js</a>
+                <!-- 4. JSファイル編集群（サブメニュー化） -->
+                <a href="data_master.html" target="main_monitor" class="menu-link menu-sub" onclick="updateActive(this)">📄 cms_master.js</a>
                 <a href="data_index.html" target="main_monitor" class="menu-link menu-sub" onclick="updateActive(this)">📄 index_news.js</a>
                 <a href="data_catalog.html" target="main_monitor" class="menu-link menu-sub" onclick="updateActive(this)">📄 apps_catalog.js</a>
                 <a href="project_html_preview.html" target="main_monitor" class="menu-link menu-sub" onclick="updateActive(this)">📄 [project]/index.html</a>
                 
-                <a href="html_manual_edit.html" target="main_monitor" class="menu-link menu-sub" onclick="updateActive(this)">📝 HTML生成手順書.js</a>
+                <!-- 5. 手順書とコピーボタンの融合UI -->
+                <div class="menu-link menu-sub" style="display:flex; justify-content:space-between; align-items:center; cursor:default;">
+                    <a href="html_manual_edit.html" target="main_monitor" style="color:inherit; text-decoration:none; flex-grow:1;" onclick="updateActive(this.parentElement)">📝 HTML生成手順書.js</a>
+                    <span onclick="event.stopPropagation(); copyPrivacyManual();" style="cursor:pointer; display:flex; align-items:center; justify-content:center; padding:5px; background:rgba(255,255,255,0.1); border-radius:4px;" title="手順書をコピー">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                    </span>
+                </div>
 
                 <div class="spacer"></div>
 
-                <!-- 5. メモ機能 -->
+                <!-- 6. メモ機能 -->
                 <a href="memo_edit.html" target="main_monitor" class="menu-link" onclick="updateActive(this)">💦( ..)φメモメモ</a>
                 
                 <hr style="border:0; border-top:1px solid #444; margin: 10px 0; width: 100%;">
                 
-                <!-- 6. 権限管理 -->
+                <!-- 7. 権限管理 -->
                 <a href="users.html" target="main_monitor" class="menu-link" onclick="updateActive(this)">👥 権限管理</a>
 
+                <!-- 8. ログアウト -->
                 <button onclick="logout()" style="margin-top:auto; background:#c0392b; color:white; border:none; padding:10px; cursor:pointer; border-radius:5px; font-weight:bold;">🔒 ログアウト</button>
             </div>
+            <!-- ▲▲ サイドバーここまで ▲▲ -->
 
+            <!-- 右側モニター（IFrame） -->
             <div class="main-content">
-                <!-- 初期表示は calc.html -->
+                <!-- 初期表示は calc.html を読み込む -->
                 <iframe name="main_monitor" id="main_monitor" src="calc.html"></iframe>
             </div>
         </div>
     </div>
 
     <script>
-        // --- 認証機能 ---
+        // --- 認証機能 (親が代表して行う) ---
         async function checkIdentity(savedToken = null) {
             const tokenInput = document.getElementById('tokenInput');
             const token = savedToken || (tokenInput ? tokenInput.value.trim() : null);
@@ -132,7 +157,7 @@
                 if (!res.ok) throw new Error();
                 const userData = await res.json();
 
-                // allowed_users.js 内の allowedUsersData を使用
+                // allowed_users.js から読み込んだ配列と照合
                 if (typeof allowedUsersData !== 'undefined' && allowedUsersData.includes(userData.login)) {
                     localStorage.setItem('gh_token', token);
                     document.getElementById('loginOverlay').style.display = 'none';
@@ -145,14 +170,35 @@
             }
         }
 
-        // メニューの「選択中」表示を切り替える
+        // クリックしたメニューを青く光らせる
         function updateActive(el) {
             document.querySelectorAll('.menu-link').forEach(link => link.classList.remove('active'));
             el.classList.add('active');
         }
 
+        // ログアウト処理
         function logout() { localStorage.removeItem('gh_token'); location.reload(); }
 
+        // --- 手順書のコピー機能 ---
+        function copyPrivacyManual() {
+            if (typeof privacyManualText !== 'undefined') {
+                const textarea = document.createElement('textarea');
+                textarea.value = privacyManualText;
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    alert("✅ HTML生成手順書をコピーしました。\nAIに貼り付けてHTMLを生成してください。");
+                } catch (err) {
+                    alert("❌ コピーに失敗しました。");
+                }
+                document.body.removeChild(textarea);
+            } else {
+                alert("⚠️ エラー: html_manual.js が読み込まれていないか、データがありません。");
+            }
+        }
+
+        // 起動時チェック
         window.addEventListener('load', () => {
             const t = localStorage.getItem('gh_token');
             if (t) checkIdentity(t);
