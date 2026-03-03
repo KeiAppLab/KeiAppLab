@@ -1099,11 +1099,10 @@
         
         // --- 右クリックメニュー (コンテキストメニュー) の制御 ---
         
-            // 画像の上で右クリックした時 (画像枠の右上にメニューを出す)
             function showContextMenu(element, folder, path, name) {
                 contextTarget = { folder, path, name };
                 const menu = document.getElementById('contextMenu');
-                const separator = document.getElementById('menuSeparator'); // 存在しなくてもエラーにならないよう対策済
+                const separator = document.getElementById('menuSeparator'); 
                 
                 document.querySelectorAll('.custom-option').forEach(el => el.classList.remove('active-menu'));
                 if (element) {
@@ -1111,7 +1110,48 @@
                 }
     
                 const delBtn = document.getElementById('menuDelete');
-                if(delBtn) delBtn.style.display = 'block'; 
+                if(delBtn) {
+                    delBtn.style.display = 'block'; 
+    
+                    // ▼▼▼ ここから追加：開いた瞬間に使用中か判定して表示を切り替える ▼▼▼
+                    let isBlocked = false;
+                    let blockReason = "";
+    
+                    if (folder === 'index_phot') {
+                        // index_phot内の場合、使用中かチェック
+                        let isUsed = false;
+                        if (typeof adminMasterData !== 'undefined') {
+                            isUsed = adminMasterData.some(item => item.image === path);
+                        }
+                        if (!isUsed && typeof allPosts !== 'undefined') {
+                            isUsed = allPosts.some(item => item.image === path);
+                        }
+                        
+                        if (isUsed) {
+                            isBlocked = true;
+                            blockReason = "project使用中";
+                        }
+                    } else {
+                        // [project]内の場合、マスター画像かチェック
+                        if (name === 'index.png') {
+                            isBlocked = true;
+                            blockReason = "マスター画像";
+                        }
+                    }
+    
+                    // 判定結果をメニューの見た目に即時反映
+                    if (isBlocked) {
+                        delBtn.innerHTML = `⚠️ block (${blockReason})`;
+                        delBtn.style.opacity = "0.5"; // 半透明にして「押せない感」を出す
+                        delBtn.style.cursor = "not-allowed"; // マウスカーソルを「禁止マーク」にする
+                    } else {
+                        delBtn.innerHTML = `🗑️ Delete (削除)`;
+                        delBtn.style.opacity = "1";
+                        delBtn.style.cursor = "pointer";
+                    }
+                    // ▲▲▲ 追加ここまで ▲▲▲
+                }
+    
                 if(separator) separator.style.display = 'block';
                 menu.classList.remove('paste-only'); 
                 
