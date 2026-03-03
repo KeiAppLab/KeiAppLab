@@ -317,17 +317,7 @@
             padding: 6px 15px;       /* 高さを少し低くする */
         }
 
-        /* フォーム追加：*/
-        /* --- お問い合わせ管理用スタイル --- */
-        .contact-project-group { background: #2d2d30; border-radius: 8px; margin-bottom: 20px; overflow: hidden; border: 1px solid #444; }
-        .contact-project-header { background: #0056b3; color: white; padding: 10px 15px; font-weight: bold; font-size: 1.1rem; display: flex; justify-content: space-between; align-items: center; }
-        .contact-badge { background: #e74c3c; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; }
-        .contact-card { background: #1e1e1e; margin: 10px; padding: 15px; border-radius: 6px; border-left: 4px solid #F39C12; }
-        .contact-card.replied { border-left-color: #27ae60; opacity: 0.8; }
-        .contact-meta { font-size: 0.85rem; color: #aaa; margin-bottom: 10px; display: flex; justify-content: space-between; }
-        .contact-body { background: #252526; padding: 10px; border-radius: 4px; font-family: sans-serif; white-space: pre-wrap; margin-bottom: 15px; font-size: 0.95rem; line-height: 1.5; color: #ddd; }
-        .reply-area { margin-top: 10px; background: #333; padding: 10px; border-radius: 4px; display: none; }
-        .reply-area textarea { width: 100%; height: 100px; background: #fff; color: #333; margin-bottom: 10px; }
+        
       
         /* --- ビルド監視用トースト通知 --- */
         #build-toast {
@@ -646,17 +636,20 @@
                 </div>
 
                 <!-- フォーム追加： -->
+                <!-- ▼ お問い合わせ管理パネル ▼ -->
                 <div id="panel-contact" class="panel">
-                    <div class="calc-container" style="max-width: 1000px; margin: 0 auto;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0056b3; margin-bottom: 20px; padding-bottom: 10px;">
-                            <h2 style="margin: 0; border: none; padding: 0;">📩 お問い合わせ管理</h2>
-                            <button class="btn-save" style="width: auto; margin: 0; padding: 8px 15px;" onclick="loadContacts()">🔄 最新データを取得</button>
-                        </div>
+                    <div class="calc-container" style="max-width: 800px; margin: 0 auto; text-align: center; padding-top: 50px;">
+                        <h2>📩 お問い合わせ管理（Gmail連携）</h2>
+                        <p style="color: #aaa; line-height: 1.8; margin-bottom: 30px;">
+                            お問い合わせの対応は、セキュリティと管理の利便性から Gmail 上で行います。<br>
+                            ユーザーからの新規お問い合わせは、自動的に指定のGmailに転送されます。<br>
+                            届いた通知メールに対してそのまま「返信」を押すことで、ユーザーへ回答が可能です。
+                        </p>
                         
-                        <!-- ここにプロジェクトごとにグループ化されたリストが入る -->
-                        <div id="contactListContainer">
-                            <p style="color: #aaa;">🔄 データを読み込んでいます...</p>
-                        </div>
+                        <!-- Gmailを別タブで開くボタン -->
+                        <button class="btn-save" style="font-size: 1.2rem; padding: 20px 40px; width: auto; border-radius: 50px; box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);" onclick="window.open('https://mail.google.com/mail/u/?authuser=keiapplab@gmail.com', '_blank')">
+                            ✉️ Gmailを開いて対応する
+                        </button>
                     </div>
                 </div>
               
@@ -2478,95 +2471,6 @@
                     }
                 });
             });
-
-        // フォーム追加：
-      　// ==========================================
-        // 📩 お問い合わせ管理システム連携ロジック
-        // ==========================================
-        
-        // ★ここに取得したGASのウェブアプリURLを貼り付けてください★
-        const CONTACT_GAS_URL = "https://script.google.com/macros/s/AKfycbxwkOYJsSf7btyL02AE4O6PGRN-NLLfffSMSLhmQ7MNbBaVPB-UXARjE1ilZ2g5eKHHHg/exec"; 
-        
-        // パネルが切り替わったときに自動でデータを取得するよう、既存のswitchPanel関数をフック
-        const originalSwitchPanel = switchPanel;
-        switchPanel = function(id) {
-            originalSwitchPanel(id);
-            if (id === 'contact') {
-                loadContacts(); // お問い合わせパネルを開いたら自動で読み込む
-            }
-        };
-        
-        // スプレッドシートからデータを取得して表示
-        async function loadContacts() {
-            const container = document.getElementById('contactListContainer');
-            container.innerHTML = '<p style="color: #aaa;">🔄 スプレッドシートからデータを取得中...</p>';
-            
-            try {
-                const response = await fetch(CONTACT_GAS_URL);
-                const json = await response.json();
-                
-                if (json.status !== "success") throw new Error(json.message);
-                
-                const data = json.data;
-                if (data.length === 0) {
-                    container.innerHTML = '<p style="color: #aaa;">現在、お問い合わせはありません。</p>';
-                    return;
-                }
-        
-                // プロジェクト名（件名）ごとにデータをグループ化
-                const groupedData = {};
-                data.forEach(item => {
-                    const projName = item["件名(プロジェクト)"] || "不明なプロジェクト";
-                    if (!groupedData[projName]) groupedData[projName] = [];
-                    groupedData[projName].push(item);
-                });
-        
-                // HTMLを生成
-                let html = "";
-                for (const [proj, items] of Object.entries(groupedData)) {
-                    // 未返信の件数をカウント
-                    const unrepliedCount = items.filter(i => i["ステータス"] === "未返信").length;
-                    const badgeHtml = unrepliedCount > 0 ? `<span class="contact-badge">${unrepliedCount}件 未返信</span>` : `<span style="font-size:0.8rem; color:#ccc;">すべて返信済み</span>`;
-        
-                    html += `<div class="contact-project-group">
-                                <div class="contact-project-header">
-                                    <span>📂 ${proj}</span>
-                                    ${badgeHtml}
-                                </div>`;
-                    
-                    items.forEach(item => {
-                        const isReplied = item["ステータス"] === "返信済み";
-                        const cardClass = isReplied ? "contact-card replied" : "contact-card";
-                        const statusLabel = isReplied ? `<span style="color:#27ae60;">✅ 返信済み</span>` : `<span style="color:#F39C12;">⚠️ 未返信</span>`;
-                        
-                        html += `
-                        <div class="${cardClass}">
-                            <div class="contact-meta">
-                                <span>👤 ${item["メールアドレス"]}</span>
-                                <span>📅 ${item["受信日時"]} | ${statusLabel}</span>
-                            </div>
-                            <div class="contact-body">${item["お問い合わせ内容"]}</div>
-                            
-                            ${isReplied ? 
-                                `<div style="font-size:0.85rem; color:#888;"><b>あなたの返信:</b><br>${item["返信内容"]}</div>` 
-                                : 
-                                `<button class="btn-save" style="width:auto; padding:5px 15px; font-size:0.9rem;" onclick="toggleReplyBox('${item["ID"]}')">💬 返信を書く</button>
-                                 <div id="reply-box-${item["ID"]}" class="reply-area">
-                                     <textarea id="reply-text-${item["ID"]}" placeholder="ユーザーへの返信内容を入力してください..."></textarea>
-                                     <button class="btn-copy" style="margin-top:0;" onclick="sendReply('${item["ID"]}')">🚀 返信メールを送信してステータスを更新</button>
-                                 </div>`
-                            }
-                        </div>`;
-                    });
-                    html += `</div>`;
-                }
-                
-                container.innerHTML = html;
-        
-            } catch (err) {
-                container.innerHTML = `<p style="color: #e74c3c;">❌ データの取得に失敗しました。<br>GASのURLが正しいか、公開設定が「全員」になっているか確認してください。<br>詳細: ${err.message}</p>`;
-            }
-        }
         
         // 返信ボックスの開閉
         function toggleReplyBox(id) {
