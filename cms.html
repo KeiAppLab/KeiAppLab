@@ -6,7 +6,7 @@
     <title>KEI Lab マスター・コックピット</title>
 
     <!-- 3つの主要データファイル読み込み -->
-    <script src="admin_master.js"></script>
+    <script src="cms_master.js"></script>
     <script src="index_news.js"></script>
     <script src="apps_catalog.js"></script>
     
@@ -390,7 +390,7 @@
                 <div class="menu-btn active" onclick="switchPanel('calc')">💰 収益・秒数計算</div>
                 <div class="menu-btn" onclick="switchPanel('cms')">📝 コンテンツ編集</div>
                 <div class="menu-btn" onclick="switchPanel('projects')">📂 全プロジェクト情報</div>
-                <div class="menu-btn" style="font-size:0.8rem; padding:10px 15px;" onclick="switchPanel('data-master')">📄 admin_master.js</div>
+                <div class="menu-btn" style="font-size:0.8rem; padding:10px 15px;" onclick="switchPanel('data-master')">📄 cms_master.js</div>
                 <div class="menu-btn" style="font-size:0.8rem; padding:10px 15px;" onclick="switchPanel('data-index')">📄 index_news.js</div>
                 <div class="menu-btn" style="font-size:0.8rem; padding:10px 15px;" onclick="switchPanel('data-catalog')">📄 apps_catalog.js</div>
                 <div class="menu-btn" style="font-size:0.8rem; padding:10px 15px;" onclick="switchPanel('data-project-html')">📄 [project]/index.html</div>
@@ -514,7 +514,7 @@
                             <!-- 日本語 -->
                             <div id="group-ja" class="lang-input-group active">
                                 <div class="form-group">
-                                    <label>プロジェクト名 (JP)　admin_master.js</label>
+                                    <label>プロジェクト名 (JP)　cms_master.js</label>
                                     <div class="input-group">
                                         <input type="text" id="inProject" class="input-white" oninput="autoFillProject()">
                                         <select id="projectSelectHelper" class="input-white" onchange="syncProjectSelect()"><option value="">▼ 履歴...</option></select>
@@ -666,9 +666,9 @@
                 </div>
                 <div id="panel-data-master" class="panel">
                     <div class="calc-container" style="max-width:100%;">
-                        <h2>📄 admin_master.js (直接編集)</h2>
+                        <h2>📄 cms_master.js (直接編集)</h2>
                         <textarea id="raw-admin-master" style="width:100%; height:50vh; background:#f4f6f8; color:#333; font-family:'Consolas', monospace; font-size:14px; padding:15px; border:1px solid #ccc; border-radius:6px;"></textarea>
-                        <button class="btn-save" onclick="saveRawData('admin_master.js', 'raw-admin-master')">💾 上書き保存</button>
+                        <button class="btn-save" onclick="saveRawData('cms_master.js', 'raw-admin-master')">💾 上書き保存</button>
                     </div>
                 </div>
 
@@ -789,7 +789,7 @@
                 document.getElementById('loginOverlay').style.display = 'none';
                 document.getElementById('mainWrapper').style.display = 'block';
                 updatePreview();
-                initProjectList(); // admin_master.js から履歴を生成
+                initProjectList(); // cms_master.js から履歴を生成
                 initImageSelector(); // 初回はデフォルト画像リスト
             }
             
@@ -869,7 +869,7 @@
                 }
             }
             
-            // プロジェクト履歴 (admin_master.js から生成)
+            // プロジェクト履歴 (cms_master.js から生成)
             function initProjectList() {
                 if (typeof adminMasterData === 'undefined') return;
                 const sel = document.getElementById('projectSelectHelper');
@@ -1638,13 +1638,13 @@
                 const inputData = getInputData(projectId);
             
                 try {
-                    // --- A. admin_master.js (管理者用・上書き) ---
+                    // --- A. cms_master.js (管理者用・上書き) ---
                     let newMasterData = (typeof adminMasterData !== 'undefined') ? [...adminMasterData] : [];
                     const idx = newMasterData.findIndex(d => d.project_id === projectId);
                     if(idx >= 0) newMasterData[idx] = inputData.master; // 上書き
                     else newMasterData.push(inputData.master); // 新規
                     
-                    await writeJsFile('admin_master.js', newMasterData, "Update admin_master");
+                    await writeJsFile('cms_master.js', newMasterData, "Update cms_master");
             
                     // --- B. index_news.js (トップ用・速報) ---
                     let indexNews = (typeof indexNewsData !== 'undefined') ? [...indexNewsData] : [];
@@ -1832,7 +1832,7 @@
                 // JSファイル形式に変換
                 // pathから変数名を推測 (簡易的)
                 let varName = "data";
-                if(path.includes("admin_master")) varName = "adminMasterData";
+                if(path.includes("cms_master")) varName = "adminMasterData";
                 else if(path.includes("index_news")) varName = "indexNewsData";
                 else if(path.includes("apps_catalog")) varName = "appsCatalogData";
                 else if(path.includes("old_news")) varName = "oldNewsData"; // 先に判定
