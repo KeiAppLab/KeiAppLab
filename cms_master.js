@@ -1,4 +1,4 @@
-const adminMasterData = [
+const cmsMasterData = [
     {
         "project_id": "outgoing_call_widget",
         "date": "2026.02.04",
