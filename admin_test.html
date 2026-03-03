@@ -1137,19 +1137,19 @@
                             isBlocked = true;
                             blockReason = "マスター画像";
                         }
+                    
                     }
     
                     // 判定結果をメニューの見た目に即時反映
                     if (isBlocked) {
                         delBtn.innerHTML = `⚠️ block (${blockReason})`;
-                        delBtn.style.opacity = "0.5"; // 半透明にして「押せない感」を出す
+                        delBtn.style.opacity = "1"; // ▼▼ 修正：半透明を解除し、ハッキリと赤文字で主張させる ▼▼
                         delBtn.style.cursor = "not-allowed"; // マウスカーソルを「禁止マーク」にする
                     } else {
                         delBtn.innerHTML = `🗑️ Delete (削除)`;
                         delBtn.style.opacity = "1";
                         delBtn.style.cursor = "pointer";
                     }
-                    // ▲▲▲ 追加ここまで ▲▲▲
                 }
     
                 if(separator) separator.style.display = 'block';
