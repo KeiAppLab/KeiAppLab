@@ -667,8 +667,8 @@
                 <div id="panel-data-master" class="panel">
                     <div class="calc-container" style="max-width:100%;">
                         <h2>📄 cms_master.js (直接編集)</h2>
-                        <textarea id="raw-admin-master" style="width:100%; height:50vh; background:#f4f6f8; color:#333; font-family:'Consolas', monospace; font-size:14px; padding:15px; border:1px solid #ccc; border-radius:6px;"></textarea>
-                        <button class="btn-save" onclick="saveRawData('cms_master.js', 'raw-admin-master')">💾 上書き保存</button>
+                        <textarea id="raw-cms-master" style="width:100%; height:50vh; background:#f4f6f8; color:#333; font-family:'Consolas', monospace; font-size:14px; padding:15px; border:1px solid #ccc; border-radius:6px;"></textarea>
+                        <button class="btn-save" onclick="saveRawData('cms_master.js', 'raw-cms-master')">💾 上書き保存</button>
                     </div>
                 </div>
 
@@ -807,7 +807,7 @@
     
                 // パネルが開かれたらデータをJSON文字列にして表示
                 if (id === 'data-master') {
-                    document.getElementById('raw-admin-master').value = JSON.stringify(typeof adminMasterData !== 'undefined' ? adminMasterData :[], null, 4);
+                    document.getElementById('raw-cms-master').value = JSON.stringify(typeof cmsMasterData !== 'undefined' ? cmsMasterData :[], null, 4);
                 } else if (id === 'data-index') {
                     document.getElementById('raw-index-news').value = JSON.stringify(typeof indexNewsData !== 'undefined' ? indexNewsData :[], null, 4);
                 } else if (id === 'data-catalog') {
@@ -871,10 +871,10 @@
             
             // プロジェクト履歴 (cms_master.js から生成)
             function initProjectList() {
-                if (typeof adminMasterData === 'undefined') return;
+                if (typeof cmsMasterData === 'undefined') return;
                 const sel = document.getElementById('projectSelectHelper');
                 sel.innerHTML = '<option value="">▼ 履歴...</option>';
-                adminMasterData.forEach(item => {
+                cmsMasterData.forEach(item => {
                     const option = document.createElement('option');
                     option.value = item.project_id; 
                     option.textContent = item.project_ja || item.project_id;
@@ -887,7 +887,7 @@
                 const sel = document.getElementById('projectSelectHelper');
                 const pid = sel.value;
                 if(pid){ 
-                    const item = adminMasterData.find(d => d.project_id === pid);
+                    const item = cmsMasterData.find(d => d.project_id === pid);
                     if(item) fillForm(item);
                     sel.selectedIndex=0; 
                 }
@@ -944,8 +944,8 @@
                     return; 
                 }
     
-                if (typeof adminMasterData !== 'undefined') {
-                    const post = adminMasterData.find(p => p.project_ja === val);
+                if (typeof cmsMasterData !== 'undefined') {
+                    const post = cmsMasterData.find(p => p.project_ja === val);
                     if (post) {
                         // 履歴と完全に一致すれば、そのデータを自動入力
                         fillForm(post);
@@ -1120,8 +1120,8 @@
                     if (folder === 'index_phot') {
                         // index_phot内の場合、使用中かチェック
                         let isUsed = false;
-                        if (typeof adminMasterData !== 'undefined') {
-                            isUsed = adminMasterData.some(item => item.image === path);
+                        if (typeof cmsMasterData !== 'undefined') {
+                            isUsed = cmsMasterData.some(item => item.image === path);
                         }
                         if (!isUsed && typeof allPosts !== 'undefined') {
                             isUsed = allPosts.some(item => item.image === path);
@@ -1238,8 +1238,8 @@
                     let isUsed = false;
                     
                     // A: 保存済みのマスターデータをチェック
-                    if (typeof adminMasterData !== 'undefined') {
-                        isUsed = adminMasterData.some(item => item.image === contextTarget.path);
+                    if (typeof cmsMasterData !== 'undefined') {
+                        isUsed = cmsMasterData.some(item => item.image === contextTarget.path);
                     }
                     // B: 現在エディタで一時保存(リストに追加)しているデータもチェック
                     if (!isUsed && typeof allPosts !== 'undefined') {
@@ -1502,8 +1502,8 @@
             
             // --- プレビューロジック ---
             function checkProjectUrl(projectId) {
-                // 簡易ロジック: adminMasterDataにIDがあれば「既存」とみなしてiframe表示
-                const exists = typeof adminMasterData !== 'undefined' && adminMasterData.some(d => d.project_id === projectId);
+                // 簡易ロジック: cmsMasterDataにIDがあれば「既存」とみなしてiframe表示
+                const exists = typeof cmsMasterData !== 'undefined' && cmsMasterData.some(d => d.project_id === projectId);
                 const iframe = document.getElementById('prevIframe');
                 const realPreview = document.getElementById('realPagePreview');
                 const simPreview = document.getElementById('simulatedPagePreview');
@@ -1639,7 +1639,7 @@
             
                 try {
                     // --- A. cms_master.js (管理者用・上書き) ---
-                    let newMasterData = (typeof adminMasterData !== 'undefined') ? [...adminMasterData] : [];
+                    let newMasterData = (typeof cmsMasterData !== 'undefined') ? [...cmsMasterData] : [];
                     const idx = newMasterData.findIndex(d => d.project_id === projectId);
                     if(idx >= 0) newMasterData[idx] = inputData.master; // 上書き
                     else newMasterData.push(inputData.master); // 新規
@@ -1832,7 +1832,7 @@
                 // JSファイル形式に変換
                 // pathから変数名を推測 (簡易的)
                 let varName = "data";
-                if(path.includes("cms_master")) varName = "adminMasterData";
+                if(path.includes("cms_master")) varName = "cmsMasterData";
                 else if(path.includes("index_news")) varName = "indexNewsData";
                 else if(path.includes("apps_catalog")) varName = "appsCatalogData";
                 else if(path.includes("old_news")) varName = "oldNewsData"; // 先に判定
