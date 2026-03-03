@@ -4,39 +4,47 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KEI Lab マスター・コックピット</title>
-    <!-- 認証用リストだけ読み込み -->
+
+    <!-- 認証用リストの読み込み -->
     <script src="allowed_users.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700;900&family=Roboto:wght@400;500;900&display=swap');
 
-        body, html { margin: 0; padding: 0; font-family: 'Helvetica Neue', Arial, sans-serif; background: #1e1e1e; color: #ddd; height: 100vh; overflow: hidden; }
-        
-        /* 認証前の表示制御 */
+        /* --- 全体レイアウト --- */
+        body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Arial, sans-serif; background: #1e1e1e; color: #ddd; height: 100vh; overflow: hidden; }
         #mainWrapper { display: none; height: 100%; }
 
-        /* ログイン画面（以前のスタイルを移植） */
+        /* --- ログイン画面 --- */
         #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #2c3e50; z-index: 9999; display: flex; justify-content: center; align-items: center; }
-        .login-container-split { display: flex; width: 850px; height: 500px; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .login-container-split { display: flex; width: 850px; height: 550px; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
         .login-left { width: 40%; padding: 40px; display: flex; flex-direction: column; justify-content: center; background: #f9f9f9; border-right: 1px solid #eee; }
         .login-left input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ccc; border-radius: 5px; color: #333; }
         .login-left button { width: 100%; padding: 12px; background: #0056b3; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .login-left button:hover { background: #003d82; }
         .login-right { width: 60%; padding: 40px; overflow-y: auto; color: #333; line-height: 1.6; }
+        .login-right h3 { border-bottom: 2px solid #0056b3; padding-bottom: 10px; margin-top: 0; }
+        .login-right ol { padding-left: 20px; margin-bottom: 20px; }
+        .login-right li { margin-bottom: 8px; font-size: 0.9rem; }
 
-        /* メインレイアウト */
+        /* --- メイン画面 --- */
         .dashboard { display: grid; grid-template-columns: 250px 1fr; height: 100%; }
         
-        /* サイドバー（固定） */
+        /* サイドバー（以前のメニューを完全復元） */
         .sidebar { background: #252526; border-right: 1px solid #333; display: flex; flex-direction: column; padding: 10px; box-sizing: border-box; }
         .sidebar h1 { font-size: 1.2rem; color: #fff; margin: 20px 10px; border-bottom: 2px solid #007acc; padding-bottom: 10px; }
         
-        /* リンクを a タグに変更 */
         .menu-link { 
             padding: 15px; margin-bottom: 5px; cursor: pointer; border-radius: 5px; color: #aaa; font-weight: bold; text-decoration: none;
             display: flex; align-items: center; gap: 10px; transition: 0.2s;
         }
         .menu-link:hover { background: #3c3c3c; color: #fff; }
         .menu-link.active { background: #007acc; color: white; }
+
+        /* サブメニュー用（JSファイル直接編集系） */
+        .menu-sub { font-size: 0.8rem; padding: 10px 15px; }
+
+        .spacer { flex-grow: 1; min-height: 20px; border-bottom: 1px solid #333; margin-bottom: 10px; }
 
         /* 右側モニターエリア */
         .main-content { flex: 1; height: 100%; background: #000; }
@@ -46,49 +54,76 @@
 </head>
 <body>
 
-    <!-- ログイン画面 -->
+    <!-- 1. ログイン画面 -->
     <div id="loginOverlay">
         <div class="login-container-split">
             <div class="login-left">
                 <h2 style="color:#333;">🚀 KEI Lab Admin</h2>
                 <input type="password" id="tokenInput" placeholder="GitHub Token (ghp_...)">
                 <button onclick="checkIdentity()">ログイン</button>
-                <div id="authStatus"></div>
+                <div id="authStatus" style="margin-top:15px; font-weight:bold;"></div>
             </div>
             <div class="login-right">
-                <h3>🔑 本人確認システム</h3>
-                <p>このコックピットは関係者専用です。GitHubトークンを入力して入室してください。</p>
+                <h3>🔑 トークンの発行手順</h3>
+                <ol>
+                    <li><a href="https://github.com/settings/tokens" target="_blank" style="color:#007acc; font-weight:bold;">GitHub Token設定ページへ移動 ↗</a></li>
+                    <li>[Generate new token (classic)] を選択</li>
+                    <li>Noteに「KEI-Admin」等と入力</li>
+                    <li><strong>[repo]</strong> にチェックを入れる</li>
+                    <li>一番下の [Generate token] を押してコピー</li>
+                </ol>
             </div>
         </div>
     </div>
 
-    <!-- メイン画面 -->
+    <!-- 2. メイン画面（サイドバー完全復元） -->
     <div id="mainWrapper">
         <div class="dashboard">
             <div class="sidebar">
                 <h1>🚀 KEI Lab Cockpit</h1>
                 
-                <!-- ターゲットを iframe の名前 (main_monitor) に向けるのがコツです -->
-                
+                <!-- 1番目：収益・秒数計算（初期アクティブ） -->
                 <a href="calc.html" target="main_monitor" class="menu-link active" onclick="updateActive(this)">💰 収益・秒数計算</a>
+                
+                <!-- 2番目：コンテンツ編集 -->
                 <a href="cms.html" target="main_monitor" class="menu-link" onclick="updateActive(this)">📝 コンテンツ編集</a>
+                
+                <!-- 3番目：全プロジェクト情報 -->
+                <a href="projects.html" target="main_monitor" class="menu-link" onclick="updateActive(this)">📂 全プロジェクト情報</a>
+
+                <!-- 4番目以降：JS直接編集系（サブメニュー） -->
+                <a href="data_master.html" target="main_monitor" class="menu-link menu-sub" onclick="updateActive(this)">📄 admin_master.js</a>
+                <a href="data_index.html" target="main_monitor" class="menu-link menu-sub" onclick="updateActive(this)">📄 index_news.js</a>
+                <a href="data_catalog.html" target="main_monitor" class="menu-link menu-sub" onclick="updateActive(this)">📄 apps_catalog.js</a>
+                <a href="project_html_preview.html" target="main_monitor" class="menu-link menu-sub" onclick="updateActive(this)">📄 [project]/index.html</a>
+                
+                <a href="html_manual_edit.html" target="main_monitor" class="menu-link menu-sub" onclick="updateActive(this)">📝 HTML生成手順書.js</a>
+
+                <div class="spacer"></div>
+
+                <!-- メモ機能 -->
+                <a href="memo_edit.html" target="main_monitor" class="menu-link" onclick="updateActive(this)">💦( ..)φメモメモ</a>
+                
+                <hr style="border:0; border-top:1px solid #444; margin: 10px 0; width: 100%;">
+                
+                <!-- 権限管理 -->
                 <a href="users.html" target="main_monitor" class="menu-link" onclick="updateActive(this)">👥 権限管理</a>
 
-                <div style="flex-grow:1;"></div>
-                <button onclick="logout()" style="background:#c0392b; color:white; border:none; padding:10px; cursor:pointer; border-radius:5px;">🔒 ログアウト</button>
+                <button onclick="logout()" style="margin-top:auto; background:#c0392b; color:white; border:none; padding:10px; cursor:pointer; border-radius:5px; font-weight:bold;">🔒 ログアウト</button>
             </div>
 
             <div class="main-content">
-                <!-- ここがコンテンツを表示する「モニター」になります -->
-                <iframe name="main_monitor" id="main_monitor" src="cms.html"></iframe>
+                <!-- 初期表示は calc.html -->
+                <iframe name="main_monitor" id="main_monitor" src="calc.html"></iframe>
             </div>
         </div>
     </div>
 
     <script>
-        // --- 認証機能 (親が代表して行う) ---
+        // --- 認証機能 ---
         async function checkIdentity(savedToken = null) {
-            const token = savedToken || document.getElementById('tokenInput').value.trim();
+            const tokenInput = document.getElementById('tokenInput');
+            const token = savedToken || (tokenInput ? tokenInput.value.trim() : null);
             const status = document.getElementById('authStatus');
             if (!token) return;
 
@@ -109,6 +144,7 @@
             }
         }
 
+        // メニューの「選択中」表示を切り替える
         function updateActive(el) {
             document.querySelectorAll('.menu-link').forEach(link => link.classList.remove('active'));
             el.classList.add('active');
