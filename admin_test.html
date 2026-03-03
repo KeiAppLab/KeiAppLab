@@ -1033,12 +1033,16 @@
                     `;
                     container.appendChild(div);
     
-                    // 画像要素がDOMに追加されたら、Base64の取得を開始
                     const imgElement = document.getElementById(imgId);
-                    fetchAndSetBase64Image(fullPath, imgElement);
+                    // ★修正：手元にデータがある（追加直後）ならAPI通信をスキップして爆速表示
+                    if (f.localBase64) {
+                        imgElement.src = f.localBase64;
+                    } else {
+                        fetchAndSetBase64Image(fullPath, imgElement);
+                    }
                 });
             }
-    
+
             // 開閉制御
             function toggleImageSelect() { 
                 const wrapper = document.querySelector('.custom-select');
@@ -1167,6 +1171,10 @@
                 if (!confirm(`本当に「${contextTarget.name}」を削除しますか？\nこの操作は取り消せません。`)) return;
     
                 const token = localStorage.getItem("gh_token");
+                
+                // ▼ 文言を「更新中...」に統一し、操作をロック ▼
+                showEditorLoading("更新中...");
+                
                 try {
                     const getRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${contextTarget.path}`, { headers: { Authorization: `token ${token}` }});
                     const fileData = await getRes.json();
@@ -1178,10 +1186,21 @@
                     });
     
                     if (delRes.ok) {
-                        alert("削除しました。");
-                        fetchAndRenderImages();
+                        // ★アラート(ポップアップ)を削除
+                        // ★APIを再度呼ばず、手元のリストから直接消して即時再描画
+                        if (contextTarget.folder === 'index_phot') {
+                            cachedIndexPhotos = cachedIndexPhotos.filter(f => f.name !== contextTarget.name);
+                            renderGrid(document.getElementById('grid-index-phot'), cachedIndexPhotos, 'index_phot', true);
+                        } else {
+                            currentProjectPhotos = currentProjectPhotos.filter(f => f.name !== contextTarget.name);
+                            renderGrid(document.getElementById('grid-project'), currentProjectPhotos, contextTarget.folder, false);
+                        }
+                        hideEditorLoading(); 
                     } else throw new Error("削除失敗");
-                } catch(e) { alert(e.message); }
+                } catch(e) { 
+                    alert("エラー: " + e.message); 
+                    hideEditorLoading(); 
+                }
             });
 
             // 右クリックメニューの「Paste image」をクリックした時
@@ -1348,33 +1367,66 @@
                 img.src = url;
             }
     
-            // GitHub APIへの書き込み
+            // GitHub APIへの書き込み (アラート廃止・完全即時反映版)
             function uploadToGitHub(file, folder, fileName) {
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                const base64Content = e.target.result.split(',')[1];
-                const path = `${folder}/${fileName}`;
-                const token = localStorage.getItem("gh_token");
-    
-                try {
-                    const putRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
-                        method: "PUT",
-                        headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
-                        body: JSON.stringify({ message: `Upload image ${fileName}`, content: base64Content })
-                    });
-    
-                    if (putRes.ok) {
-                        alert(`「${fileName}」をアップロードしました！`);
-                        fetchAndRenderImages(); // 再描画
-                    } else {
-                        throw new Error("アップロード失敗");
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    const base64Content = e.target.result.split(',')[1];
+                    const path = `${folder}/${fileName}`;
+                    const token = localStorage.getItem("gh_token");
+        
+                    // ▼ 文言を「更新中...」に統一 ▼
+                    showEditorLoading("更新中...");
+                    
+                    try {
+                        const putRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
+                            method: "PUT",
+                            headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                            body: JSON.stringify({ message: `Upload image ${fileName}`, content: base64Content })
+                        });
+        
+                        if (putRes.ok) {
+                            // ★アラート(ポップアップ)を削除
+                            
+                            // 1. 手元のリストに「今アップロードしたBase64データ」を直接追加して即時再描画
+                            const newItem = { path: path, name: fileName, localBase64: "data:image/png;base64," + base64Content };
+                            if (folder === 'index_phot') {
+                                cachedIndexPhotos.push(newItem);
+                                renderGrid(document.getElementById('grid-index-phot'), cachedIndexPhotos, 'index_phot', true);
+                            } else {
+                                currentProjectPhotos.push(newItem);
+                                renderGrid(document.getElementById('grid-project'), currentProjectPhotos, folder, false);
+                            }
+                            
+                            // 2. 詳細ページプレビューの即時反映ロジック
+                            if (folder === currentProjectId) {
+                                const realPreview = document.getElementById('realPagePreview');
+                                const simPreview = document.getElementById('simulatedPagePreview');
+                                
+                                realPreview.style.display = 'none';
+                                simPreview.style.display = 'block';
+                                
+                                const previewImg = document.getElementById('prevPageImg');
+                                previewImg.src = "data:image/png;base64," + base64Content;
+                                previewImg.style.display = 'block';
+                                
+                                const s = previewLang==='ja'?'':previewLang.charAt(0).toUpperCase()+previewLang.slice(1);
+                                document.getElementById('prevPageTitle').textContent = document.getElementById('inProject'+s).value || currentProjectId;
+                                document.getElementById('prevPageCatchcopy').textContent = document.getElementById('inTitle'+s).value || "タイトル";
+                                document.getElementById('prevBody').innerHTML = `<div style="margin-bottom: 20px; line-height:1.6; white-space: pre-wrap;">${document.getElementById('inBody'+s).value}</div>`;
+                            }
+                            
+                            hideEditorLoading(); 
+                        } else {
+                            throw new Error("アップロードに失敗しました。");
+                        }
+                    } catch (err) {
+                        alert("エラー: " + err.message);
+                        hideEditorLoading(); 
                     }
-                } catch (err) {
-                    alert("エラー: " + err.message);
-                }
-            };
-            reader.readAsDataURL(file);
-        }
+                };
+                reader.readAsDataURL(file);
+            }
             
             
             // --- プレビューロジック ---
