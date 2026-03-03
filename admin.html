@@ -30,7 +30,7 @@
         /* --- メイン画面 --- */
         .dashboard { display: grid; grid-template-columns: 250px 1fr; height: 100%; }
         
-        /* サイドバー（以前のメニューを完全復元） */
+        /* サイドバー */
         .sidebar { background: #252526; border-right: 1px solid #333; display: flex; flex-direction: column; padding: 10px; box-sizing: border-box; }
         .sidebar h1 { font-size: 1.2rem; color: #fff; margin: 20px 10px; border-bottom: 2px solid #007acc; padding-bottom: 10px; }
         
@@ -82,17 +82,17 @@
             <div class="sidebar">
                 <h1>🚀 KEI Lab Cockpit</h1>
                 
-                <!-- 1番目：収益・秒数計算（初期アクティブ） -->
+                <!-- 1. 収益・秒数計算（初期アクティブ） -->
                 <a href="calc.html" target="main_monitor" class="menu-link active" onclick="updateActive(this)">💰 収益・秒数計算</a>
                 
-                <!-- 2番目：コンテンツ編集 -->
+                <!-- 2. コンテンツ編集 -->
                 <a href="cms.html" target="main_monitor" class="menu-link" onclick="updateActive(this)">📝 コンテンツ編集</a>
                 
-                <!-- 3番目：全プロジェクト情報 -->
+                <!-- 3. 全プロジェクト情報 -->
                 <a href="projects.html" target="main_monitor" class="menu-link" onclick="updateActive(this)">📂 全プロジェクト情報</a>
 
-                <!-- 4番目以降：JS直接編集系（サブメニュー） -->
-                <a href="data_master.html" target="main_monitor" class="menu-link menu-sub" onclick="updateActive(this)">📄 admin_master.js</a>
+                <!-- 4. JSファイル直接編集・プレビュー系 -->
+                <a href="data_cms_master.html" target="main_monitor" class="menu-link menu-sub" onclick="updateActive(this)">📄 cms_master.js</a>
                 <a href="data_index.html" target="main_monitor" class="menu-link menu-sub" onclick="updateActive(this)">📄 index_news.js</a>
                 <a href="data_catalog.html" target="main_monitor" class="menu-link menu-sub" onclick="updateActive(this)">📄 apps_catalog.js</a>
                 <a href="project_html_preview.html" target="main_monitor" class="menu-link menu-sub" onclick="updateActive(this)">📄 [project]/index.html</a>
@@ -101,12 +101,12 @@
 
                 <div class="spacer"></div>
 
-                <!-- メモ機能 -->
+                <!-- 5. メモ機能 -->
                 <a href="memo_edit.html" target="main_monitor" class="menu-link" onclick="updateActive(this)">💦( ..)φメモメモ</a>
                 
                 <hr style="border:0; border-top:1px solid #444; margin: 10px 0; width: 100%;">
                 
-                <!-- 権限管理 -->
+                <!-- 6. 権限管理 -->
                 <a href="users.html" target="main_monitor" class="menu-link" onclick="updateActive(this)">👥 権限管理</a>
 
                 <button onclick="logout()" style="margin-top:auto; background:#c0392b; color:white; border:none; padding:10px; cursor:pointer; border-radius:5px; font-weight:bold;">🔒 ログアウト</button>
@@ -132,7 +132,8 @@
                 if (!res.ok) throw new Error();
                 const userData = await res.json();
 
-                if (allowedUsersData.includes(userData.login)) {
+                // allowed_users.js 内の allowedUsersData を使用
+                if (typeof allowedUsersData !== 'undefined' && allowedUsersData.includes(userData.login)) {
                     localStorage.setItem('gh_token', token);
                     document.getElementById('loginOverlay').style.display = 'none';
                     document.getElementById('mainWrapper').style.display = 'block';
