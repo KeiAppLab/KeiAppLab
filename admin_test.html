@@ -317,33 +317,6 @@
             justify-content: center; /* センター揃え */
             padding: 6px 15px;       /* 高さを少し低くする */
         }
-
-        /* エディタ保護用のローディング画面 */
-        .editor-area {
-            position: relative; /* オーバーレイの基準位置にするため追加 */
-        }
-        .editor-loading-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.6); /* 半透明の黒 */
-            z-index: 1000; /* 入力欄の上に被せる */
-            display: none; /* 初期は非表示 */
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            font-weight: bold;
-            font-size: 1.2rem;
-            backdrop-filter: blur(2px); /* 背景を少しぼかす */
-        }
-        .editor-loading-overlay .spinner {
-            width: 40px; height: 40px;
-            border: 4px solid rgba(255,255,255,0.3);
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 15px;
-        }
         
         /* --- ビルド監視用トースト通知 --- */
         #build-toast {
@@ -454,13 +427,6 @@
                         
                         <!-- エディタ (左側) -->
                         <div class="editor-area">
-                            
-                            <!-- ローディングオーバーレイ -->
-                            <div id="editorLoading" class="editor-loading-overlay">
-                                <div class="spinner"></div>
-                                <div id="editorLoadingMsg">処理中...</div>
-                            </div>
-                            
                             <h2 style="display: flex; align-items: center; justify-content: space-between;">
                                 <span>📝 記事・プロジェクト作成</span>
                                 <span id="lastEditDatePop" style="display:none; font-size: 0.8rem; background: #e67e22; color: white; padding: 4px 12px; border-radius: 12px; font-weight: normal; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">前回編集日: ----.--.--</span>
@@ -748,21 +714,6 @@
             let previewLang = 'ja';
             let currentProjectId = ""; // 現在入力中のプロジェクトID
             
-            // ▼▼▼ ローディング制御関数 ▼▼▼
-            function showEditorLoading(message) {
-                const overlay = document.getElementById('editorLoading');
-                const msgEl = document.getElementById('editorLoadingMsg');
-                if (overlay && msgEl) {
-                    msgEl.textContent = message || "処理中...";
-                    overlay.style.display = 'flex';
-                }
-            }
-    
-            function hideEditorLoading() {
-                const overlay = document.getElementById('editorLoading');
-                if (overlay) overlay.style.display = 'none';
-            }
-        
             // --- 認証・初期化 ---
             async function checkIdentity() {
                 const token = document.getElementById('tokenInput').value.trim() || arguments[0];
@@ -1027,7 +978,30 @@
                 renderGrid(gridProject, currentProjectPhotos, projId, false);
             }
     
-            // グリッド描画関数 (isSelectable: クリックで入力欄にセットできるか)
+            // ▼▼▼ GitHub APIからBase64データを直接取得して画像にセットする関数 ▼▼▼
+            async function fetchAndSetBase64Image(path, imgElement) {
+                const token = localStorage.getItem('gh_token');
+                try {
+                    // APIエンドポイントを叩く（キャッシュ無効化）
+                    const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
+                        headers: { Authorization: `token ${token}` },
+                        cache: 'no-store'
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.content) {
+                            // GitHubから返ってくるBase64データには改行が含まれるので除去してセット
+                            imgElement.src = "data:image/png;base64," + data.content.replace(/\n/g, '');
+                        }
+                    } else {
+                        imgElement.src = 'https://via.placeholder.com/75?text=Error';
+                    }
+                } catch (e) {
+                    imgElement.src = 'https://via.placeholder.com/75?text=Error';
+                }
+            }
+    
+            // グリッド描画関数 (修正版：Base64直接読み込み)
             function renderGrid(container, files, folderName, isSelectable) {
                 container.innerHTML = '';
                 files.forEach(f => {
@@ -1046,24 +1020,22 @@
                     // 右クリックイベントの設定
                     div.oncontextmenu = (e) => {
                         e.preventDefault();
-                        e.stopPropagation(); // 親への伝播を止める
-                        
-                        // [project]フォルダの index.png はマスターなのでメニューを出さない
-                        if (!isSelectable && f.name === 'index.png') {
-                            return; // 何もせずに処理を終了する
-                        }
-    
+                        e.stopPropagation();
+                        if (!isSelectable && f.name === 'index.png') return; // 保護
                         showContextMenu(div, folderName, fullPath, f.name);
                     };
     
-                    // ▼ URLの末尾にタイムスタンプ(?t=...)を付けてキャッシュを強制的に破棄させる ▼
-                    const rawUrl = `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/main/${fullPath}?t=${Date.now()}`;
-                    
+                    // ▼ 修正：一旦プレースホルダー(Loading)を置き、裏でBase64を取得しに行く ▼
+                    const imgId = "img_" + Math.random().toString(36).substr(2, 9);
                     div.innerHTML = `
-                        <img src="${rawUrl}" class="option-img" onerror="this.src='https://via.placeholder.com/75'">
+                        <img id="${imgId}" src="https://via.placeholder.com/75?text=Load" class="option-img">
                         <span class="option-text">${f.name}</span>
                     `;
                     container.appendChild(div);
+    
+                    // 画像要素がDOMに追加されたら、Base64の取得を開始
+                    const imgElement = document.getElementById(imgId);
+                    fetchAndSetBase64Image(fullPath, imgElement);
                 });
             }
     
@@ -1195,10 +1167,6 @@
                 if (!confirm(`本当に「${contextTarget.name}」を削除しますか？\nこの操作は取り消せません。`)) return;
     
                 const token = localStorage.getItem("gh_token");
-                
-                // ▼ ローディング開始 ▼
-                showEditorLoading("画像を削除中...");
-                
                 try {
                     const getRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${contextTarget.path}`, { headers: { Authorization: `token ${token}` }});
                     const fileData = await getRes.json();
@@ -1210,14 +1178,10 @@
                     });
     
                     if (delRes.ok) {
-                        alert("削除しました。画面を更新します。");
-                        // ▼ 削除後は強制リロードして最新状態にする ▼
-                        location.reload();
+                        alert("削除しました。");
+                        fetchAndRenderImages();
                     } else throw new Error("削除失敗");
-                } catch(e) { 
-                    alert(e.message); 
-                    hideEditorLoading(); // エラー時はローディング解除
-                }
+                } catch(e) { alert(e.message); }
             });
 
             // 右クリックメニューの「Paste image」をクリックした時
@@ -1386,36 +1350,31 @@
     
             // GitHub APIへの書き込み
             function uploadToGitHub(file, folder, fileName) {
-                const reader = new FileReader();
-                reader.onload = async (e) => {
-                    const base64Content = e.target.result.split(',')[1];
-                    const path = `${folder}/${fileName}`;
-                    const token = localStorage.getItem("gh_token");
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const base64Content = e.target.result.split(',')[1];
+                const path = `${folder}/${fileName}`;
+                const token = localStorage.getItem("gh_token");
     
-                    // ▼ ローディング開始 ▼
-                    showEditorLoading("画像をアップロード中...");
+                try {
+                    const putRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
+                        method: "PUT",
+                        headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                        body: JSON.stringify({ message: `Upload image ${fileName}`, content: base64Content })
+                    });
     
-                    try {
-                        const putRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
-                            method: "PUT",
-                            headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
-                            body: JSON.stringify({ message: `Upload image ${fileName}`, content: base64Content })
-                        });
-    
-                        if (putRes.ok) {
-                            alert(`「${fileName}」をアップロードしました！画面を更新します。`);
-                            // ▼ アップロード後も強制リロード ▼
-                            location.reload();
-                        } else {
-                            throw new Error("アップロード失敗");
-                        }
-                    } catch (err) {
-                        alert("エラー: " + err.message);
-                        hideEditorLoading(); // エラー時は解除
+                    if (putRes.ok) {
+                        alert(`「${fileName}」をアップロードしました！`);
+                        fetchAndRenderImages(); // 再描画
+                    } else {
+                        throw new Error("アップロード失敗");
                     }
-                };
-                reader.readAsDataURL(file);
-            }
+                } catch (err) {
+                    alert("エラー: " + err.message);
+                }
+            };
+            reader.readAsDataURL(file);
+        }
             
             
             // --- プレビューロジック ---
