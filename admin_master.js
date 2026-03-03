@@ -69,7 +69,7 @@ const adminMasterData = [
         "project_id": "gorila",
         "date": "2026.03.03",
         "category": "update",
-        "image": "index_phot/index_play.png",
+        "image": "index_phot/index_about.png",
         "status": "coming",
         "privacy_html": "",
         "project_ja": "GORIRA",
