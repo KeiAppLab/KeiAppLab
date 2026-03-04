@@ -351,37 +351,43 @@
         /* ↓↓↓ ここから、サイドメニューアイコン拡大回転 ↓↓↓ */
         .menu-icon, .flipped-icon {
             display: inline-block;
-            width: 1.5em; /* 修正：幅を固定 */
-            height: 1.2em; /* 修正：高さを固定して、拡大してもボタンが動かないようにする */
+            width: 1.5em; 
+            height: 1.2em; 
             text-align: center;
             transition: transform 0.2s ease-out;
-            vertical-align: middle; /* 修正：文字との高さを揃える */
+            vertical-align: middle;
         }
 
+        /* 通常アイコンのホバー */
         .menu-btn:hover .menu-icon {
-            transform: scale(1.3) rotate(10deg); /* 1.2から1.3へ少し強調しました */
+            transform: scale(1.3) rotate(10deg);
         }
         
+        /* 反転アイコン：初期状態でも必ず反転させる */
+        .flipped-icon {
+            transform: scaleX(-1); /* ここで常に反転 */
+        }
+
+        /* 反転アイコンのホバー：反転を維持したまま拡大・回転 */
         .menu-btn:hover .flipped-icon {
             transform: scaleX(-1) scale(1.3) rotate(-10deg);
         }
 
-        /* ▼▼▼ 追加：メモボタンの特殊装飾 ▼▼▼ */
-        /* ( ..) のフォントをRobotoに変更 */
-        .memo-face {
-            font-family: 'Roboto', sans-serif;
+        /* ▼▼▼ メモボタンの「カプセル型」装飾 ▼▼▼ */
+        .memo-capsule {
+            background-color: rgba(135, 206, 250, 0.4); /* 半透明の水色 */
+            border-radius: 20px; /* カプセルのように丸く */
+            padding: 0 6px;      /* 左右の余白を少し増やす */
+            margin: 0 2px;
+            display: inline-block;
+            line-height: 1.2;
+            font-family: 'Roboto', sans-serif; /* カプセル全体をシャープなフォントに */
             font-weight: bold;
-            letter-spacing: 1px;
         }
 
-        /* （ ）の中を薄い水色にする */
-        .blue-space {
-            background-color: rgba(135, 206, 250, 0.4); /* 半透明の水色 */
-            border-radius: 5px; /* 角を少し丸く */
-            padding: 0 2px;
-            margin: 0 1px;
-            display: inline-block;
-            line-height: 1.1; /* 上下にはみ出さないよう調整 */
+        /* 顔文字の目と口の調整 */
+        .memo-face {
+            letter-spacing: -1px; /* 点の間隔を少し詰める */
         }
         /* ↑↑↑ ここまで ↑↑↑ */
         
@@ -465,7 +471,10 @@
             
                 <!-- メモボタン（反転アイコン対応） -->
                 <div class="menu-btn" onclick="switchPanel('memo')">
-                    <span class="flipped-icon">💦</span>(<span class="blue-space"><span class="memo-face">(　..)</span></span>)φメモメモ
+                    <!-- 反転アイコンを flipped-icon クラスで維持 -->
+                    <span class="flipped-icon">💦</span>
+                    <!-- カッコごとカプセルで包みました -->
+                    <span class="memo-capsule">(<span class="memo-face"> ．．</span>)</span>φメモメモ
                 </div>
             
                 <hr style="border:0; border-top:1px solid #444; margin: 10px 0; width: 100%;">
