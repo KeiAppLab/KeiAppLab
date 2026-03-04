@@ -228,7 +228,7 @@ Email: keiapplab@gmail.com
             // ★修正点: getAttributeで属性そのものをチェック & 相対パスを使用
             var currentSrc = iframe.getAttribute('src');
             if (!currentSrc || currentSrc === "") {
-                iframe.src = "../support.html?project=" + encodeURIComponent(appName);
+                iframe.src = "https://keiapplab.github.io/KeiAppLab/support.html?project=" + encodeURIComponent(appName);
             }
             
             btn.innerHTML = "❌ フォームを閉じる";
