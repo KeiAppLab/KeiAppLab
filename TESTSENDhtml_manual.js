@@ -229,7 +229,7 @@ Email: keiapplab@gmail.com
             // iframeのsrcが空の場合のみセット（リロード防止）
             // support.htmlにプロジェクト名を渡す
             if (!iframe.src) {
-                iframe.src = "../support.html?project=" + encodeURIComponent(appName);
+                iframe.src = "https://keiapplab.github.io/KeiAppLab/support.html?project=" + encodeURIComponent(appName);
             }
             
             btn.innerHTML = "❌ フォームを閉じる";
