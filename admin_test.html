@@ -377,7 +377,7 @@
         .memo-capsule {
             background-color: rgba(135, 206, 250, 0.2); /* 半透明の水色 */
             border-radius: 11px; /* カプセルのように丸く */
-            padding: 0 -1px;
+            padding: 0 1px;
             margin-left: -6px;  /* ▼ 左の 💦 を引き寄せる ▼ */
             margin-right: -10px; /* ▼ 右の φ を引き寄せる ▼ */
             display: inline-block;
@@ -391,6 +391,49 @@
             letter-spacing: 2px; /* 点の間隔を調整 */
         }
         /* ↑↑↑ ここまで ↑↑↑ */
+
+        .folder-section {
+            border-bottom: 1px solid #ccc;
+            background: #fff;
+            position: relative;
+            margin: 0;
+        }
+        .folder-section:last-child { border-bottom: none; }
+        .folder-title {
+            background: #e6e6e6;
+            padding: 8px 15px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #333;
+            border-bottom: 1px solid #ccc;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .folder-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr); 
+            gap: 8px; 
+            padding: 8px; 
+            align-content: start; 
+            overflow-y: auto; 
+            transition: background 0.2s;
+        }
+        #grid-index-phot { height: 260px; }
+        #grid-project { height: 130px; }
+
+        .custom-option { 
+            position: relative; display: flex; flex-direction: column; align-items: center; text-align: center;
+            padding: 4px 4px 2px 4px; 
+            border: 1px solid #eee; border-radius: 4px;
+            cursor: pointer; transition: all 0.2s; color: #333; 
+        }
+        /* メニュー展開中またはホバー時に色を付ける */
+        .custom-option:hover, .custom-option.active-menu { 
+            background-color: #f2f9fc; border-color: #0056b3; color: #0056b3; 
+        }
+        .option-img { width: 80px; height: 80px; object-fit: cover; border-radius: 4px; margin-bottom: 4px; border: 1px solid #ddd; }
+        .option-text { font-size: 0.7rem; font-weight: normal; word-break: break-all; line-height: 1.2; display: block; margin: 0; }
         
     </style>
 </head>
