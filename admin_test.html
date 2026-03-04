@@ -1034,8 +1034,6 @@
                     }
                 }
                 updatePreview();
-                // プロジェクトが切り替わった時に、そのプロジェクト用の画像を裏で読み込んでおく
-                fetchAndRenderImages();
             }
     
             // 特定のID以外の言語フィールドを空にする関数
@@ -1143,7 +1141,11 @@
 
             // 開閉制御
             function toggleImageSelect() { 
-                document.querySelector('.custom-select').classList.toggle('open'); 
+                const wrapper = document.querySelector('.custom-select');
+                wrapper.classList.toggle('open'); 
+                if (wrapper.classList.contains('open')) {
+                    fetchAndRenderImages(); // 開くたびに最新状態をチェック
+                }
             }
     
             function selectImage(fullPath, fileName) {
