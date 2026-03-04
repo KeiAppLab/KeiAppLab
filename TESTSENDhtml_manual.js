@@ -139,7 +139,34 @@ Email: keiapplab@gmail.com
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ページタイトル | FreeCallApp</title>
-    <!-- ここに同じ<style>〜</style>を入れます -->
+    <!-- ここに同じ<style>〜</style>を入れます ->
+    <style>
+        body { font-family: "Helvetica Neue", Arial, sans-serif; background: #f9f9f9; color: #333; line-height: 1.6; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; background: #fff; padding: 40px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        h1 { font-size: 24px; border-bottom: 3px solid #0056b3; padding-bottom: 10px; margin-bottom: 30px; }
+        h2 { font-size: 18px; background: #f0f0f0; padding: 10px; border-left: 5px solid #0056b3; margin-top: 30px; }
+        p, li { font-size: 14px; }
+        ul { padding-left: 20px; }
+        .date { text-align: right; font-size: 12px; color: #666; margin-bottom: 40px; }
+        
+        /* お問い合わせボタンとiframeのスタイル */
+        .contact-section { margin-top: 15px; }
+        .open-contact-btn {
+            background-color: #0056b3; color: white; border: none; padding: 12px 25px;
+            border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 14px;
+            display: inline-flex; align-items: center; gap: 8px; transition: 0.2s;
+            width: 100%; justify-content: center; max-width: 300px;
+        }
+        .open-contact-btn:hover { background-color: #004494; }
+        .contact-frame-wrapper {
+            display: none; /* 初期状態は非表示 */
+            margin-top: 20px; border: 1px solid #ddd; border-radius: 8px;
+            overflow: hidden; background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            animation: slideDown 0.3s ease-out;
+        }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        iframe { width: 100%; height: 750px; border: none; display: block; }
+    </style>
 </head>
 <body>
 
@@ -177,29 +204,24 @@ Email: keiapplab@gmail.com
     </p>
 
     <!-- ▼ ここからお問い合わせフォーム ▼ -->
-    <div style="background: #f4f6f8; padding: 20px; border-radius: 8px; margin-top: 15px; border: 1px solid #ccc;">
-        <form id="contactForm" onsubmit="submitContact(event)">
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; font-weight: bold; margin-bottom: 5px; color: #333;">連絡先メールアドレス <span style="color:#d9534f;">*</span></label>
-                <input type="email" id="contactEmail" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 14px;" placeholder="例: your@email.com">
-            </div>
-
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; font-weight: bold; margin-bottom: 5px; color: #333;">件名（プロジェクト名）</label>
-                <!-- ※JavaScriptで現在のプロジェクト名を自動入力し、readonly（変更不可）にする -->
-                <input type="text" id="contactSubject" readonly style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 14px; background-color: #e9ecef; color: #555;">
-            </div>
-
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; font-weight: bold; margin-bottom: 5px; color: #333;">お問い合わせ内容 <span style="color:#d9534f;">*</span></label>
-                <textarea id="contactBody" required rows="5" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 14px;" placeholder="ご質問やデータ削除のご依頼内容をご記入ください。"></textarea>
-            </div>
-
-            <button type="submit" id="contactSubmitBtn" style="background-color: #F39C12; color: #fff; border: none; padding: 12px 20px; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%;">
-                送信する
+     <div class="contact-section">
+            <p>
+                <strong>啓 App Lab (KEI App Lab)</strong><br>
+                Email: keiapplab@gmail.com
+            </p>
+            
+            <button type="button" class="open-contact-btn" onclick="toggleContact()">
+                📩 お問い合わせフォームを開く
             </button>
-            <div id="contactMsg" style="margin-top: 10px; font-weight: bold; text-align: center; display: none;"></div>
-        </form>
+            
+            <div id="contactWrapper" class="contact-frame-wrapper">
+                <iframe id="contactIframe" src="" loading="lazy"></iframe>
+            </div>
+        </div>
+
+        <div style="margin-top: 50px; border-top: 1px solid #eee; padding-top: 20px; text-align: center; font-size: 12px; color: #999;">
+            &copy; 2026 KEI App Lab. All Rights Reserved.
+        </div>
     </div>
 
 
@@ -209,6 +231,31 @@ Email: keiapplab@gmail.com
     </div>
 </div>
 
+// フォーム追加：
+<script>
+        function toggleContact() {
+            var wrapper = document.getElementById('contactWrapper');
+            var iframe = document.getElementById('contactIframe');
+            var btn = document.querySelector('.open-contact-btn');
+            
+            // アプリ名をタイトルから取得してパラメータにする
+            var appName = document.title.split('|')[0].trim().replace('プライバシーポリシー', '').trim() || "FreeCallApp";
+
+            if (wrapper.style.display === 'none' || wrapper.style.display === '') {
+                wrapper.style.display = 'block';
+                // まだ読み込まれていない場合のみsrcをセット（無駄な通信防止）
+                if (!iframe.src) {
+                    iframe.src = "../contact.html?project=" + encodeURIComponent(appName);
+                }
+                btn.innerHTML = "❌ フォームを閉じる";
+                btn.style.backgroundColor = "#666";
+            } else {
+                wrapper.style.display = 'none';
+                btn.innerHTML = "📩 お問い合わせフォームを開く";
+                btn.style.backgroundColor = "#0056b3";
+            }
+        }
+    </script>
 </body>
 </html>
 `;
