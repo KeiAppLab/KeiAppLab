@@ -347,6 +347,27 @@
         @keyframes spin { 100% { transform: rotate(360deg); } }
         .toast-btn { background: #27ae60; color: white; border: none; padding: 8px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; }
         .toast-btn:hover { background: #219653; }
+
+        /* ↓↓↓ ここから、サイドメニューアイコン拡大回転 ↓↓↓ */
+        .menu-icon {
+            display: inline-block;
+            transition: transform 0.2s ease-out;
+            margin-right: 5px;
+        }
+        .menu-btn:hover .menu-icon {
+            transform: scale(1.2) rotate(10deg);
+        }
+        .flipped-icon {
+            display: inline-block;
+            transform: scaleX(-1);
+            transition: transform 0.2s ease-out;
+            margin-right: 5px;
+        }
+        .menu-btn:hover .flipped-icon {
+            transform: scaleX(-1) scale(1.2) rotate(-10deg);
+        }
+        /* ↑↑↑ ここまで ↑↑↑ */
+        
     </style>
 </head>
 <body>
@@ -385,18 +406,28 @@
         <div class="dashboard">
             
             <!-- ▼▼ サイドバー（左メニュー） ▼▼ -->
+            <!-- ▼▼ サイドバー（左メニュー） ▼▼ -->
             <div class="sidebar">
                 <h1>🚀 KEI Lab Admin</h1>
-                <div class="menu-btn active" onclick="switchPanel('calc')">📈 収益・秒数計算</div>
-                <div class="menu-btn" onclick="switchPanel('contact-admin')">📩 お問い合わせ管理</div>
-                <div class="menu-btn" onclick="switchPanel('cms')">📝 コンテンツ編集</div>
-                <div class="menu-btn" onclick="switchPanel('projects')">📂 全プロジェクト情報</div>
+                <div class="menu-btn active" onclick="switchPanel('calc')">
+                    <span class="menu-icon">📈</span> 収益・秒数計算
+                </div>
+                <div class="menu-btn" onclick="switchPanel('contact-admin')">
+                    <span class="menu-icon">📩</span> お問い合わせ管理
+                </div>
+                <div class="menu-btn" onclick="switchPanel('cms')">
+                    <span class="menu-icon">📝</span> コンテンツ編集
+                </div>
+                <div class="menu-btn" onclick="switchPanel('projects')">
+                    <span class="menu-icon">📂</span> 全プロジェクト情報
+                </div>
+                
+                <!-- 小さなメニュー項目 -->
                 <div class="menu-btn" style="font-size:0.8rem; padding:10px 15px;" onclick="switchPanel('data-master')">📄 admin_master.js</div>
                 <div class="menu-btn" style="font-size:0.8rem; padding:10px 15px;" onclick="switchPanel('data-index')">📄 index_news.js</div>
                 <div class="menu-btn" style="font-size:0.8rem; padding:10px 15px;" onclick="switchPanel('data-catalog')">📄 apps_catalog.js</div>
                 <div class="menu-btn" style="font-size:0.8rem; padding:10px 15px;" onclick="switchPanel('data-project-html')">📄 [project]/index.html</div>
                 
-                <!-- 手順書とコピーボタン -->
                 <div class="menu-btn" style="font-size:0.8rem; padding:10px 15px; display:flex; justify-content:space-between; align-items:center;" onclick="switchPanel('html-manual')">
                     <span>📝 HTML生成手順書.js</span>
                     <span onclick="event.stopPropagation(); copyPrivacyManual();" style="cursor:pointer; display:flex; align-items:center; justify-content:center; padding:5px; background:rgba(255,255,255,0.1); border-radius:4px;" title="手順書をコピー">
@@ -406,21 +437,28 @@
                         </svg>
                     </span>
                 </div>
-
+            
                 <div class="spacer"></div>
-                <!-- 大発掘会議（ルビ風・アイコン反転） -->
+            
+                <!-- 大発掘会議（反転アイコン対応） -->
                 <div class="menu-btn" onclick="switchPanel('idea-mining')" style="display:flex; flex-direction:column; align-items:flex-start; line-height:1.2; padding-top:5px; padding-bottom:15px; white-space: nowrap;">
                     <span style="font-size:0.7rem; color:#aaa; margin-left:25px; margin-bottom:-10px;">みんなの！</span>
-                    <span><span style="display:inline-block; transform:scaleX(-1);">💭</span> 原石Project大発掘会議</span>
+                    <span><span class="flipped-icon">💭</span> 原石Project大発掘会議</span>
                 </div>
-                <!-- メモボタンのアイコン反転 -->
+            
+                <!-- メモボタン（反転アイコン対応） -->
                 <div class="menu-btn" onclick="switchPanel('memo')">
-                    <span style="display:inline-block; transform:scaleX(-1);">💦</span>( ..)φメモメモ
+                    <span class="flipped-icon">💦</span>(　．．)φメモメモ
                 </div>
-
+            
                 <hr style="border:0; border-top:1px solid #444; margin: 10px 0; width: 100%;">
-                <div class="menu-btn" onclick="switchPanel('users')">🪪 権限管理</div>
-                <div class="menu-btn" onclick="logout()" style="margin-top:auto; background:#c0392b; color:white;">🔒 ログアウト</div>
+                
+                <div class="menu-btn" onclick="switchPanel('users')">
+                    <span class="menu-icon">🪪</span> 権限管理
+                </div>
+                <div class="menu-btn" onclick="logout()" style="margin-top:auto; background:#c0392b; color:white;">
+                    <span class="menu-icon">🔒</span> ログアウト
+                </div>
             </div>
             <!-- ▲▲ サイドバーここまで ▲▲ -->
 
