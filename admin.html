@@ -819,10 +819,11 @@
                 if (overlay) overlay.style.display = 'none';
             }
 
-            async function fetchAndSetBase64Image(path, imgElement) {
+            // ▼▼▼ 取得したデータをファイル情報に「記憶(キャッシュ)」させる ▼▼▼
+            async function fetchAndSetBase64Image(path, imgElement, fileObj) {
                 const token = localStorage.getItem('gh_token');
                 try {
-                    // APIエンドポイントを叩く（?t=時間 を付けてキャッシュを完全回避）
+                    // APIエンドポイントを叩く（キャッシュ完全回避）
                     const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}?t=${Date.now()}`, {
                         headers: { Authorization: `token ${token}` },
                         cache: 'no-store'
@@ -830,8 +831,10 @@
                     if (res.ok) {
                         const data = await res.json();
                         if (data.content) {
-                            // Base64データを直接画像タグに流し込む
-                            imgElement.src = "data:image/png;base64," + data.content.replace(/\n/g, '');
+                            const base64Str = "data:image/png;base64," + data.content.replace(/\n/g, '');
+                            imgElement.src = base64Str;
+                            // ★ここが超重要：取得したデータを記憶させておく
+                            if (fileObj) fileObj.localBase64 = base64Str;
                         }
                     } else {
                         imgElement.src = 'https://via.placeholder.com/75?text=Error';
@@ -862,8 +865,9 @@
                 document.getElementById('loginOverlay').style.display = 'none';
                 document.getElementById('mainWrapper').style.display = 'block';
                 updatePreview();
-                initProjectList(); // admin_master.js から履歴を生成
-                initImageSelector(); // 初回はデフォルト画像リスト
+                initProjectList(); 
+                // ▼▼▼ 起動した瞬間に、裏側で最新の画像リストを完璧に読み込んでおく ▼▼▼
+                fetchAndRenderImages(); 
             }
             
             function logout() { localStorage.removeItem('gh_token'); location.reload(); }
@@ -1034,6 +1038,9 @@
                     }
                 }
                 updatePreview();
+            
+                // ▼▼▼ プロジェクト名が変わった時だけ、そのプロジェクト用の画像を裏で読み込み直す ▼▼▼
+                fetchAndRenderImages();
             }
     
             // 特定のID以外の言語フィールドを空にする関数
@@ -1067,7 +1074,7 @@
             // 右クリックで選択中の対象を保持する変数
             let contextTarget = { folder: null, path: null, name: null };
     
-            // 1. 画像リストの取得と描画（キャッシュ回避版）
+            // ▼▼▼ 目次を更新する際、古い「画像の記憶」を賢く引き継ぐ ▼▼▼
             async function fetchAndRenderImages() {
                 const token = localStorage.getItem('gh_token');
                 if (!token) return;
@@ -1077,34 +1084,49 @@
                 const projId = currentProjectId; 
     
                 document.getElementById('label-project-folder').textContent = projId ? projId : "[project未選択]";
-    
-                // フォルダの目次もキャッシュされないようにタイムスタンプを付ける
                 const t = Date.now();
-
+    
+                // --- 1. index_phot の取得とキャッシュ引継ぎ ---
                 try {
                     const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/index_phot?t=${t}`, { headers: { Authorization: `token ${token}` }, cache: 'no-store' });
                     if (res.ok) {
                         const files = await res.json();
-                        cachedIndexPhotos = files.filter(f => f.type === "file" && /\.(png|jpe?g|gif|webp)$/i.test(f.name));
+                        const newFiles = files.filter(f => f.type === "file" && /\.(png|jpe?g|gif|webp)$/i.test(f.name));
+                        
+                        // ★魔法：新しく取得した目次に、前回の画像記憶をコピーする
+                        newFiles.forEach(nf => {
+                            const oldF = cachedIndexPhotos.find(of => of.name === nf.name);
+                            if (oldF && oldF.localBase64) nf.localBase64 = oldF.localBase64;
+                        });
+                        cachedIndexPhotos = newFiles;
                     }
                 } catch (e) { console.warn(e); }
     
-                currentProjectPhotos =[];
+                // --- 2. [project] の取得とキャッシュ引継ぎ ---
+                let newProjectPhotos =[];
                 if (projId) {
                     try {
                         const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${projId}?t=${t}`, { headers: { Authorization: `token ${token}` }, cache: 'no-store' });
                         if (res.ok) {
                             const files = await res.json();
-                            currentProjectPhotos = files.filter(f => f.type === "file" && /\.(png|jpe?g|gif|webp)$/i.test(f.name));
+                            newProjectPhotos = files.filter(f => f.type === "file" && /\.(png|jpe?g|gif|webp)$/i.test(f.name));
+                            
+                            // ★魔法：[project]側でも、前回の画像記憶をコピーする
+                            newProjectPhotos.forEach(nf => {
+                                const oldF = currentProjectPhotos.find(of => of.name === nf.name);
+                                if (oldF && oldF.localBase64) nf.localBase64 = oldF.localBase64;
+                            });
                         }
-                    } catch (e) { }
+                    } catch (e) { /* フォルダがない場合は無視 */ }
                 }
+                currentProjectPhotos = newProjectPhotos;
     
+                // 描画実行（記憶があれば Load を出さずに一瞬で表示される）
                 renderGrid(gridIndex, cachedIndexPhotos, 'index_phot', true);
                 renderGrid(gridProject, currentProjectPhotos, projId, false);
             }
     
-            // グリッド描画関数 (Base64直接読み込み版)
+            // 記憶(キャッシュ)があれば通信をスキップして爆速表示する ▼▼▼
             function renderGrid(container, files, folderName, isSelectable) {
                 container.innerHTML = '';
                 files.forEach(f => {
@@ -1121,31 +1143,37 @@
     
                     div.oncontextmenu = (e) => {
                         e.preventDefault();
-                        e.stopPropagation(); 
+                        e.stopPropagation();
                         if (!isSelectable && f.name === 'index.png') return; 
                         showContextMenu(div, folderName, fullPath, f.name);
                     };
     
-                    // ▼ 一旦Loading文字を置き、裏でBase64データを取りに行く ▼
                     const imgId = "img_" + Math.random().toString(36).substr(2, 9);
-                    div.innerHTML = `
-                        <img id="${imgId}" src="https://via.placeholder.com/75?text=Load" class="option-img">
-                        <span class="option-text">${f.name}</span>
-                    `;
-                    container.appendChild(div);
-
-                    const imgElement = document.getElementById(imgId);
-                    fetchAndSetBase64Image(fullPath, imgElement);
+                    
+                    // ★記憶(キャッシュ)がある場合は、Loadを出さずに一瞬で画像を表示
+                    if (f.localBase64) {
+                        div.innerHTML = `
+                            <img id="${imgId}" src="${f.localBase64}" class="option-img">
+                            <span class="option-text">${f.name}</span>
+                        `;
+                        container.appendChild(div);
+                    } else {
+                        // ★記憶がない(初回)場合のみ、Loadを出して裏で通信する
+                        div.innerHTML = `
+                            <img id="${imgId}" src="https://via.placeholder.com/75?text=Load" class="option-img">
+                            <span class="option-text">${f.name}</span>
+                        `;
+                        container.appendChild(div);
+                        const imgElement = document.getElementById(imgId);
+                        // f を渡して、取得後に記憶させる
+                        fetchAndSetBase64Image(fullPath, imgElement, f); 
+                    }
                 });
             }
 
             // 開閉制御
             function toggleImageSelect() { 
-                const wrapper = document.querySelector('.custom-select');
-                wrapper.classList.toggle('open'); 
-                if (wrapper.classList.contains('open')) {
-                    fetchAndRenderImages(); // 開くたびに最新状態をチェック
-                }
+                document.querySelector('.custom-select').classList.toggle('open'); 
             }
     
             function selectImage(fullPath, fileName) {
