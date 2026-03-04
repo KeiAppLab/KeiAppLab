@@ -3,114 +3,2510 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ページタイトル | FreeCallApp</title>
-    <!-- CSS -->
+    <title>KEI Lab マスター・コックピット</title>
+
+    <!-- 3つの主要データファイル読み込み -->
+    <script src="admin_master.js"></script>
+    <script src="index_news.js"></script>
+    <script src="apps_catalog.js"></script>
+    
+    <script src="allowed_users.js"></script>
+    <script src="TESTSEND_html_manual.js"></script>
+
     <style>
-        body { font-family: "Helvetica Neue", Arial, sans-serif; background: #f9f9f9; color: #333; line-height: 1.6; margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; background: #ffffff; padding: 40px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        h1 { font-size: 24px; border-bottom: 3px solid #F39C12; padding-bottom: 10px; margin-bottom: 30px; }
-        h2 { font-size: 18px; background: #f0f0f0; padding: 10px; border-left: 5px solid #F39C12; margin-top: 30px; }
-        h3 { font-size: 16px; color: #555; margin-top: 20px; font-weight: bold; }
-        p, li { font-size: 14px; }
-        ul { padding-left: 20px; }
-        .date { text-align: right; font-size: 12px; color: #666; margin-bottom: 40px; }
-        .important { color: #d9534f; font-weight: bold; }
-        .footer { margin-top: 50px; border-top: 1px solid #eee; padding-top: 20px; text-align: center; font-size: 12px; color: #999; }
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700;900&family=Roboto:wght@400;500;900&display=swap');
+
+        /* --- 全体レイアウト --- */
+        body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Arial, sans-serif; background: #1e1e1e; color: #ddd; height: 100vh; overflow: hidden; }
+        #mainWrapper { display: none; height: 100%; }
+
+        /* --- ログイン画面 --- */
+        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #2c3e50; z-index: 9999; display: flex; justify-content: center; align-items: center; }
+        .login-container-split { display: flex; width: 850px; height: 550px; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .login-left { width: 40%; padding: 40px; display: flex; flex-direction: column; justify-content: center; background: #f9f9f9; border-right: 1px solid #eee; }
+        .login-left input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ccc; border-radius: 5px; }
+        .login-left button { width: 100%; padding: 12px; background: #0056b3; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .login-left button:hover { background: #003d82; }
+        .login-right { width: 60%; padding: 40px; overflow-y: auto; color: #333; line-height: 1.6; }
+        .login-right h3 { border-bottom: 2px solid #0056b3; padding-bottom: 10px; margin-top: 0; }
+        .login-right ol { padding-left: 20px; margin-bottom: 20px; }
+        .login-right li { margin-bottom: 8px; font-size: 0.9rem; }
+        .warning-box { background: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 10px; border-radius: 5px; font-size: 0.85rem; margin-top: 15px; }
+
+        /* --- メイン画面 --- */
+        .dashboard { display: grid; grid-template-columns: 250px 1fr; height: 100%; }
+        .sidebar { background: #252526; border-right: 1px solid #333; display: flex; flex-direction: column; padding: 10px; box-sizing: border-box; }
+        .sidebar h1 { font-size: 1.2rem; color: #fff; margin: 20px 10px; border-bottom: 2px solid #007acc; padding-bottom: 10px; }
+        .menu-btn { padding: 15px; margin-bottom: 5px; cursor: pointer; border-radius: 5px; color: #aaa; font-weight: bold; transition: 0.2s; display: flex; align-items: center; gap: 10px; }
+        .menu-btn:hover { background: #3c3c3c; color: #fff; }
+        .menu-btn.active { background: #007acc; color: white; }
+        .spacer { flex-grow: 1; min-height: 20px; border-bottom: 1px solid #333; margin-bottom: 10px; }
+
+        .main-content { position: relative; overflow: hidden; height: 100%; }
+        /* paddingの値を 上15px 右15px 下15px 左30px に変更します */
+        .panel { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; overflow-y: auto; padding: 15px 15px 15px 30px; box-sizing: border-box; }
+        .panel.active { display: block; }
+
+        /* --- CMSレイアウト (40:60) --- */
+        .cms-layout { display: flex; height: 100%; gap: 0; }
+        .editor-area { width: 40%; overflow-y: auto; padding-right: 20px; height: 100%; box-sizing: border-box; }
+        .preview-area { width: 60%; background: #e0e0e0; color: #333; overflow-y: auto; padding: 20px; height: 100%; box-sizing: border-box; }
+
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-top: 5px; margin-bottom: 5px; font-weight: bold; font-size: 0.9rem; color: #aaa; }
+        /* ラベル行のフレックス設定（ステータススイッチ配置用） */
+        .label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .label-row label { margin: 0; }
+
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #555; border-radius: 4px; box-sizing: border-box; font-size: 1rem; }
+        /* --- プライバシーポリシーのプレースホルダー（薄く・小さく） --- */
+        #inPrivacy::placeholder { font-size: 0.8rem; color: #999; line-height: 1.5; }
+        .input-white { background-color: #ffffff !important; color: #333 !important; border: 1px solid #ccc !important; font-weight: bold; }
         
-        /* お問い合わせボタンとiframeのスタイル */
-        .open-contact-btn {
-            background-color: #0056b3; color: white; border: none; padding: 12px 20px;
-            border-radius: 4px; font-weight: bold; cursor: pointer; width: 100%; font-size: 16px;
-            margin-top: 15px; display: flex; justify-content: center; align-items: center; gap: 10px;
-            transition: 0.2s;
+        .row-group { display: flex; gap: 10px; }
+        .row-group > div { flex: 1; }
+
+        .input-group { display: flex; width: 100%; }
+        .input-group input { flex: 1; border-top-right-radius: 0 !important; border-bottom-right-radius: 0 !important; border-right: 0 !important; }
+        .input-group select { flex: 1; border-top-left-radius: 0 !important; border-bottom-left-radius: 0 !important; background-color: #e6e6e6 !important; color: #0056b3 !important; cursor: pointer; }
+
+        .editor-lang-tabs { display: flex; gap: 5px; margin-bottom: 15px; border-bottom: 1px solid #555; padding-bottom: 10px; }
+        .edit-tab { padding: 8px 15px; background: #333; color: #aaa; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .edit-tab:hover { background: #444; color: #fff; }
+        .edit-tab.active { background: #007acc; color: white; }
+        
+        .lang-input-group { display: none; animation: fadeIn 0.3s; }
+        .lang-input-group.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* ステータススイッチ */
+        .status-switch { display: flex; gap: 10px; background: #333; padding: 2px 8px; border-radius: 4px; }
+        .status-label { color: #fff; font-size: 0.8rem; display: flex; align-items: center; gap: 5px; cursor: pointer; font-weight: normal; margin: 0; }
+        .status-label input { width: auto; margin: 0; }
+
+        /* 画像選択・フォルダUIのスタイル */
+        .custom-select-wrapper { position: relative; user-select: none; width: 100%; }
+        .custom-select { position: relative; display: flex; flex-direction: column; }
+        .custom-select__trigger { position: relative; display: flex; align-items: center; justify-content: space-between; padding: 10px; font-size: 1rem; font-weight: bold; color: #333; background: #ffffff; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; }
+        
+        .custom-options { 
+            position: absolute; top: 100%; left: 0; right: 0; 
+            border: 1px solid #ccc; border-top: 0; background: #fff; 
+            transition: all 0.3s; opacity: 0; visibility: hidden; pointer-events: none; z-index: 100; 
+            border-radius: 0 0 4px 4px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            /* グリッドではなく縦に並べる（余白も0にする） */
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            overflow: hidden; 
         }
-        .open-contact-btn:hover { background-color: #004494; }
-        .contact-frame-wrapper {
-            display: none; margin-top: 15px; border: 1px solid #ccc; border-radius: 8px;
-            overflow: hidden; background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        .custom-select.open .custom-options { opacity: 1; visibility: visible; pointer-events: all; }
+
+        .custom-option { 
+            position: relative; display: flex; flex-direction: column; align-items: center; text-align: center;
+            /* ▼ 下の余白だけを 2px に減らして底を詰める ▼ */
+            padding: 4px 4px 2px 4px; 
+            border: 1px solid #eee; border-radius: 4px;
+            cursor: pointer; transition: all 0.2s; color: #333; 
         }
-        /* iframeの高さは内容に応じて調整 */
-        iframe { width: 100%; height: 750px; border: none; display: block; }
+        .custom-option:hover { background-color: #f2f9fc; border-color: #0056b3; color: #0056b3; }
+        .option-img { width: 80px; height: 80px; object-fit: cover; border-radius: 4px; margin-bottom: 4px; border: 1px solid #ddd; }
+        
+        .option-text { 
+            font-size: 0.7rem; font-weight: normal; word-break: break-all; line-height: 1.2; 
+            /* ▼ 謎の隙間を完全に消し去る魔法 ▼ */
+            display: block;
+            margin: 0;
+        }
+        /* カスタム画像選択UIと右クリックメニュー */
+        /* フォルダ枠のデザイン（上下に分割） */
+        .folder-section {
+            border-bottom: 1px solid #ccc;
+            background: #fff;
+            position: relative;
+            margin: 0; /* 外側の余白を削除 */
+        }
+        .folder-section:last-child {
+            border-bottom: none; /* 一番下の線は消す */
+        }
+        .folder-title {
+            background: #e6e6e6;
+            padding: 8px 15px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #333;
+            border-bottom: 1px solid #ccc;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        /* 画像が並ぶグリッドエリア */
+        .folder-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr); 
+            gap: 8px; 
+            padding: 8px; 
+            /* ▼ align-items を消して、align-content に変更します ▼ */
+            align-content: start; 
+            overflow-y: auto; 
+            transition: background 0.2s;
+        }
+
+        /* --- プレビューエリア --- */
+        .preview-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-bottom: 10px; }
+        .preview-label { font-size: 0.8rem; color: #666; font-weight: bold; border-bottom: 1px dashed #999; display: block; margin-bottom: 10px; }
+        
+        .news-item { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #ccc; }
+        .news-date { font-family: 'Roboto', sans-serif; color: #666; width: 100px; font-size: 0.9rem; }
+        .news-tag { font-size: 0.8rem; padding: 2px 8px; border-radius: 4px; margin-right: 15px; color: white; width: 110px; text-align: center; }
+        .tag-release { background: #0056b3; } .tag-update  { background: #e67e22; } .tag-start   { background: #8e44ad; } .tag-steam   { background: #2c3e50; } .tag-game    { background: #27ae60; }
+        .news-link { text-decoration: none; color: #333; font-weight: 500; font-family: 'Noto Serif JP', serif; }
+
+        .preview-split-row { display: flex; border: 1px solid #ccc; border-radius: 8px; overflow: hidden; margin-bottom: 30px; }
+        .split-col { flex: 1; padding: 15px; display: flex; flex-direction: column; align-items: center; }
+        .split-col.left { background: #f0f0f0; border-right: 1px solid #ddd; }
+        .split-col.right { background: #e8e8e8; }
+
+        /* 共通カードスタイル */
+        .highlight-card { width: 100%; max-width: 300px; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 1px solid rgba(0,0,0,0.05); }
+        .highlight-img-area { width: 100%; height: 160px; overflow: hidden; background: #eee; position: relative; }
+        .highlight-img { width: 100%; height: 100%; object-fit: cover; object-position: center; transition: opacity 0.3s; }
+        .highlight-category-badge { position: absolute; bottom: 0; left: 0; color: white; font-size: 0.8rem; padding: 4px 12px; border-top-right-radius: 8px; font-weight: bold; z-index: 2; }
+        
+        /* 最新の活動用 */
+        .highlight-card.dimmed { opacity: 0.4; }
+        .highlight-content-tight { padding: 5px 0 0 0; text-align: left; }
+        .highlight-title-tight { 
+            font-family: 'Noto Serif JP', serif; font-size: 1rem; font-weight: 900; color: #333; line-height: 1.5; margin: 0; 
+            width: 18em; white-space: normal;
+            display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+            height: 4.5em; 
+        }
+        .highlight-meta { font-size: 0.75rem; color: #666; margin-bottom: 2px; font-family: 'Roboto', sans-serif; }
+
+        /* アプリ紹介用 */
+        .coming-soon-overlay { 
+            display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-10deg); 
+            font-size: 1.8rem; font-weight: 900; color: #fff; text-shadow: 2px 2px 0 #000, -1px -1px 0 #000; 
+            border: 3px solid #fff; padding: 5px 20px; box-shadow: 3px 3px 0 rgba(0,0,0,0.5); z-index: 10; pointer-events: none;
+        }
+        .highlight-img.coming-soon-mode { opacity: 0.5; filter: grayscale(50%); }
+
+        .project-name-badge {
+            position: absolute; bottom: 0; left: 0; z-index: 5;
+            background: #0056b3; color: #fff;
+            font-family: 'Roboto', sans-serif; font-weight: 900; font-size: 0.9rem;
+            padding: 5px 12px; 
+            border-top-right-radius: 8px; box-shadow: 2px -2px 5px rgba(0,0,0,0.3);
+            max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        .app-desc-content { padding: 8px 10px; text-align: left; }
+        .app-desc-text {
+            font-family: 'Noto Serif JP', serif; font-size: 0.9rem; color: #444; line-height: 1.5;
+            width: 20em; height: 6em;
+            display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
+        }
+
+        /* 詳細ページ */
+        .page-preview { 
+            font-family: 'Noto Serif JP', serif; 
+            line-height: 1.8; 
+            margin-top: 20px; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            height: 700px;          /* ▼ iframe側と高さを統一 ▼ */
+            overflow-y: auto;       /* ▼ はみ出た場合は枠内でスクロール ▼ */
+            border: 1px solid #ccc; /* ▼ iframe側と枠線のデザインを統一 ▼ */
+            box-sizing: border-box; /* ▼ paddingを含めて700pxに収める ▼ */
+        }
+        .page-preview h1 { border-bottom: 3px solid #0056b3; display: inline-block; padding-bottom: 5px; margin-bottom: 20px; font-size: 1.5rem; }
+        .page-preview img { max-width: 100%; border-radius: 10px; margin: 20px 0; }
+        #prevBody, .news-link { white-space: pre-wrap; }
+
+        button { padding: 12px 20px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 10px; width: 100%; }
+        .btn-save { background: #27ae60; color: white; }
+        .btn-copy { background: #e67e22; color: white; margin-top: 20px; }
+
+        /* （プレビュー上下移動ボタン） */
+        .scroll-toggle-btn {
+            background-color: #0056b3;
+            color: #ffffff;
+            border: none;
+            border-radius: 20px; /* 角丸指定 */
+            padding: 5px 40px; /* 横長にする */
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2); /* 浮き出る影 */
+            transition: all 0.3s;
+            display: inline-block;
+        }
+        .scroll-toggle-btn:hover {
+            background-color: #003d82;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+
+        /* ご要望の高さ指定 */
+        #grid-index-phot {
+            height: 260px; /* 縦に約2段分表示される高さ */
+        }
+        #grid-project {
+            height: 130px; /* 縦に約1段分表示される高さ */
+        }
+
+        /* ドラッグ＆ドロップ時のハイライト（内側に青枠を出す） */
+        .folder-grid.dragover {
+            background: #e6f7ff;
+            box-shadow: inset 0 0 0 2px #007acc;
+        }
+
+        /* 選択不可（[project]）エリアのスタイル */
+        .folder-grid.readonly {
+            background: #f9f9f9;
+        }
+        .folder-grid.readonly .custom-option {
+            cursor: default; /* ポインターを矢印に */
+        }
+        .folder-grid.readonly .custom-option:hover {
+            background-color: transparent;
+            border-color: #eee;
+        }
+
+        /* 右クリックメニュー（コンテキストメニュー） */
+        #contextMenu {
+            display: none;
+            position: fixed;
+            background: white;
+            border: 1px solid #ccc;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+            border-radius: 4px;
+            z-index: 10000;
+            padding: 5px 0;
+            min-width: 150px;
+        }
+        .context-item {
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            color: #333;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .context-item:hover {
+            background: #007acc;
+            color: white;
+        }
+
+        /* 区切り線 */
+        .context-separator {
+            margin: 4px 0;
+            border: none;
+            border-top: 1px solid #ddd;
+        }
+
+        /* ペースト専用モード（余白クリック時）のスタイル */
+        #contextMenu.paste-only {
+            min-width: 130px;
+        }
+        #contextMenu.paste-only .context-item {
+            justify-content: center; /* センター揃え */
+            padding: 6px 15px;       /* 高さを少し低くする */
+        }
+
+        
+      
+        /* --- ビルド監視用トースト通知 --- */
+        #build-toast {
+            position: fixed; bottom: 20px; right: 20px;
+            background: #2c3e50; color: #fff; padding: 15px 25px; border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3); z-index: 10000;
+            display: none; align-items: center; gap: 15px; font-family: sans-serif;
+            animation: slideInUp 0.5s ease-out forwards;
+        }
+        @keyframes slideInUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .spinner {
+            width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .toast-btn { background: #27ae60; color: white; border: none; padding: 8px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        .toast-btn:hover { background: #219653; }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <!-- 大見出し -->
-    <h1>利用規約</h1>
-    
-    <!-- 制定日 -->
-    <div class="date">
-        制定日：2026年X月X日<br>
-        啓 App Lab
+    <div id="build-toast">
+        <div id="toast-icon" class="spinner"></div>
+        <div id="toast-msg" style="font-size: 0.9rem;">🔄 サイトデータを保存しました...</div>
     </div>
-
-    <!-- 前文 -->
-    <p>この利用規約（以下、「本規約」といいます）は、啓 App Lab（以下、「当方」といいます）が提供する...（前文を書く）</p>
-
-    <!-- 中見出し（条文） -->
-    <h2>第1条（適用）</h2>
-    <p>本文を書きます。</p>
-
-    <!-- 小見出しとリスト -->
-    <h3>1. 小項目のタイトル</h3>
-    <p>説明文を書きます。</p>
-    <ul>
-        <li><strong>項目名：</strong> 内容を書きます。</li>
-        <li><strong>注意事項：</strong> <span class="important">絶対に読んでほしい赤い文字</span>を書きます。</li>
-    </ul>
-
-    <!-- お問い合わせ (Iframe版) -->
-    <h2>第X条（お問い合わせ窓口）</h2>
-    <p>
-        本ポリシーおよび利用者情報の取扱い、データの削除要求に関するお問い合わせは、以下の窓口までご連絡ください。
-    </p>
-    <div style="background: #f4f6f8; padding: 20px; border-radius: 8px; border: 1px solid #ddd;">
-        <strong>啓 App Lab (KEI App Lab)</strong><br>
-        Email: keiapplab@gmail.com
-        
-        <button type="button" class="open-contact-btn" onclick="toggleContact()">
-            📩 お問い合わせフォームを開く
-        </button>
-        
-        <div id="contactWrapper" class="contact-frame-wrapper">
-            <!-- srcを空にしておく -->
-            <iframe id="contactIframe" src="" loading="lazy"></iframe>
+    
+    <div id="loginOverlay">
+        <div class="login-container-split">
+            <div class="login-left">
+                <h2>🚀 KEI Lab Admin</h2>
+                <input type="password" id="tokenInput" placeholder="GitHub Token (ghp_...)">
+                <button onclick="checkIdentity()">ログイン</button>
+                <div id="authStatus"></div>
+            </div>
+            <div class="login-right">
+                <h3>🔑 トークンの発行手順</h3>
+                <ol>
+                    <li><a href="https://github.com/settings/tokens" target="_blank" style="color:#007acc; font-weight:bold;">GitHub Token設定ページへ移動 ↗</a></li>
+                    <li>[Generate new token (classic)] を選択</li>
+                    <li>Expiration（期限）を設定（90 days推奨）</li>
+                    <li><strong>[repo]</strong> にチェックを入れる（必須）</li>
+                    <li>一番下の [Generate token] を押してコピー</li>
+                </ol>
+                <div class="warning-box">
+                    <strong>⚠️ 警告：</strong><br>
+                    トークンが漏洩した場合は、直ちにGitHub設定ページで該当トークンを削除（Revoke）してください。
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- フッター -->
-    <div class="footer">
-        &copy; 2026 KEI App Lab. All Rights Reserved.
-    </div>
-</div>
-
-<script>
-    function toggleContact() {
-        var wrapper = document.getElementById('contactWrapper');
-        var iframe = document.getElementById('contactIframe');
-        var btn = document.querySelector('.open-contact-btn');
-        
-        var appName = document.title.split('|')[1] ? document.title.split('|')[1].trim() : "FreeCallApp";
-
-        if (wrapper.style.display === 'none' || wrapper.style.display === '') {
-            wrapper.style.display = 'block';
+    <!-- 2. メイン画面 -->
+    <div id="mainWrapper">
+        <div class="dashboard">
             
-            // ★修正点: getAttributeで属性そのものをチェック & 相対パスを使用
-            var currentSrc = iframe.getAttribute('src');
-            if (!currentSrc || currentSrc === "") {
-                iframe.src = "../support.html?project=" + encodeURIComponent(appName);
+            <!-- ▼▼ サイドバー（左メニュー） ▼▼ -->
+            <div class="sidebar">
+                <h1>🚀 KEI Lab Admin</h1>
+                <div class="menu-btn active" onclick="switchPanel('calc')">💰 収益・秒数計算</div>
+                <div class="menu-btn" onclick="switchPanel('cms')">📝 コンテンツ編集</div>
+                <div class="menu-btn" onclick="switchPanel('projects')">📂 全プロジェクト情報</div>
+                <div class="menu-btn" style="font-size:0.8rem; padding:10px 15px;" onclick="switchPanel('data-master')">📄 admin_master.js</div>
+                <div class="menu-btn" style="font-size:0.8rem; padding:10px 15px;" onclick="switchPanel('data-index')">📄 index_news.js</div>
+                <div class="menu-btn" style="font-size:0.8rem; padding:10px 15px;" onclick="switchPanel('data-catalog')">📄 apps_catalog.js</div>
+                <div class="menu-btn" style="font-size:0.8rem; padding:10px 15px;" onclick="switchPanel('data-project-html')">📄 [project]/index.html</div>
+                
+                <!-- 手順書とコピーボタン -->
+                <div class="menu-btn" style="font-size:0.8rem; padding:10px 15px; display:flex; justify-content:space-between; align-items:center;" onclick="switchPanel('html-manual')">
+                    <span>📝 HTML生成手順書.js</span>
+                    <span onclick="event.stopPropagation(); copyPrivacyManual();" style="cursor:pointer; display:flex; align-items:center; justify-content:center; padding:5px; background:rgba(255,255,255,0.1); border-radius:4px;" title="手順書をコピー">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                    </span>
+                </div>
+
+                <!-- フォーム追加： -->
+                <hr style="border:0; border-top:1px solid #444; margin: 10px 0; width: 100%;">
+                <div class="menu-btn" onclick="switchPanel('contact')">📩 お問い合わせ管理</div>
+              
+                <div class="spacer"></div>
+                <!-- メモボタン -->
+                <div class="menu-btn" onclick="switchPanel('memo')">💦( ..)φメモメモ</div>
+                <hr style="border:0; border-top:1px solid #444; margin: 10px 0; width: 100%;">
+                <div class="menu-btn" onclick="switchPanel('users')">👥 権限管理</div>
+                <div class="menu-btn" onclick="logout()" style="margin-top:auto; background:#c0392b; color:white;">🔒 ログアウト</div>
+            </div>
+            <!-- ▲▲ サイドバーここまで ▲▲ -->
+
+
+            <!-- ▼▼ メインコンテンツエリア ▼▼ -->
+            <div class="main-content">
+
+                <!-- 計算機パネル (初期表示) -->
+                <div id="panel-calc" class="panel active">
+                    <div class="calc-container">
+                        <h2>💰 シミュレーター</h2>
+                        <div class="calc-grid">
+                            <div><label>動画広告単価</label><input type="number" id="adPrice" value="1.5" step="0.1"></div>
+                            <div><label>通話原価 (1分)</label><input type="number" id="callCost" value="3.0" step="0.1"></div>
+                        </div>
+                        <label>利益率 <span id="marginDisplay">20%</span></label>
+                        <input type="range" id="margin" min="0" max="50" value="20" oninput="document.getElementById('marginDisplay').innerText = this.value + '%'">
+                        <button class="btn-calc" onclick="calcSeconds()">計算する</button>
+                        <div class="calc-result-box"><div id="calcOutput" class="calc-number">--- 秒</div></div>
+                    </div>
+                </div>
+
+                <!-- CMSパネル (初期表示) -->
+                <div id="panel-cms" class="panel">
+                    <div class="cms-layout">
+                        
+                        <!-- エディタ (左側) -->
+                        <div class="editor-area">
+                            <h2 style="display: flex; align-items: center; justify-content: space-between;">
+                                <span>📝 記事・プロジェクト作成</span>
+                                <span id="lastEditDatePop" style="display:none; font-size: 0.8rem; background: #e67e22; color: white; padding: 4px 12px; border-radius: 12px; font-weight: normal; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">前回編集日: ----.--.--</span>
+                            </h2>
+                            
+                            <div class="row-group">
+                                <div class="form-group"><label>日付</label><input type="text" id="inDate" class="input-white"></div>
+                                <div class="form-group">
+                                    <label>カテゴリ</label>
+                                    <select id="inCategory" class="input-white" onchange="updatePreview()">
+                                        <option value="update">更新情報</option>
+                                        <option value="release">プレスリリース</option>
+                                        <option value="start">プロジェクト開始</option>
+                                        <option value="steam">Steamリリース</option>
+                                        <option value="game">ミニゲーム</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>画像ファイル管理 (ドラッグ＆ドロップ・右クリック対応)</label>
+                                <input type="hidden" id="inImage" onchange="updatePreview()">
+                                
+                                <div class="custom-select-wrapper" id="imageManagerWrapper" tabindex="0"> <!-- ペースト検知用 -->
+                                    <div class="custom-select">
+                                        <div class="custom-select__trigger" onclick="toggleImageSelect()">
+                                            <span id="selectedImageText">画像を選択してください...</span>
+                                            <span>▼</span>
+                                        </div>
+                                        
+                                        <!-- 展開されるエリア -->
+                                        <!-- ▼ padding: 0; に変更して外側の余白を完全に消す ▼ -->
+                                        <div class="custom-options" id="imageOptionsContainer" style="padding: 0; background: #f0f0f0; cursor: default;">
+                                            
+                                            <!-- 1. index_phot フォルダ (選択可能エリア) -->
+                                            <div class="folder-section">
+                                                <div class="folder-title">📂 index_phot <span style="font-weight:normal; font-size:0.75rem;">(選択・追加可能)</span></div>
+                                                <div class="folder-grid" id="grid-index-phot">
+                                                    <!-- JSでここに画像が入る -->
+                                                </div>
+                                            </div>
+
+                                            <!-- 2. [project] フォルダ (確認・追加専用エリア) -->
+                                            <div class="folder-section">
+                                                <div class="folder-title">📂 <span id="label-project-folder">[project]</span> <span style="font-weight:normal; font-size:0.75rem;">(閲覧・追加専用)</span></div>
+                                                <div class="folder-grid readonly" id="grid-project">
+                                                    <!-- JSでここに画像が入る -->
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr style="border:0; border-top:1px dashed #555; margin: 10px 0;">
+
+                            <!-- ▼ ボタンのテキストを変更 ▼ -->
+                            <div class="editor-lang-tabs">
+                                <button class="edit-tab active" onclick="switchEditorLang('ja')">🇯🇵 日本</button>
+                                <button class="edit-tab" onclick="switchEditorLang('en')">🇺🇸 ｱﾒﾘｶ</button>
+                                <button class="edit-tab" onclick="switchEditorLang('de')">🇩🇪 ﾄﾞｲﾂ</button>
+                                <button class="edit-tab" onclick="switchEditorLang('fr')">🇫🇷 ﾌﾗﾝｽ</button>
+                                <button class="edit-tab" onclick="switchEditorLang('es')">🇪🇸 ｽﾍﾟｲﾝ</button>
+                            </div>
+
+                            <!-- 日本語 -->
+                            <div id="group-ja" class="lang-input-group active">
+                                <div class="form-group">
+                                    <label>プロジェクト名 (JP)　admin_master.js</label>
+                                    <div class="input-group">
+                                        <input type="text" id="inProject" class="input-white" oninput="autoFillProject()">
+                                        <select id="projectSelectHelper" class="input-white" onchange="syncProjectSelect()"><option value="">▼ 履歴...</option></select>
+                                    </div>
+                                </div>
+                                <div class="form-group"><label>お知らせ・キャッチコピー (JP)</label><textarea id="inTitle" class="input-white" rows="2" oninput="updatePreview()"></textarea></div>
+                                
+                                <div class="form-group">
+                                    <div class="label-row">
+                                        <label>アプリ紹介本文 (JP)</label>
+                                        <div class="status-switch">
+                                            <label class="status-label"><input type="radio" name="appStatus" value="released" onchange="updatePreview()"> リリース済み</label>
+                                            <label class="status-label"><input type="radio" name="appStatus" value="coming" checked onchange="updatePreview()"> Coming Soon</label>
+                                        </div>
+                                    </div>
+                                    <textarea id="inBody" class="input-white" rows="3" oninput="updatePreview()"></textarea>
+                                </div>
+                                
+                                <!-- プライバシーポリシー設定 -->
+                                <div class="form-group" style="background:#2d2d30; padding:15px; border-radius:8px; margin-top:20px;">
+                                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                                        <label style="margin:0; color:#e67e22; font-size:1rem;">🛡️ プライバシーポリシー</label>
+                                        <button type="button" onclick="togglePrivacyPreview()" style="background:#27ae60; color:white; padding:5px 10px; border:none; border-radius:4px; font-size:0.8rem; cursor:pointer; width:auto; margin:0;">👁️ プレビュー</button>
+                                    </div>
+                                    
+                                    <!-- ▼ 1行の入力欄にスッキリ変更 ▼ -->
+                                    <input type="text" id="inPrivacyHtml" class="input-white" style="font-family:monospace; font-size:0.85rem;" placeholder="▶ (JP, EN, DE, FR, ES) 5言語対応HTMLを入力して下さい。">
+                                </div>
+                            </div>
+
+                            <!-- 多言語 -->
+                            <div id="group-en" class="lang-input-group">
+                                <div class="form-group"><label>Project (EN)</label><input type="text" id="inProjectEn" class="input-white" oninput="updatePreview()"></div>
+                                <div class="form-group"><label>Title (EN)</label><textarea id="inTitleEn" class="input-white" rows="2" oninput="updatePreview()"></textarea></div>
+                                <div class="form-group"><label>App Intro (EN)</label><textarea id="inBodyEn" class="input-white" rows="3" oninput="updatePreview()"></textarea></div>
+                            </div>
+                            <div id="group-de" class="lang-input-group"><div class="form-group"><label>Project (DE)</label><input type="text" id="inProjectDe" class="input-white" oninput="updatePreview()"></div><div class="form-group"><label>Title (DE)</label><textarea id="inTitleDe" class="input-white" rows="2" oninput="updatePreview()"></textarea></div><div class="form-group"><label>App Intro (DE)</label><textarea id="inBodyDe" class="input-white" rows="3" oninput="updatePreview()"></textarea></div></div>
+                            <div id="group-fr" class="lang-input-group"><div class="form-group"><label>Project (FR)</label><input type="text" id="inProjectFr" class="input-white" oninput="updatePreview()"></div><div class="form-group"><label>Title (FR)</label><textarea id="inTitleFr" class="input-white" rows="2" oninput="updatePreview()"></textarea></div><div class="form-group"><label>App Intro (FR)</label><textarea id="inBodyFr" class="input-white" rows="3" oninput="updatePreview()"></textarea></div></div>
+                            <div id="group-es" class="lang-input-group"><div class="form-group"><label>Project (ES)</label><input type="text" id="inProjectEs" class="input-white" oninput="updatePreview()"></div><div class="form-group"><label>Title (ES)</label><textarea id="inTitleEs" class="input-white" rows="2" oninput="updatePreview()"></textarea></div><div class="form-group"><label>App Intro (ES)</label><textarea id="inBodyEs" class="input-white" rows="3" oninput="updatePreview()"></textarea></div></div>
+
+                            <button class="btn-save" style="margin-top:20px;" onclick="saveToGitHub()">🚀 GitHubへ更新保存</button>
+                        </div>
+
+                        <!-- プレビュー (右側) -->
+                        <div class="preview-area">
+                            
+                            <!-- ★修正: プライバシー専用プレビュー枠 (iframeを使用) -->
+                            <div id="privacyPreviewBox" style="display:none; flex-direction:column; height:100%; background:#f9f9f9; border-radius:8px; padding:20px; box-sizing:border-box;">
+                                <div style="text-align:right; margin-bottom:10px;">
+                                    <button onclick="togglePrivacyPreview()" style="background:#c0392b; color:white; padding:8px 15px; width:auto; border-radius:4px; font-weight:bold; cursor:pointer; box-shadow:0 2px 5px rgba(0,0,0,0.2);">× プレビューを閉じる</button>
+                                </div>
+                                <!-- iframeで完全に隔離。CSSの影響を受けない -->
+                                <iframe id="privacyPreviewIframe" style="width:100%; flex:1; min-height:600px; background:#fff; border:1px solid #ccc; border-radius:8px; box-shadow:0 2px 15px rgba(0,0,0,0.05);"></iframe>
+                            </div>
+
+                            <!-- 通常プレビュー -->
+                            <div id="normalPreviewContent">
+                                <div class="preview-header">
+                                    <h2 style="border:none; margin:0; font-size:1.1rem; color:#333;">👁️ リアルタイムプレビュー</h2>
+                                </div>
+                                
+                                <div style="margin-bottom:30px;">
+                                    <span class="preview-label">▼ お知らせ (News List)</span>
+                                    <div class="news-item">
+                                        <span class="news-date" id="prevDate">2026.03.15</span>
+                                        <span class="news-tag tag-update" id="prevTag">更新情報</span>
+                                        <div style="flex:1;">
+                                            <span style="font-weight:bold; margin-right:10px; color:#333;" id="prevProjectName">プロジェクト名</span>
+                                            <span class="news-link" id="prevTitle">タイトル</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="preview-split-row">
+                                    <div class="split-col left">
+                                        <span class="preview-label" style="margin-bottom:10px;">▼ 最新の活動 (Highlights)</span>
+                                        <div class="highlight-card" id="prevHighlightCard">
+                                            <div class="highlight-img-area">
+                                                <img src="" alt="No Image" id="prevImg" class="highlight-img">
+                                                <span class="highlight-category-badge tag-update" id="prevCardCatBadge">更新情報</span>
+                                            </div>
+                                            <div class="highlight-content-tight">
+                                                <div class="highlight-meta" style="padding:0 10px;">
+                                                    <span class="meta-date" id="prevCardDate">2026.03.15</span> | 
+                                                    <span class="meta-proj" id="prevCardProj">プロジェクト名</span>
+                                                </div>
+                                                <div class="highlight-title-tight" id="prevCardTitle" style="padding:0 10px 10px 10px;">お知らせ・キャッチコピー</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="split-col right">
+                                        <span class="preview-label" style="margin-bottom:10px;">▼ アプリ紹介 (App List)</span>
+                                        <div class="highlight-card">
+                                            <div class="highlight-img-area">
+                                                <img src="" alt="No Image" id="prevAppImg" class="highlight-img">
+                                                <div id="comingSoonOverlay" class="coming-soon-overlay">Coming Soon</div>
+                                                <div class="project-name-badge" id="prevAppProj">プロジェクト名</div>
+                                            </div>
+                                            <div class="app-desc-content">
+                                                <div class="app-desc-text" id="prevAppDesc">アプリ紹介本文がここに入ります...</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                 <!-- センタリングされたトグルボタン -->
+                                <div style="text-align: center; margin: 20px 0;">
+                                    <button id="previewScrollBtn" type="button" class="scroll-toggle-btn" onclick="togglePreviewScroll()">▼</button>
+                                </div>
+                                
+                                <span class="preview-label">▼ 詳細ページ (Project Page)</span>
+                                <div id="realPagePreview" style="display:none; width:100%; height:700px; border:1px solid #ccc; background:#fff;">
+                                    <iframe id="prevIframe" style="width:100%; height:100%; border:none;"></iframe>
+                                </div>
+                                <div id="simulatedPagePreview" class="page-preview">
+                                    <h1 id="prevPageTitle">タイトル</h1>
+                                    <div id="prevPageCatchcopy" style="font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; color: #333; line-height: 1.5; white-space: pre-wrap;">キャッチコピー</div>
+                                    <div style="display:none;"><span id="prevPageDate"></span> | <span id="prevPageProject"></span></div>
+                                    <img src="" id="prevPageImg" style="display:none;">
+                                    <div id="prevBody" style="white-space: pre-wrap;">本文...</div>
+                                    
+                                    <!-- プレビュー用のフッターリンク -->
+                                    <div style="margin-top: 50px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; font-size: 0.85rem; color: #666; font-family: sans-serif;">
+                                        <a href="#" style="color: #0056b3; text-decoration: none; font-weight: bold;">プライバシーポリシー</a><br><br>
+                                        © 2026 啓 App Lab | <a href="#" style="color: #0056b3; text-decoration: none;">app-ads.txt</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- フォーム追加： -->
+                <!-- ▼ お問い合わせ管理パネル ▼ -->
+                <div id="panel-contact" class="panel">
+                    <div class="calc-container" style="max-width: 800px; margin: 0 auto; text-align: center; padding-top: 50px;">
+                        <h2>📩 お問い合わせ管理（Gmail連携）</h2>
+                        <p style="color: #aaa; line-height: 1.8; margin-bottom: 30px;">
+                            お問い合わせの対応は、セキュリティと管理の利便性から Gmail 上で行います。<br>
+                            ユーザーからの新規お問い合わせは、自動的に指定のGmailに転送されます。<br>
+                            届いた通知メールに対してそのまま「返信」を押すことで、ユーザーへ回答が可能です。
+                        </p>
+                        
+                        <!-- Gmailを別タブで開くボタン -->
+                        <button class="btn-save" style="font-size: 1.2rem; padding: 20px 40px; width: auto; border-radius: 50px; box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);" onclick="window.open('https://mail.google.com/mail/u/?authuser=keiapplab@gmail.com', '_blank')">
+                            ✉️ Gmailを開いて対応する
+                        </button>
+                    </div>
+                </div>
+              
+                <!-- メモ機能パネル -->
+                <div id="panel-memo" class="panel">
+                    <div class="calc-container" style="max-width:100%;">
+                        <h2>💦 ( ..)φ メモメモ</h2>
+                        <p style="color:#aaa;">思いついたアイデアやタスクを自由に書き込めます。（memo.txt としてGitHubに保存されます）</p>
+                        <textarea id="raw-memo" style="width:100%; height:50vh; background:#f4f6f8; color:#333; font-family:sans-serif; font-size:15px; line-height:1.6; padding:15px; border:1px solid #ccc; border-radius:6px;"></textarea>
+                        <button class="btn-save" onclick="saveMemoText()">💾 メモを上書き保存</button>
+                    </div>
+                </div>
+
+                <div id="panel-projects" class="panel">
+                    <div class="calc-container">
+                        <h2>📂 全プロジェクト情報</h2>
+                        <p>ここで登録されたアプリ一覧（apps_catalog.js）を管理します（実装準備中）</p>
+                    </div>
+                </div>
+                <div id="panel-data-master" class="panel">
+                    <div class="calc-container" style="max-width:100%;">
+                        <h2>📄 admin_master.js (直接編集)</h2>
+                        <textarea id="raw-admin-master" style="width:100%; height:50vh; background:#f4f6f8; color:#333; font-family:'Consolas', monospace; font-size:14px; padding:15px; border:1px solid #ccc; border-radius:6px;"></textarea>
+                        <button class="btn-save" onclick="saveRawData('admin_master.js', 'raw-admin-master')">💾 上書き保存</button>
+                    </div>
+                </div>
+
+                <div id="panel-data-index" class="panel">
+                    <div class="calc-container" style="max-width:100%;">
+                        <h2>📄 index_news.js (直接編集)</h2>
+                        <textarea id="raw-index-news" style="width:100%; height:50vh; background:#f4f6f8; color:#333; font-family:'Consolas', monospace; font-size:14px; padding:15px; border:1px solid #ccc; border-radius:6px;"></textarea>
+                        <button class="btn-save" onclick="saveRawData('index_news.js', 'raw-index-news')">💾 上書き保存</button>
+                    </div>
+                </div>
+
+                <div id="panel-data-catalog" class="panel">
+                    <div class="calc-container" style="max-width:100%;">
+                        <h2>📄 apps_catalog.js (直接編集)</h2>
+                        <textarea id="raw-apps-catalog" style="width:100%; height:50vh; background:#f4f6f8; color:#333; font-family:'Consolas', monospace; font-size:14px; padding:15px; border:1px solid #ccc; border-radius:6px;"></textarea>
+                        <button class="btn-save" onclick="saveRawData('apps_catalog.js', 'raw-apps-catalog')">💾 上書き保存</button>
+                    </div>
+                </div>
+
+                <div id="panel-data-project-html" class="panel">
+                    <div class="calc-container" style="max-width:100%;">
+                        <h2>📄 [project]/index.html (プレビュー)</h2>
+                        <p style="color:#aaa;">現在入力中の内容から生成されるHTMLコードです（読み取り専用）。保存時にこの内容でファイルが作られます。</p>
+                        <textarea id="raw-project-html" style="width:100%; height:50vh; background:#f4f6f8; color:#333; font-family:'Consolas', monospace; font-size:14px; padding:15px; border:1px solid #ccc; border-radius:6px;" readonly></textarea>
+                    </div>
+                </div>
+
+                <div id="panel-html-manual" class="panel">
+                    <div class="calc-container" style="max-width:100%;">
+                        <h2>📝 TESTSEND_html_manual.js (直接編集)</h2>
+                        <p style="color:#aaa;">プライバシーポリシー生成用のAIプロンプト（手順書）です。※「`」や「;」を消さないように注意してください。</p>
+                        <textarea id="raw-html-manual" style="width:100%; height:50vh; background:#f4f6f8; color:#333; font-family:'Consolas', monospace; font-size:14px; padding:15px; border:1px solid #ccc; border-radius:6px;"></textarea>
+                        <button class="btn-save" onclick="saveManualJs()">💾 手順書を上書き保存</button>
+                    </div>
+                </div>
+                <div id="panel-users" class="panel">
+                    <div class="calc-container">
+                        <h2>👥 編集権限者の管理</h2>
+                        <div style="display:flex; gap:10px; margin-bottom:20px;">
+                            <input type="text" id="newUserId" placeholder="GitHubユーザーID" class="input-white" style="flex:1;">
+                            <button class="btn-save" style="width:auto; margin-top:0;" onclick="addUser()">追加</button>
+                        </div>
+                        <ul id="userList" style="background:#1e1e1e; padding:20px; border-radius:8px; list-style:none; max-height:300px; overflow-y:auto; border:1px solid #444;"></ul>
+                        <button class="btn-copy" onclick="saveUsersToGitHub()">💾 権限設定をGitHubに保存</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ▼▼▼ 右クリックメニューのHTML ▼▼▼ -->
+    <div id="contextMenu">
+        <div class="context-item" id="menuPaste">📋 Paste image (貼り付け)</div>
+        <hr class="context-separator" id="menuSeparator"> <!-- 区切り線 -->
+        <div class="context-item" id="menuDelete" style="color:#c0392b;">🗑️ Delete (削除)</div>
+    </div>>
+
+    <script>
+            // ▼▼▼ 設定 ▼▼▼
+            const GITHUB_CONFIG = { owner: "KeiAppLab", repo: "KeiAppLab" };
+            let previewLang = 'ja';
+            let currentProjectId = ""; // 現在入力中のプロジェクトID
+            
+            // --- 認証・初期化 ---
+            async function checkIdentity() {
+                const token = document.getElementById('tokenInput').value.trim() || arguments[0];
+                const status = document.getElementById('authStatus');
+                if (!token) { status.innerText = "⚠️ トークンを入力"; status.style.color = "orange"; return; }
+                status.innerText = "確認中..."; status.style.color = "black";
+                try {
+                    const res = await fetch("https://api.github.com/user", { headers: { Authorization: `token ${token}` } });
+                    if (!res.ok) throw new Error("無効なトークン");
+                    const user = await res.json();
+                    if (typeof allowedUsersData !== 'undefined' && allowedUsersData.includes(user.login)) {
+                        localStorage.setItem('gh_token', token);
+                        showDashboard();
+                    } else { status.innerText = "❌ 未許可ID: " + user.login; status.style.color = "red"; }
+                } catch (err) { status.innerText = "⚠️ " + err.message; status.style.color = "red"; }
             }
             
-            btn.innerHTML = "❌ フォームを閉じる";
-            btn.style.backgroundColor = "#666";
-        } else {
-            wrapper.style.display = 'none';
-            btn.innerHTML = "📩 お問い合わせフォームを開く";
-            btn.style.backgroundColor = "#0056b3";
-        }
-    }
-</script>
+            function showDashboard() {
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('mainWrapper').style.display = 'block';
+                updatePreview();
+                initProjectList(); // admin_master.js から履歴を生成
+                initImageSelector(); // 初回はデフォルト画像リスト
+            }
+            
+            function logout() { localStorage.removeItem('gh_token'); location.reload(); }
+            window.addEventListener('load', () => {
+                const t = localStorage.getItem('gh_token'); if(t) checkIdentity(t); renderUserList();
+            });
+            
+            // --- パネル切り替え ---
+            function switchPanel(id) {
+                document.querySelectorAll('.panel').forEach(e => e.classList.remove('active'));
+                document.querySelectorAll('.menu-btn').forEach(e => e.classList.remove('active'));
+                document.getElementById('panel-' + id).classList.add('active');
+                event.currentTarget.classList.add('active');
+    
+                // パネルが開かれたらデータをJSON文字列にして表示
+                if (id === 'data-master') {
+                    document.getElementById('raw-admin-master').value = JSON.stringify(typeof adminMasterData !== 'undefined' ? adminMasterData :[], null, 4);
+                } else if (id === 'data-index') {
+                    document.getElementById('raw-index-news').value = JSON.stringify(typeof indexNewsData !== 'undefined' ? indexNewsData :[], null, 4);
+                } else if (id === 'data-catalog') {
+                    document.getElementById('raw-apps-catalog').value = JSON.stringify(typeof appsCatalogData !== 'undefined' ? appsCatalogData :[], null, 4);
+                } else if (id === 'data-project-html') {
+                    const dummyId = currentProjectId || "new_project_id";
+                    const inputData = getInputData(dummyId);
+                    const htmlCode = generateProjectHtmlString(dummyId, inputData);
+                    document.getElementById('raw-project-html').value = htmlCode;
+                } else if (id === 'html-manual') {
+                    // ★追加: 手順書データをテキストエリアにセット
+                    const manualContent = (typeof privacyManualText !== 'undefined') ? privacyManualText : "ここにマニュアルを記載してください。";
+                    document.getElementById('raw-html-manual').value = "const privacyManualText = `" + manualContent.replace(/`/g, '\\`') + "`;";
+                } else if (id === 'memo') {
+                    // ★追加: メモデータをテキストエリアにセット
+                    document.getElementById('raw-memo').value = "読み込み中...";
+                    const token = localStorage.getItem("gh_token");
+                    fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/memo.txt`, {
+                        headers: token ? { Authorization: `token ${token}` } : {}
+                    })
+                    .then(res => res.ok ? res.json() : Promise.reject("Not Found"))
+                    .then(data => {
+                        document.getElementById('raw-memo').value = decodeURIComponent(escape(atob(data.content)));
+                    })
+                    .catch(() => {
+                        document.getElementById('raw-memo').value = "（メモはまだありません。ここに入力してください）";
+                    });
+                }
+            }
+            
 
-</body>
-</html>
+    // --- CMSロジック: 初期化と入力補助 ---
+            
+            // 今日の日付を取得する便利関数
+            function getTodayString() {
+                const d = new Date();
+                return d.getFullYear() + '.' + (d.getMonth()+1).toString().padStart(2,'0') + '.' + d.getDate().toString().padStart(2,'0');
+            }
+            
+            // 初期化時に今日の日付をセット
+            document.getElementById('inDate').value = getTodayString();
+            
+            function switchEditorLang(lang) {
+                document.querySelectorAll('.lang-input-group').forEach(e => e.classList.remove('active'));
+                document.getElementById('group-' + lang).classList.add('active');
+                document.querySelectorAll('.edit-tab').forEach(e => e.classList.remove('active'));
+                event.currentTarget.classList.add('active');
+                
+                previewLang = lang; 
+                updatePreview();
+
+                // 既存プロジェクトのiframeプレビューも新しい言語で再読み込みさせる
+                if (currentProjectId) checkProjectUrl(currentProjectId);
+                // プライバシープレビュー（iframe）が開いていれば、その中身も更新する
+                const privacyBox = document.getElementById('privacyPreviewBox');
+                if (privacyBox && privacyBox.style.display !== 'none') {
+                    privacyBox.style.display = 'none';
+                    togglePrivacyPreview(); 
+                }
+            }
+            
+            // プロジェクト履歴 (admin_master.js から生成)
+            function initProjectList() {
+                if (typeof adminMasterData === 'undefined') return;
+                const sel = document.getElementById('projectSelectHelper');
+                sel.innerHTML = '<option value="">▼ 履歴...</option>';
+                adminMasterData.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.project_id; 
+                    option.textContent = item.project_ja || item.project_id;
+                    sel.appendChild(option);
+                });
+            }
+            
+            // 履歴選択時の自動入力
+            function syncProjectSelect() {
+                const sel = document.getElementById('projectSelectHelper');
+                const pid = sel.value;
+                if(pid){ 
+                    const item = adminMasterData.find(d => d.project_id === pid);
+                    if(item) fillForm(item);
+                    sel.selectedIndex=0; 
+                }
+            }
+            
+            // データをフォームに埋め込む処理
+            function fillForm(data) {
+                const langs = ['ja', 'en', 'de', 'fr', 'es'];
+                langs.forEach(lang => {
+                    const suffix = lang === 'ja' ? '' : lang.charAt(0).toUpperCase() + lang.slice(1);
+                    document.getElementById('inProject' + suffix).value = data['project_' + lang] || "";
+                    document.getElementById('inTitle' + suffix).value = data['title_' + lang] || "";
+                    document.getElementById('inBody' + suffix).value = data['body_' + lang] || "";
+                });
+                
+                setImageValue(data.image || "");
+                // プライバシーポリシーの復元
+                document.getElementById('inPrivacyHtml').value = data.privacy_html || "";
+
+                if (data.status) {
+                    const radio = document.querySelector(`input[name="appStatus"][value="${data.status}"]`);
+                    if(radio) radio.checked = true;
+                }
+    
+                // ★変更: 日付をPOPに表示する
+                const pop = document.getElementById('lastEditDatePop');
+                if (data.date) {
+                    pop.textContent = "前回編集日: " + data.date;
+                    pop.style.display = "inline-block";
+                } else {
+                    pop.style.display = "none";
+                }
+                
+                currentProjectId = data.project_id;
+                updatePreview();
+                checkProjectImages(data.project_id);
+                checkProjectUrl(data.project_id);
+            }
+            
+// ★修正: 日本語プロジェクト名を変更した時の処理（完全リセット対応）
+            function autoFillProject() {
+                const val = document.getElementById('inProject').value.trim();
+                
+                // 入力欄が空の場合の完全リセット
+                if(!val) { 
+                    clearFieldsExcept('inProject');
+                    document.getElementById('inDate').value = getTodayString();
+                    document.getElementById('lastEditDatePop').style.display = "none"; // ★追加: POPを消す
+                    currentProjectId = "";
+                    setImageValue("");
+                    initImageSelector(); // 画像リストをデフォルトに戻す
+                    checkProjectUrl(""); // iframeプレビューを非表示に戻す
+                    updatePreview(); 
+                    return; 
+                }
+    
+                if (typeof adminMasterData !== 'undefined') {
+                    const post = adminMasterData.find(p => p.project_ja === val);
+                    if (post) {
+                        // 履歴と完全に一致すれば、そのデータを自動入力
+                        fillForm(post);
+                    } else {
+                        // 履歴に存在しない文字が打たれた場合 =「新規作成」と判断して他をクリア
+                        clearFieldsExcept('inProject');
+                        document.getElementById('inDate').value = getTodayString();
+                        document.getElementById('lastEditDatePop').style.display = "none"; // ★追加: POPを消す
+                        currentProjectId = "";
+                        setImageValue("");
+                        initImageSelector();
+                        checkProjectUrl(""); 
+                    }
+                }
+                updatePreview();
+            }
+    
+            // 特定のID以外の言語フィールドを空にする関数
+            function clearFieldsExcept(excludeId) {
+                const langs = ['ja', 'en', 'de', 'fr', 'es'];
+                langs.forEach(lang => {
+                    const suffix = lang === 'ja' ? '' : lang.charAt(0).toUpperCase() + lang.slice(1);
+                    if ('inProject' + suffix !== excludeId) {
+                        document.getElementById('inProject' + suffix).value = "";
+                    }
+                    document.getElementById('inTitle' + suffix).value = "";
+                    document.getElementById('inBody' + suffix).value = "";
+                });
+            }
+    
+            // 英語名入力でID生成
+            document.getElementById('inProjectEn').addEventListener('input', async function() {
+                const enName = this.value.trim();
+                if (enName) {
+                    currentProjectId = enName.replace(/\s+/g, '_').toLowerCase();
+                    await checkProjectImages(currentProjectId);
+                    checkProjectUrl(currentProjectId);
+                }
+                updatePreview();
+            });
+            
+            // --- 🖼️ 超進化版：画像ファイル管理ロジック ---
+            let cachedIndexPhotos =[];
+            let currentProjectPhotos =[];
+            
+            // 右クリックで選択中の対象を保持する変数
+            let contextTarget = { folder: null, path: null, name: null };
+    
+            // 1. 画像リストの取得と描画
+            async function fetchAndRenderImages() {
+                const token = localStorage.getItem('gh_token');
+                if (!token) return;
+    
+                const gridIndex = document.getElementById('grid-index-phot');
+                const gridProject = document.getElementById('grid-project');
+                const projId = currentProjectId; // 現在のプロジェクトID
+    
+                // フォルダ名のラベル更新
+                document.getElementById('label-project-folder').textContent = projId ? projId : "[project未選択]";
+    
+                // --- index_phot の取得 ---
+                try {
+                    const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/index_phot`, { headers: { Authorization: `token ${token}` }});
+                    if (res.ok) {
+                        const files = await res.json();
+                        cachedIndexPhotos = files.filter(f => f.type === "file" && /\.(png|jpe?g|gif|webp)$/i.test(f.name));
+                    }
+                } catch (e) { console.warn(e); }
+    
+                // --- [project] の取得 ---
+                currentProjectPhotos =[];
+                if (projId) {
+                    try {
+                        const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${projId}`, { headers: { Authorization: `token ${token}` }});
+                        if (res.ok) {
+                            const files = await res.json();
+                            currentProjectPhotos = files.filter(f => f.type === "file" && /\.(png|jpe?g|gif|webp)$/i.test(f.name));
+                        }
+                    } catch (e) { /* フォルダがない場合は無視 */ }
+                }
+    
+                // 描画実行
+                renderGrid(gridIndex, cachedIndexPhotos, 'index_phot', true);
+                renderGrid(gridProject, currentProjectPhotos, projId, false);
+            }
+    
+            // グリッド描画関数 (isSelectable: クリックで入力欄にセットできるか)
+            function renderGrid(container, files, folderName, isSelectable) {
+                container.innerHTML = '';
+                files.forEach(f => {
+                    const div = document.createElement('div');
+                    div.className = 'custom-option';
+                    const fullPath = `${folderName}/${f.name}`;
+                    
+                    // 左クリック：index_photのみ選択可能
+                    if (isSelectable) {
+                        div.onclick = (e) => {
+                            // 右クリック時は反応させない
+                            if (e.button === 2) return;
+                            selectImage(fullPath, f.name);
+                        };
+                    }
+    
+                    // 右クリックイベントの設定
+                    div.oncontextmenu = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation(); // 親への伝播を止める
+                    // ▼ 修正: クリック座標ではなく、画像枠(div)そのものを渡す ▼
+                    showContextMenu(div, folderName, fullPath, f.name);
+                }
+    
+                    // キャッシュ回避のためパブリックURLではなくAPIから直接描画するか、RawURLを使用
+                    const rawUrl = `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/main/${fullPath}`;
+                    
+                    div.innerHTML = `
+                        <img src="${rawUrl}" class="option-img" onerror="this.src='https://via.placeholder.com/75'">
+                        <span class="option-text">${f.name}</span>
+                    `;
+                    container.appendChild(div);
+                });
+            }
+    
+            // 開閉制御
+            function toggleImageSelect() { 
+                const wrapper = document.querySelector('.custom-select');
+                wrapper.classList.toggle('open'); 
+                if (wrapper.classList.contains('open')) {
+                    fetchAndRenderImages(); // 開くたびに最新状態をチェック
+                }
+            }
+    
+            function selectImage(fullPath, fileName) {
+                document.getElementById('inImage').value = fullPath;
+                document.getElementById('selectedImageText').textContent = fileName;
+                document.querySelector('.custom-select').classList.remove('open');
+                updatePreview();
+            }
+    
+            function setImageValue(fullPath) {
+                document.getElementById('inImage').value = fullPath;
+                const fileName = fullPath.split('/').pop() || "画像を選択...";
+                document.getElementById('selectedImageText').textContent = fileName;
+            }
+    
+            window.addEventListener('click', function(e) {
+                const select = document.querySelector('.custom-select');
+                // 右クリックメニュー等が出ている時は閉じない
+                if (!select.contains(e.target) && e.target.id !== 'contextMenu' && !e.target.classList.contains('context-item')) {
+                    select.classList.remove('open');
+                }
+                hideContextMenu(); // 左クリックでメニューを消す
+            });
+        
+            // --- 右クリックメニュー (コンテキストメニュー) の制御 ---
+            // 画像の上で右クリックした時 (Paste と Delete の両方を出す)
+            // 画像の上で右クリックした時 (画像枠の右上にメニューを出す)
+        function showContextMenu(element, folder, path, name) {
+            contextTarget = { folder, path, name };
+            const menu = document.getElementById('contextMenu');
+            const separator = document.getElementById('menuSeparator');
+            
+            // Deleteと区切り線を表示し、ペースト専用モードを解除
+            document.getElementById('menuDelete').style.display = 'block'; 
+            separator.style.display = 'block';
+            menu.classList.remove('paste-only'); 
+            
+            // 画像枠(element)の画面上の座標を取得
+            const rect = element.getBoundingClientRect();
+            
+            menu.style.display = 'block';
+            // 画像枠の「右端 (rect.right)」と「上端 (rect.top)」に合わせて配置
+            menu.style.left = rect.right + 'px';
+            menu.style.top = rect.top + 'px';
+        }
+
+        function hideContextMenu() {
+            document.getElementById('contextMenu').style.display = 'none';
+        }
+
+        // フォルダの「余白」で右クリックした時 (マウス位置に出す、Pasteのみ)
+        document.getElementById('imageManagerWrapper').addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            
+            // すでに画像の上(custom-option)で右クリックされている場合は何もしない
+            if (e.target.closest('.custom-option')) return;
+
+            let targetFolder = null;
+            if (e.target.closest('#grid-index-phot')) targetFolder = 'index_phot';
+            else if (e.target.closest('#grid-project') && currentProjectId) targetFolder = currentProjectId;
+            
+            if (targetFolder) {
+                contextTarget = { folder: targetFolder, path: null, name: null };
+                const menu = document.getElementById('contextMenu');
+                const separator = document.getElementById('menuSeparator');
+                
+                // Deleteと区切り線を隠し、ペースト専用モード(中央揃え＆低め)にする
+                document.getElementById('menuDelete').style.display = 'none'; 
+                separator.style.display = 'none';
+                menu.classList.add('paste-only'); 
+                
+                menu.style.display = 'block';
+                // 余白の場合はマウスのクリック位置に出す
+                menu.style.left = e.clientX + 'px';
+                menu.style.top = e.clientY + 'px';
+            }
+        });
+            // --- リネーム処理は廃止のため削除済 ---
+    
+            // 削除処理
+            document.getElementById('menuDelete').addEventListener('click', async () => {
+                hideContextMenu();
+                if (!contextTarget.path) return;
+                if (!confirm(`本当に「${contextTarget.name}」を削除しますか？\nこの操作は取り消せません。`)) return;
+    
+                const token = localStorage.getItem("gh_token");
+                try {
+                    const getRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${contextTarget.path}`, { headers: { Authorization: `token ${token}` }});
+                    const fileData = await getRes.json();
+    
+                    const delRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${contextTarget.path}`, {
+                        method: "DELETE",
+                        headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                        body: JSON.stringify({ message: `Delete ${contextTarget.name}`, sha: fileData.sha })
+                    });
+    
+                    if (delRes.ok) {
+                        alert("削除しました。");
+                        fetchAndRenderImages();
+                    } else throw new Error("削除失敗");
+                } catch(e) { alert(e.message); }
+            });
+
+            // 右クリックメニューの「Paste image」をクリックした時
+            document.getElementById('menuPaste').addEventListener('click', async () => {
+                hideContextMenu();
+                
+                // 貼り付け先フォルダの決定
+                const targetFolder = contextTarget.folder || 'index_phot';
+                
+                if (targetFolder === 'project' && !currentProjectId) {
+                    alert("先にプロジェクト名を入力してください。");
+                    return;
+                }
+                const actualFolder = targetFolder === 'project' ? currentProjectId : targetFolder;
+    
+                try {
+                    // クリップボードの読み取り（ブラウザによってはここで許可ダイアログが出ます）
+                    const clipboardItems = await navigator.clipboard.read();
+                    
+                    let imageFound = false;
+                    for (const clipboardItem of clipboardItems) {
+                        // 画像タイプ（image/*）のアイテムを探す
+                        const imageTypes = clipboardItem.types.filter(type => type.startsWith('image/'));
+                        if (imageTypes.length > 0) {
+                            imageFound = true;
+                            // 最初の画像形式でデータ（Blob）を取得
+                            const blob = await clipboardItem.getType(imageTypes[0]);
+                            // Fileオブジェクトに変換（ファイル名として仮の 'pasted_image.png' を付与）
+                            const file = new File([blob], 'pasted_image.png', { type: blob.type });
+                            
+                            // 既存のアップロード処理に渡す
+                            processAndUploadImage(file, actualFolder);
+                            break; // 1枚見つかれば終了
+                        }
+                    }
+                    
+                    if (!imageFound) {
+                        alert("クリップボードに画像が見つかりません。\n画像をコピーしてから再度お試しください。");
+                    }
+                } catch (err) {
+                    // クリップボードへのアクセスが拒否された、または非対応ブラウザの場合
+                    alert("クリップボードからの読み取りに失敗しました。\n・ブラウザのアクセス許可を確認してください。\n・または、枠内をクリックしてから Ctrl+V (Cmd+V) キーで貼り付けてください。\n詳細: " + err.message);
+                }
+            });
+
+            // --- ドラッグ＆ドロップ＆ペーストによる画像アップロード処理 ---      
+            const wrapper = document.getElementById('imageManagerWrapper');
+    
+            // ペースト対応
+            wrapper.addEventListener('paste', (e) => {
+                hideContextMenu();
+                const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+                for (let index in items) {
+                    const item = items[index];
+                    if (item.kind === 'file') {
+                        const blob = item.getAsFile();
+                        // 貼り付け先は最後に右クリックしたフォルダ、またはデフォルトで index_phot
+                        const targetFolder = contextTarget.folder || 'index_phot';
+                        processAndUploadImage(blob, targetFolder);
+                    }
+                }
+            });
+
+            // D&D対応
+            const gridIndex = document.getElementById('grid-index-phot');
+            const gridProj = document.getElementById('grid-project');
+    
+            function setupDragAndDrop(targetElement, targetFolder) {
+                targetElement.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    targetElement.classList.add('dragover');
+                });
+                targetElement.addEventListener('dragleave', () => {
+                    targetElement.classList.remove('dragover');
+                });
+                targetElement.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    targetElement.classList.remove('dragover');
+                    const file = e.dataTransfer.files[0];
+                    if (file) {
+                        if (targetFolder === 'project' && !currentProjectId) {
+                            alert("先にプロジェクト名を入力してください。");
+                            return;
+                        }
+                        const actualFolder = targetFolder === 'project' ? currentProjectId : targetFolder;
+                        processAndUploadImage(file, actualFolder);
+                    }
+                });
+            }
+            setupDragAndDrop(gridIndex, 'index_phot');
+            setupDragAndDrop(gridProj, 'project');
+    
+            // 画像の検証・リサイズチェックとアップロード
+            function processAndUploadImage(file, targetFolder) {
+                if (!file.type.startsWith('image/')) {
+                    alert("画像ファイルのみアップロード可能です。");
+                    return;
+                }
+    
+                const img = new Image();
+                const url = URL.createObjectURL(file);
+                
+                img.onload = async () => {
+                    URL.revokeObjectURL(url);
+                    // 400x400のチェック
+                    if (img.width !== 400 || img.height !== 400) {
+                        alert(`エラー：画像サイズが ${img.width}x${img.height} です。\n400px × 400px の画像のみアップロード可能です。`);
+                        return;
+                    }
+    
+                    // ファイル名の決定ロジック
+                    let finalName = file.name;
+                    
+                    // [project]フォルダへの追加の場合の特殊ルール
+                    if (targetFolder !== 'index_phot') {
+                        const existingIndexes = currentProjectPhotos
+                            .map(p => p.name)
+                            .filter(n => n.startsWith('index') && n.endsWith('.png'));
+                        
+                        if (existingIndexes.length === 0) {
+                            finalName = "index.png";
+                        } else {
+                            let maxNum = 0;
+                            existingIndexes.forEach(n => {
+                                const match = n.match(/index\((\d+)\)\.png/);
+                                if (match) {
+                                    const num = parseInt(match[1], 10);
+                                    if (num > maxNum) maxNum = num;
+                                } else if (n === 'index.png') {
+                                    if (0 >= maxNum) maxNum = 0;
+                                }
+                            });
+                            const nextNum = (maxNum + 1).toString().padStart(2, '0');
+                            finalName = `index(${nextNum}).png`;
+                        }
+                    } else {
+                        // index_phot への追加の場合：重複を避けるロジック
+                        let baseName = finalName.substring(0, finalName.lastIndexOf('.')) || finalName;
+                        let ext = finalName.substring(finalName.lastIndexOf('.'));
+                        baseName = baseName.replace(/[^a-zA-Z0-9_\-]/g, '');
+                        if(!baseName) baseName = "image_" + Date.now();
+    
+                        let count = 1;
+                        finalName = baseName + ext;
+                        const existingNames = cachedIndexPhotos.map(p => p.name);
+                        while (existingNames.includes(finalName)) {
+                            finalName = `${baseName}(${count})${ext}`;
+                            count++;
+                        }
+                    }
+    
+                    uploadToGitHub(file, targetFolder, finalName);
+                };
+                img.src = url;
+            }
+    
+            // GitHub APIへの書き込み
+            function uploadToGitHub(file, folder, fileName) {
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    const base64Content = e.target.result.split(',')[1];
+                    const path = `${folder}/${fileName}`;
+                    const token = localStorage.getItem("gh_token");
+    
+                    try {
+                        const putRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
+                            method: "PUT",
+                            headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                            body: JSON.stringify({ message: `Upload image ${fileName}`, content: base64Content })
+                        });
+    
+                        if (putRes.ok) {
+                            alert(`「${fileName}」をアップロードしました！`);
+                            fetchAndRenderImages(); // 再描画
+                        } else {
+                            throw new Error("アップロード失敗");
+                        }
+                    } catch (err) {
+                        alert("エラー: " + err.message);
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+            
+            
+            // --- プレビューロジック ---
+            function checkProjectUrl(projectId) {
+                // 簡易ロジック: adminMasterDataにIDがあれば「既存」とみなしてiframe表示
+                const exists = typeof adminMasterData !== 'undefined' && adminMasterData.some(d => d.project_id === projectId);
+                const iframe = document.getElementById('prevIframe');
+                const realPreview = document.getElementById('realPagePreview');
+                const simPreview = document.getElementById('simulatedPagePreview');
+                
+                if (exists && projectId !== "") {
+                    realPreview.style.display = 'block';
+                    simPreview.style.display = 'none';
+                    // ▼ URLの末尾に「現在のプレビュー言語」をパラメータとして付与する ▼
+                    iframe.src = `https://${GITHUB_CONFIG.owner.toLowerCase()}.github.io/${GITHUB_CONFIG.repo}/${projectId}/index.html?lang=${previewLang}`;
+                } else {
+                    realPreview.style.display = 'none';
+                    simPreview.style.display = 'block';
+                }
+            }
+ 
+            // ★修正: iframe対応のプレビュー切り替え
+            function togglePrivacyPreview() {
+                const previewBox = document.getElementById('privacyPreviewBox');
+                const iframe = document.getElementById('privacyPreviewIframe');
+                const normalContent = document.getElementById('normalPreviewContent');
+                
+                if (previewBox.style.display === 'none') {
+                    // 入力欄からHTMLを取得
+                    let htmlData = document.getElementById('inPrivacyHtml').value.trim();
+                    
+                    if (!htmlData) {
+                        htmlData = "<h3 style='color:#999; text-align:center; margin-top:50px;'>※HTMLが入力されていません</h3>";
+                    } else {
+                        // iframe内で正しく表示し、かつ選択中の言語(previewLang)だけを表示するための枠組みを追加
+                        htmlData = `<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><style>body{font-family:sans-serif; padding:20px; line-height:1.6; color:#333; background:#fff; margin:0;} .lang-ja, .lang-en, .lang-de, .lang-fr, .lang-es { display:none; } .lang-${previewLang} { display:block; }</style></head><body>${htmlData}</body></html>`;
+                    }
+                    
+                    // iframeの中にHTMLを直接流し込む
+                    iframe.srcdoc = htmlData;
+                    
+                    // 表示の切り替え（flexにして高さを維持）
+                    previewBox.style.display = 'flex';
+                    normalContent.style.display = 'none';
+                } else {
+                    // 閉じる処理
+                    previewBox.style.display = 'none';
+                    normalContent.style.display = 'block';
+                    iframe.srcdoc = ""; // メモリ解放のために中身を消す
+                }
+            }
+            
+            function updatePreview() {
+                const date = document.getElementById('inDate').value;
+                const cat = document.getElementById('inCategory').value;
+                const img = document.getElementById('inImage').value;
+                const s = previewLang==='ja'?'':previewLang.charAt(0).toUpperCase()+previewLang.slice(1);
+                
+                const proj = document.getElementById('inProject'+s).value || "Project";
+                const title = document.getElementById('inTitle'+s).value || "Title";
+                const body = document.getElementById('inBody'+s).value || "App Intro Body...";
+                const statusRadio = document.querySelector('input[name="appStatus"]:checked');
+                const isComingSoon = statusRadio && statusRadio.value === 'coming';
+            
+                // 1. お知らせリスト (Titleを表示)
+                document.getElementById('prevDate').textContent=date;
+                document.getElementById('prevTitle').textContent=title;
+                document.getElementById('prevProjectName').textContent=proj;
+                const tag = document.getElementById('prevTag');
+                tag.className='news-tag tag-'+cat;
+                // 多言語マッピング省略
+                tag.textContent = cat; 
+            
+                // 画像
+                const setImg = (id) => {
+                    const el = document.getElementById(id); el.src=img;
+                    el.style.display = img ? 'block' : 'none';
+                };
+                setImg('prevImg'); setImg('prevAppImg'); setImg('prevPageImg');
+            
+                // 2. 最新の活動 (Titleを表示)
+                const card1 = document.getElementById('prevHighlightCard');
+                // リリース枠以外は少し薄くするなどの処理があればここに
+                if(['release','start','steam'].includes(cat)) { card1.classList.remove('dimmed'); } else { card1.classList.add('dimmed'); }
+    
+                document.getElementById('prevCardTitle').textContent=title;
+                document.getElementById('prevCardProj').textContent=proj;
+                document.getElementById('prevCardDate').textContent=date;
+                const badge = document.getElementById('prevCardCatBadge');
+                badge.textContent=cat; badge.className='highlight-category-badge tag-'+cat;
+                
+                // 3. アプリ紹介 (Bodyを表示)
+                document.getElementById('prevAppProj').textContent = proj;
+                document.getElementById('prevAppDesc').textContent = body; // ここは紹介文
+                const appImg = document.getElementById('prevAppImg');
+                const overlay = document.getElementById('comingSoonOverlay');
+                if(isComingSoon) { appImg.classList.add('coming-soon-mode'); overlay.style.display = 'block'; } else { appImg.classList.remove('coming-soon-mode'); overlay.style.display = 'none'; }
+            
+                // 4. 詳細ページ (シミュレーション)
+                document.getElementById('prevPageTitle').textContent=proj;
+                // ★追加: タイトルの下にキャッチコピーを表示
+                document.getElementById('prevPageCatchcopy').textContent=title;
+                
+                document.getElementById('prevPageDate').textContent="";
+                document.getElementById('prevPageProject').textContent="";
+                
+                // ★修正: 本文のdivに white-space: pre-wrap; を追加して改行を反映
+                let simHtml = `
+                    <div style="margin-bottom: 20px; line-height:1.6; white-space: pre-wrap;">${body}</div>
+                    
+                    <h3 style="border-bottom:2px solid #ccc; padding-bottom:5px;">最新のニュース</h3>
+                    <div style="margin-top:10px; padding:15px; background:#f9f9f9; border-left:4px solid #0056b3; border-radius:4px;">
+                        <div style="color:#666; font-size:0.8rem; margin-bottom:5px;">${date}</div>
+                        <div style="font-weight:bold;">${title}</div>
+                    </div>
+                    
+                    <div style="margin-top:15px; text-align:right;">
+                        <a href="#" style="color:#0056b3; text-decoration:none;">▶ すべての更新履歴を見る。</a>
+                    </div>
+                `;
+                document.getElementById('prevBody').innerHTML = simHtml;
+            }
+            
+            // --- ★核心：保存ロジック ---
+            async function saveToGitHub() {
+                const token = localStorage.getItem("gh_token");
+                if (!token) { alert("認証が必要です"); return; }
+            
+                // 1. プロジェクトIDチェック
+                const projectEn = document.getElementById('inProjectEn').value.trim();
+                if (!projectEn) { alert("⚠️ 英語のプロジェクト名を入力してください（ID生成に必要です）"); return; }
+                
+                const projectId = projectEn.replace(/\s+/g, '_').toLowerCase();
+                
+                if(!confirm(`以下のIDで保存処理を開始します。\nProject ID: ${projectId}\n\nよろしいですか？`)) return;
+            
+                // 入力データの収集
+                const inputData = getInputData(projectId);
+            
+                try {
+                    // --- A. admin_master.js (管理者用・上書き) ---
+                    let newMasterData = (typeof adminMasterData !== 'undefined') ? [...adminMasterData] : [];
+                    const idx = newMasterData.findIndex(d => d.project_id === projectId);
+                    if(idx >= 0) newMasterData[idx] = inputData.master; // 上書き
+                    else newMasterData.push(inputData.master); // 新規
+                    
+                    await writeJsFile('admin_master.js', newMasterData, "Update admin_master");
+            
+                    // --- B. index_news.js (トップ用・速報) ---
+                    let indexNews = (typeof indexNewsData !== 'undefined') ? [...indexNewsData] : [];
+                    indexNews.unshift(inputData.indexItem);
+                    
+                    // リリース枠(10)と更新枠(10)に分けて抽出
+                    const releaseCats = ['release', 'start', 'steam'];
+                    const updateCats = ['update', 'game'];
+                    
+                    const releases = indexNews.filter(i => releaseCats.includes(i.category)).slice(0, 10);
+                    const updates = indexNews.filter(i => updateCats.includes(i.category)).slice(0, 10);
+                    const newIndexNews = [...releases, ...updates];
+                    
+                    await writeJsFile('index_news.js', newIndexNews, "Update index_news");
+            
+                    // --- C. apps_catalog.js (一覧用・カタログ) ---
+                    let catalog = (typeof appsCatalogData !== 'undefined') ? [...appsCatalogData] : [];
+                    const catIdx = catalog.findIndex(d => d.project_id === projectId);
+                    if(catIdx >= 0) catalog[catIdx] = inputData.catalogItem;
+                    else catalog.push(inputData.catalogItem);
+                    
+                    await writeJsFile('apps_catalog.js', catalog, "Update apps_catalog");
+            
+                    // --- D. [id]/news.js (個別最新3件) ---
+                    const newsPath = `${projectId}/news.js`;
+                    let currentAppNews = await fetchExistingJs(newsPath) || [];
+                    currentAppNews.unshift(inputData.newsItem);
+                    const newAppNews = currentAppNews.slice(0, 3); // 最新3件
+                    
+                    await writeJsFile(newsPath, newAppNews, `Update ${projectId} news`);
+            
+                    // --- E. [id]/old_news.js (アーカイブ) ---
+                    const oldNewsPath = `${projectId}/old_news.js`;
+                    let currentOldNews = await fetchExistingJs(oldNewsPath) || [];
+                    currentOldNews.unshift(inputData.newsItem); // 全件保存（削除なし）
+                    
+                    await writeJsFile(oldNewsPath, currentOldNews, `Update ${projectId} archive`);
+            
+                    // --- F. 画像コピー & HTML生成 (新規プロジェクト時) ---
+                    // 画像パスが index_phot/ 始まりなら、それを/index.png にコピー
+                    if (inputData.master.image.startsWith('index_phot/')) {
+                        await copyImageToProject(inputData.master.image, `${projectId}/index.png`);
+                    }
+            
+                    // HTML生成 (/index.html がなければ作成)
+                    // 入力データ(inputData)を渡して、HTML内に静的に埋め込む
+                    await createProjectHtml(projectId, inputData);
+            
+                    // --- G. プライバシーポリシー生成 ---
+                    if (inputData.master.privacy_html && inputData.master.privacy_html.trim() !== "") {
+                        const privacyPath = `${projectId}/privacy.html`;
+                        
+                        let privacySha = null;
+                        try {
+                            const checkPriv = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${privacyPath}`, {
+                                headers: { Authorization: `token ${token}` }
+                            });
+                            if (checkPriv.ok) {
+                                privacySha = (await checkPriv.json()).sha;
+                            }
+                        } catch(e) {}
+
+                        const privacyEncoded = btoa(unescape(encodeURIComponent(inputData.master.privacy_html)));
+                        await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${privacyPath}`, {
+                            method: "PUT",
+                            headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                message: `Update privacy policy for ${projectId}`,
+                                content: privacyEncoded,
+                                sha: privacySha
+                            })
+                        });
+                    }
+
+                    // 監視関数を呼び出します
+                    startBuildMonitor();
+            
+                } catch (err) {
+                    console.error(err);
+                    alert("❌ 保存中にエラーが発生しました:\n" + err.message);
+                }
+            }
+
+// 直接編集データの保存（安全対策・サニタイズ強化版）
+            async function saveRawData(filename, textareaId) {
+                const textarea = document.getElementById(textareaId);
+                let parsedData;
+                
+                // 1. JSONの構文チェックとサニタイズ
+                try {
+                    // 入力された文字をデータとして解釈（構文が間違っていればここで弾く）
+                    parsedData = JSON.parse(textarea.value); 
+                } catch (e) {
+                    alert("❌ JSONの書き方にエラーがあります。\n「 , (カンマ) 」の付け忘れや、「 \" (ダブルクォーテーション) 」の消し忘れがないか確認してください。\n\n詳細: " + e.message);
+                    return; // エラーなら通信させずにここで処理を止める（安全ガード）
+                }
+
+                // 2. データ構造のチェック（意図しない形式への破壊防止）
+                if (!Array.isArray(parsedData)) {
+                    alert("❌ エラー: データは全体が [ ] で囲まれた配列形式である必要があります。");
+                    return;
+                }
+
+                // 3. ユーザーへの最終確認
+                if(!confirm(`${filename} を手動で上書き保存します。よろしいですか？`)) return;
+                
+                try {
+                    // 保存する直前に、テキストエリアの中身を機械が読みやすいように綺麗に自動整形する
+                    textarea.value = JSON.stringify(parsedData, null, 4);
+                    
+                    // GitHubへ書き込み
+                    await writeJsFile(filename, parsedData, `Manual edit ${filename}`);
+                    alert("✅ 保存しました！");
+                    location.reload();
+                } catch (e) {
+                    // GitHub API の通信エラーはこちらでキャッチ
+                    alert("❌ GitHubへの保存中に通信エラーが発生しました。\n" + e.message);
+                }
+            }
+            
+            // データ収集ヘルパー
+            function getInputData(pid) {
+                const date = document.getElementById('inDate').value;
+                const cat = document.getElementById('inCategory').value;
+                const img = document.getElementById('inImage').value; // フルパス
+                const status = document.querySelector('input[name="appStatus"]:checked').value;
+                
+                // 多言語データの取得
+                const langs = ['ja', 'en', 'de', 'fr', 'es'];
+                let names={}, titles={}, bodies={}, privacies={}; // privacies を追加
+                langs.forEach(l => {
+                    const s = l==='ja'?'':l.charAt(0).toUpperCase()+l.slice(1);
+                    names['project_'+l] = document.getElementById('inProject'+s).value;
+                    titles['title_'+l] = document.getElementById('inTitle'+s).value;
+                    bodies['body_'+l] = document.getElementById('inBody'+s).value;
+                });
+            
+                // プライバシーHTMLを取得
+                const privacyHtml = document.getElementById('inPrivacyHtml').value;
+
+                // 1. Master用 に privacy_html を追加
+                const master = { project_id: pid, date, category: cat, image: img, status, privacy_html: privacyHtml, ...names, ...titles, ...bodies };
+            
+                // 2. Index用 (お知らせ重視・紹介文なし・画像は固定パス化)
+                const indexItem = {
+                    id: Date.now(), // 一意のID
+                    date, category: cat,
+                    image: `${pid}/index.png`, // 固定パス
+                    link: `${pid}/index.html`,
+                    ...names, ...titles // 紹介文なし
+                };
+            
+                // 3. Catalog用 (紹介文重視・お知らせなし)
+                const catalogItem = {
+                    project_id: pid,
+                    status,
+                    image: `${pid}/index.png`,
+                    ...names, ...bodies // お知らせなし
+                };
+            
+                // 4. AppNews用 (お知らせのみ)
+                const newsItem = {
+                    date, category: cat,
+                    ...titles // お知らせのみ
+                };
+            
+                return { master, indexItem, catalogItem, newsItem };
+            }
+            
+            // GitHub API ヘルパー: ファイル書き込み
+            async function writeJsFile(path, dataObj, msg) {
+                const token = localStorage.getItem("gh_token");
+                // 既存ファイルのSHAを取得して上書き
+                let sha = null;
+                try {
+                    const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
+                        headers: { Authorization: `token ${token}` }
+                    });
+                    if (res.ok) {
+                        const json = await res.json();
+                        sha = json.sha;
+                    }
+                } catch(e) {}
+            
+                // JSファイル形式に変換
+                // pathから変数名を推測 (簡易的)
+                let varName = "data";
+                if(path.includes("admin_master")) varName = "adminMasterData";
+                else if(path.includes("index_news")) varName = "indexNewsData";
+                else if(path.includes("apps_catalog")) varName = "appsCatalogData";
+                else if(path.includes("old_news")) varName = "oldNewsData"; // 先に判定
+                else if(path.includes("news")) varName = "newsData";
+            
+                const contentStr = `const ${varName} = ${JSON.stringify(dataObj, null, 4)};`;
+                const encoded = btoa(unescape(encodeURIComponent(contentStr)));
+            
+                const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
+                    method: "PUT",
+                    headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: msg, content: encoded, sha: sha })
+                });
+                if (!res.ok) throw new Error(`Failed to write ${path}`);
+            }
+            
+            // GitHub API ヘルパー: 既存JSの読み込み
+            async function fetchExistingJs(path) {
+                const token = localStorage.getItem("gh_token");
+                try {
+                    const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
+                        headers: { Authorization: `token ${token}` } // キャッシュ回避推奨
+                    });
+                    if (!res.ok) return null;
+                    const json = await res.json();
+                    const content = decodeURIComponent(escape(atob(json.content)));
+                    // JSON部分を抽出
+                    const match = content.match(/\[.*\]/s); // 配列を探す
+                    if (match) return JSON.parse(match[0]);
+                } catch (e) { console.log("File not found or parse error:", path); }
+                return null;
+            }
+            
+            // 画像コピー
+            async function copyImageToProject(srcPath, destPath) {
+                const token = localStorage.getItem("gh_token");
+                // 1. 元画像をバイナリ(Blob->Base64)で取得
+                const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${srcPath}`, {
+                    headers: { Authorization: `token ${token}` }
+                });
+                if(!res.ok) return; // 画像がない
+                const data = await res.json();
+                const content = data.content; // Base64のまま
+            
+                // 2. 宛先に書き込み (存在チェックして上書きするか、常にするか。ここでは常に上書き)
+                let sha = null;
+                try {
+                    const check = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${destPath}`, {
+                         headers: { Authorization: `token ${token}` }
+                    });
+                    if(check.ok) sha = (await check.json()).sha;
+                } catch(e){}
+            
+                await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${destPath}`, {
+                    method: "PUT",
+                    headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        message: "Copy image to project folder",
+                        content: content,
+                        sha: sha
+                    })
+                });
+            }
+            
+// HTMLテンプレート作成 (完全独立型・多言語対応・通信最適化済み)
+           // --- ★追加: HTML文字列を生成する独立関数 ---
+            function generateProjectHtmlString(projectId, inputData) {
+                const projectJa = inputData.master.project_ja || projectId;
+                const appDataJson = JSON.stringify(inputData.master);
+    
+                return `<!DOCTYPE html>
+    <html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${projectJa}</title>
+        <script src="news.js"><\/script>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700;900&family=Roboto:wght@500;900&display=swap');
+            body { font-family: 'Noto Serif JP', serif; background: #fff; color: #333; padding: 0; margin: 0; line-height: 1.8; overflow-x: hidden; }
+            .top-nav { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); width: 100%; max-width: 1100px; padding: 0 20px; box-sizing: border-box; display: flex; justify-content: space-between; align-items: flex-start; z-index: 1000; pointer-events: none; }
+            .top-nav > * { pointer-events: auto; }
+            .back-btn { cursor: pointer; font-family: 'Roboto', sans-serif; font-weight: 900; color: #0056b3; text-decoration: none; display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.8); padding: 5px 10px; border-radius: 8px; backdrop-filter: blur(2px); }
+            .back-btn:hover { color: #003d82; }
+            .lang-menu-wrapper { position: relative; }
+            .lang-main-btn { background: #0056b3; color: #fff; border: none; padding: 8px 15px; border-radius: 20px; font-family: 'Roboto', sans-serif; font-weight: 900; cursor: pointer; z-index: 10; position: relative; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+            .lang-sub-btns { position: absolute; top: 10px; right: 0; display: flex; flex-direction: row-reverse; pointer-events: none; }
+            .lang-circle { width: 35px; height: 35px; border-radius: 50%; color: white; border: none; font-family: 'Roboto', sans-serif; font-weight: bold; font-size: 0.8rem; display: flex; justify-content: center; align-items: center; cursor: pointer; position: absolute; right: 0; top: 0; opacity: 0; transform: translateY(0) translateX(0); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+            .lang-ja { background: #e74c3c; z-index: 5; } .lang-en { background: #3498db; z-index: 4; } .lang-de { background: #f1c40f; color: #333; z-index: 3; } .lang-fr { background: #9b59b6; z-index: 2; } .lang-es { background: #e67e22; z-index: 1; }
+            .lang-menu-wrapper.open .lang-sub-btns { pointer-events: auto; }
+            .lang-menu-wrapper.open .lang-circle { opacity: 1; }
+            .lang-menu-wrapper.open .lang-circle:nth-child(1) { transform: translateY(45px) translateX(0); }
+            .lang-menu-wrapper.open .lang-circle:nth-child(2) { transform: translateY(45px) translateX(-45px); }
+            .lang-menu-wrapper.open .lang-circle:nth-child(3) { transform: translateY(45px) translateX(-90px); }
+            .lang-menu-wrapper.open .lang-circle:nth-child(4) { transform: translateY(45px) translateX(-135px); }
+            .lang-menu-wrapper.open .lang-circle:nth-child(5) { transform: translateY(45px) translateX(-180px); }
+            .main-content { max-width: 800px; margin: 80px auto 40px auto; padding: 20px; }
+            h1 { border-bottom: 3px solid #0056b3; display: inline-block; padding-bottom: 5px; margin-bottom: 20px; font-size: 1.5rem; }
+            .catchcopy { font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; color: #333; line-height: 1.5; white-space: pre-wrap; }
+            img { max-width: 100%; border-radius: 10px; margin: 20px 0; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+            .app-desc { margin-bottom: 30px; line-height: 1.8; white-space: pre-wrap; }
+            .news-box { margin-top: 15px; padding: 15px; background: #f9f9f9; border-left: 4px solid #0056b3; border-radius:4px; animation: fadeIn 0.5s; }
+            @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+            .date { color: #666; font-size: 0.8rem; margin-bottom: 5px; }
+            .history-link { display: inline-block; margin-top: 15px; color: #0056b3; text-decoration: none; font-weight:bold; cursor: pointer; padding: 10px; border-radius: 5px; background: #f0f8ff; }
+            .history-link:hover { text-decoration: underline; background: #e0f0ff; }
+            
+            /* 履歴モーダル（別窓風）のスタイル */
+            .history-modal { display: none; margin-top: 10px; padding: 15px; background: #fff; border: 2px solid #0056b3; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); max-height: 400px; overflow-y: auto; position: relative; animation: fadeIn 0.3s; }
+            /* 色を #999（グレー）にし、位置を右上にスッキリ配置 */
+            .modal-close { position: absolute; top: 5px; right: 15px; cursor: pointer; font-size: 1.5rem; font-weight: bold; color: #999; user-select: none; }
+            /* マウスを乗せた時は #333（濃いグレー）にする */
+            .modal-close:hover { color: #333; }
+            .history-list-item { display: flex; align-items: flex-start; gap: 15px; border-bottom: 1px solid #eee; padding: 10px 0; }
+            .history-list-item:last-child { border-bottom: none; }
+            .history-date { font-family: 'Roboto', sans-serif; font-size: 0.85rem; color: #666; white-space: nowrap; padding-top: 3px; }
+            .history-title { font-weight: bold; color: #333; line-height: 1.4; }
+
+            .footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; font-size: 0.85rem; color: #666; }
+            .footer a { color: #0056b3; text-decoration: none; font-weight: bold; }
+
+            /* モーダル内の言語切り替え制御 */
+            .lang-content { display: none; }
+            .show-ja .lang-ja { display: block; }
+            .show-en .lang-en { display: block; }
+            .show-de .lang-de { display: block; }
+            .show-fr .lang-fr { display: block; }
+            .show-es .lang-es { display: block; }
+            /* 一枚の紙のスタイル */
+            .privacy-paper {
+                background: #ffffff;
+                border-radius: 4px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.15), 0 2px 5px rgba(0,0,0,0.05); 
+                padding: 0;
+                overflow: hidden;
+                margin: 15px auto 20px auto; /* ▼ 下の余白を 40px から 20px に減らす ▼ */
+                max-width: 800px;
+                text-align: left;
+                position: relative;
+                animation: fadeIn 0.4s ease-out;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="top-nav">
+            <a href="#" class="back-btn" onclick="goBack(event)">🔙 <span id="back-text">戻る</span></a>
+            <div class="lang-menu-wrapper" id="langMenu">
+                <button class="lang-main-btn" onclick="toggleLangMenu()">Language ▼</button>
+                <div class="lang-sub-btns">
+                    <button class="lang-circle lang-es" onclick="changeLang('es')">ES</button>
+                    <button class="lang-circle lang-fr" onclick="changeLang('fr')">FR</button>
+                    <button class="lang-circle lang-de" onclick="changeLang('de')">DE</button>
+                    <button class="lang-circle lang-en" onclick="changeLang('en')">EN</button>
+                    <button class="lang-circle lang-ja" onclick="changeLang('ja')">JP</button>
+                </div>
+            </div>
+        </div>
+        <div class="main-content">
+            <h1 id="app-title">Loading...</h1>
+            <!-- ★追加: 実際のHTML側にもキャッチコピー枠を設ける -->
+            <div id="app-catchcopy" class="catchcopy"></div>
+            
+            <img src="index.png" alt="App Image">
+            <div id="app-desc" class="app-desc"></div>
+            
+            <h3 id="news-heading" style="border-bottom:2px solid #ccc; padding-bottom:5px;">最新のニュース</h3>
+            <div id="news-container"></div>
+            
+            <div style="text-align: right; position: relative;">
+                <a class="history-link" id="history-link" onclick="loadOldNews(event)">▶ すべての更新履歴を見る。</a>
+                <div id="history-modal" class="history-modal" style="text-align: left;">
+                    <span class="modal-close" onclick="document.getElementById('history-modal').style.display='none'">×</span>
+                    <div id="modal-content"></div>
+                </div>
+            </div>
+
+            <div class="footer">
+                <!-- ▼ リンクをdivで囲み、下に20pxの余白を固定で作る ▼ -->
+                <div style="margin-bottom: 20px;">
+                    <a href="privacy.html" id="privacy-link" onclick="showPrivacy(event)">プライバシーポリシー</a>
+                </div>
+                
+                <div id="privacy-paper" class="privacy-paper" style="display: none;">
+                    <span class="modal-close" style="z-index: 10;" onclick="closePrivacy()">×</span>
+                    <iframe id="privacy-iframe" src="" style="width:100%; height:75vh; border:none; display:block;"></iframe>
+                </div>
+
+                <!-- ▼ brを消し、divで囲む ▼ -->
+                <div>
+                    © 2026 啓 App Lab | <a href="../app-ads.txt" target="_blank">app-ads.txt</a>
+                </div>
+            </div>
+        </div>
+        <script>
+            const appData = ${appDataJson};
+            
+            // --- 最強の言語判定ロジック ---
+            function determineLanguage() {
+                const supportedLangs = ['ja', 'en', 'de', 'fr', 'es'];
+                
+                // 1. URLの末尾（?lang=xx）をチェック（最優先）
+                const urlParams = new URLSearchParams(window.location.search);
+                const langParam = urlParams.get('lang');
+                if (langParam && supportedLangs.includes(langParam)) {
+                    return langParam;
+                }
+                
+                // 2. ブラウザに保存された過去の記憶（preferredLang）をチェック
+                const savedLang = localStorage.getItem('preferredLang');
+                if (savedLang && supportedLangs.includes(savedLang)) {
+                    return savedLang;
+                }
+                
+                // 3. ユーザーの見ている地域（ブラウザ設定言語）をチェック
+                const browserLang = (window.navigator.language || window.navigator.userLanguage || '').slice(0, 2).toLowerCase();
+                if (supportedLangs.includes(browserLang)) {
+                    return browserLang;
+                }
+                
+                // 4. いずれにも該当しない場合は「英語 (en)」
+                return 'en';
+            }
+            
+            // 判定結果を変数に入れ、記憶の箱にも保存しておく
+            let currentLang = determineLanguage();
+            localStorage.setItem('preferredLang', currentLang);
+            const texts = {
+                ja: { back: "戻る", backTop: "啓(KEI)App Labへ戻る", news: "最新のニュース", history: "▶ すべての更新履歴を見る。", loading: "読み込み中...", noNews: "現在お知らせはありません。", privacy: "プライバシーポリシー", privAlert: "プライバシーポリシーは現在準備中（実装予定）です。" },
+                en: { back: "Back", backTop: "Back to KEI App Lab", news: "Latest News", history: "▶ View all history", loading: "Loading...", noNews: "No news available.", privacy: "Privacy Policy", privAlert: "Privacy Policy is currently under preparation." },
+                de: { back: "Zurück", backTop: "Zurück zu KEI App Lab", news: "Aktuelle News", history: "▶ Gesamten Verlauf", loading: "Wird geladen...", noNews: "Keine Nachrichten.", privacy: "Datenschutzrichtlinie", privAlert: "Die Datenschutzrichtlinie ist in Vorbereitung." },
+                fr: { back: "Retour", backTop: "Retour à KEI App Lab", news: "Dernières Nouvelles", history: "▶ Voir tout l'historique", loading: "Chargement...", noNews: "Aucune nouvelle.", privacy: "Politique de confidentialité", privAlert: "La politique de confidentialité est en cours de préparation." },
+                es: { back: "Volver", backTop: "Volver a KEI App Lab", news: "Últimas Noticias", history: "▶ Ver todo el historial", loading: "Cargando...", noNews: "No hay noticias.", privacy: "Política de privacidad", privAlert: "La política de privacidad está en preparación." }
+            };
+            function goBack(e) { e.preventDefault(); if (history.length <= 1 || document.referrer === "") window.location.href = "../index.html"; else history.back(); }
+            function toggleLangMenu() { document.getElementById('langMenu').classList.toggle('open'); }
+            function changeLang(lang) { 
+                currentLang = lang; 
+                localStorage.setItem('preferredLang', lang); 
+                document.getElementById('langMenu').classList.remove('open'); 
+                
+                // URLパラメータも変更して、後でリロードしても維持されるようにする
+                const url = new URL(window.location);
+                url.searchParams.set('lang', lang);
+                window.history.replaceState({}, '', url);
+
+                renderPage(); 
+                
+                // もし「更新履歴モーダル」が開いていたら中身を再描画する
+                const hModal = document.getElementById('history-modal');
+                if (hModal.style.display === 'block' && typeof oldNewsData !== 'undefined') {
+                    renderHistoryList();
+                }
+
+                // もし「プライバシーモーダル」が開いていたら言語クラスを切り替える
+                const pPaper = document.getElementById('privacy-paper');
+                if (pPaper && pPaper.style.display === 'block') {
+                    const iframe = document.getElementById('privacy-iframe');
+                    iframe.src = 'privacy.html?lang=' + lang;
+                }
+            }
+            function renderPage(targetData = null) {
+                const suffix = currentLang === 'ja' ? '' : '_' + currentLang;
+                const t = texts[currentLang] || texts.en;
+                const isDirectLink = (history.length <= 1 || document.referrer === "");
+                document.getElementById('back-text').textContent = isDirectLink ? t.backTop : t.back;
+                document.getElementById('news-heading').textContent = t.news;
+                const hLink = document.getElementById('history-link');
+                if(hLink.style.display !== 'none') hLink.textContent = t.history;
+                document.getElementById('privacy-link').textContent = t.privacy;
+                
+                const projName = appData['project' + suffix] || appData.project_ja || '${projectId}';
+                document.getElementById('app-title').textContent = projName;
+                
+                // ★追加: キャッチコピーと本文の流し込み（改行対応済み）
+                document.getElementById('app-catchcopy').textContent = appData['title' + suffix] || appData.title_ja || '';
+                document.getElementById('app-desc').textContent = appData['body' + suffix] || appData.body_ja || '';
+    
+                const dataToRender = targetData || (typeof newsData !== 'undefined' ? newsData : []);
+                const container = document.getElementById('news-container');
+                container.innerHTML = '';
+                if(dataToRender.length > 0){
+                    dataToRender.forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = 'news-box';
+                        const title = item['title' + suffix] || item.title_ja || item.title_en || '';
+                        div.innerHTML = '<div class="date">' + item.date + '</div><div style="font-weight:bold; white-space: pre-wrap;">' + title + '</div>';
+                        container.appendChild(div);
+                    });
+                } else { container.innerHTML = '<p>' + t.noNews + '</p>'; }
+            }
+
+            // 履歴リストのHTMLを生成・流し込む専用の関数
+            function renderHistoryList() {
+                const modalContent = document.getElementById('modal-content');
+                modalContent.innerHTML = '';
+                const suffix = currentLang === 'ja' ? '' : '_' + currentLang;
+                const t = texts[currentLang] || texts.en;
+
+                if (typeof oldNewsData !== 'undefined' && oldNewsData.length > 0) {
+                    oldNewsData.forEach(item => {
+                        const title = item['title' + suffix] || item.title_ja || item.title_en || '';
+                        modalContent.innerHTML += \`<div class="history-list-item"><div class="history-date">\${item.date}</div><div class="history-title">\${title}</div></div>\`;
+                    });
+                } else {
+                    modalContent.innerHTML = '<p>' + t.noNews + '</p>';
+                }
+            }
+
+            // --- 動的ロード：全履歴データを別窓（モーダル）に表示 ---
+            function loadOldNews(e) {
+                e.preventDefault(); 
+                const link = document.getElementById('history-link'); 
+                const modal = document.getElementById('history-modal');
+                const t = texts[currentLang] || texts.en;
+                
+                // すでに開いている場合は閉じる
+                if (modal.style.display === 'block') {
+                    modal.style.display = 'none';
+                    return;
+                }
+
+                link.textContent = t.loading; link.style.pointerEvents = 'none';
+                
+                // 通信してデータを取得
+                const script = document.createElement('script'); 
+                script.src = 'old_news.js';
+                script.onload = () => { 
+                    link.textContent = t.history;
+                    link.style.pointerEvents = 'auto';
+                    modal.style.display = 'block';
+                    renderHistoryList(); // 独立させた関数を呼ぶ
+                };
+                script.onerror = () => { 
+                    link.textContent = 'Data Load Error'; link.style.pointerEvents = 'auto'; 
+                };
+                document.body.appendChild(script);
+            }
+
+            // --- プライバシーポリシーの表示（紙の展開） ---
+            async function showPrivacy(e) {
+                e.preventDefault();
+                const paper = document.getElementById('privacy-paper');
+                const iframe = document.getElementById('privacy-iframe');
+                const t = texts[currentLang] || texts.en;
+                
+                // すでに開いている場合は閉じる
+                if (paper.style.display === 'block') {
+                    closePrivacy();
+                    return;
+                }
+
+                try {
+                    const res = await fetch('privacy.html', { method: 'HEAD' });
+                    if (!res.ok) throw new Error('Not Found');
+                    
+                    // iframeにURLをセットして、紙を表示する
+                    iframe.src = 'privacy.html?lang=' + currentLang;
+                    paper.style.display = 'block';
+
+                    // ★魔法：開いた後、紙の下端が画面に入るようにスムーズに自動スクロールする
+                    setTimeout(() => {
+                        paper.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                    }, 100);
+
+                } catch (err) {
+                    alert(t.privAlert);
+                }
+            }
+
+            // --- プライバシーポリシーを閉じる ---
+            function closePrivacy() {
+                const paper = document.getElementById('privacy-paper');
+                const iframe = document.getElementById('privacy-iframe');
+                paper.style.display = 'none';
+                iframe.src = ""; // 中身を消して軽くする
+            }
+
+            // フォーム追加：フォーム送信処理のイメージ
+            async function submitContact(e) {
+              e.preventDefault();
+              const btn = document.getElementById('contactSubmitBtn');
+              const msg = document.getElementById('contactMsg');
+              
+              const email = document.getElementById('contactEmail').value;
+              const subject = document.getElementById('contactSubject').value;
+              const body = document.getElementById('contactBody').value;
+          
+              btn.textContent = "送信中...";
+              btn.disabled = true;
+          
+              try {
+                  // ★ここに先ほどコピーしたGASのURLを貼り付けます★
+                  const gasUrl = "https://script.google.com/macros/s/AKfycbxCc6gurDKgl2-wIOnZbALKEVaPE9q4z_4TWasxSYmwomncGaQJk7ya_5uowtMVVNOMow/exec"; 
+                  
+                  const response = await fetch(gasUrl, {
+                      method: "POST",
+                      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                      // action: "send" を送ることでGASが「受信処理」だと認識します
+                      body: new URLSearchParams({ email: email, subject: subject, body: body, action: "send" })
+                  });
+          
+                  // GASはCORSリダイレクトを返すため、response.ok が true なら成功とみなす
+                  if (response.ok || response.type === 'opaque') {
+                      msg.textContent = "✅ お問い合わせを送信しました。確認メールをお送りしました。";
+                      msg.style.color = "#27ae60";
+                      msg.style.display = "block";
+                      document.getElementById('contactForm').reset();
+                      // 件名だけは再度セットし直す
+                      document.getElementById('contactSubject').value = document.getElementById('app-title').textContent;
+                  } else {
+                      throw new Error("通信エラー");
+                  }
+              } catch (err) {
+                  msg.textContent = "❌ エラーが発生しました。時間をおいて再試行してください。";
+                  msg.style.color = "#d9534f";
+                  msg.style.display = "block";
+              } finally {
+                  btn.textContent = "送信する";
+                  btn.disabled = false;
+              }
+          }
+          
+          // フォーム追加： ページ読み込み時にプロジェクト名を件名に自動セット
+          window.addEventListener("DOMContentLoaded", () => {
+              renderPage();
+              // 少し遅延させて、app-titleに名前が入った後にセットする
+              setTimeout(() => {
+                  const projName = document.getElementById('app-title').textContent;
+                  const subjInput = document.getElementById('contactSubject');
+                  if(subjInput) subjInput.value = projName;
+              }, 500);
+          });
+
+        <\/script>
+    </body>
+    </html>`;
+            }     
+            async function createProjectHtml(projectId, inputData) {
+                const path = `${projectId}/index.html`;
+                const token = localStorage.getItem("gh_token");
+                
+                const check = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
+                     headers: { Authorization: `token ${token}` }
+                });
+                if(check.ok) return; 
+            
+                const htmlContent = generateProjectHtmlString(projectId, inputData);
+                const encoded = btoa(unescape(encodeURIComponent(htmlContent)));
+
+                // ★追加: 実際にGitHubへファイルを送信する処理
+                await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
+                    method: "PUT",
+                    headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        message: "Create project index.html",
+                        content: encoded
+                    })
+                });
+            }
+            
+            // --- ユーザー管理・計算 (復元済み) ---
+            function renderUserList() {
+                const list = document.getElementById('userList');
+                if(!list) return;
+                list.innerHTML = '';
+                if (typeof allowedUsersData !== 'undefined') {
+                    allowedUsersData.forEach((user, index) => {
+                        const li = document.createElement('li');
+                        li.style = "display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid #444; color:#fff;";
+                        li.innerHTML = `<span>${user}</span><button style="background:#c0392b; width:auto; padding:2px 8px; font-size:0.8rem; margin:0;" onclick="removeUser(${index})">削除</button>`;
+                        list.appendChild(li);
+                    });
+                }
+            }
+            function addUser() {
+                const input = document.getElementById('newUserId');
+                const id = input.value.trim();
+                if(!id) return;
+                if(allowedUsersData.includes(id)) { alert("既に登録されています"); return; }
+                allowedUsersData.push(id);
+                input.value = '';
+                renderUserList();
+            }
+            function removeUser(index) {
+                if(confirm("削除しますか？")) { allowedUsersData.splice(index, 1); renderUserList(); }
+            }
+            async function saveUsersToGitHub() {
+                const token = localStorage.getItem("gh_token");
+                if (!token) { alert("認証が必要です"); return; }
+                if(!confirm("GitHub上の allowed_users.js を更新します。よろしいですか？")) return;
+                const jsonString = JSON.stringify(allowedUsersData, null, 4);
+                const content = `// 編集権限を持つユーザーリスト\nconst allowedUsersData = ${jsonString};`;
+                const encodedContent = btoa(unescape(encodeURIComponent(content)));
+                try {
+                    const getRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/allowed_users.js`, { headers: { Authorization: `token ${token}` } });
+                    const fileData = await getRes.json();
+                    const putRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/allowed_users.js`, {
+                        method: "PUT",
+                        headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                        body: JSON.stringify({ message: "Update allowed users list", content: encodedContent, sha: fileData.sha })
+                    });
+                    if (putRes.ok) alert("権限設定を更新しました！"); else alert("保存に失敗しました。");
+                } catch (err) { alert("エラー: " + err.message); }
+            }
+    
+            function calcSeconds() {
+                const adPrice = parseFloat(document.getElementById('adPrice').value);
+                const callCost = parseFloat(document.getElementById('callCost').value);
+                const margin = parseFloat(document.getElementById('margin').value);
+                const costPerSec = callCost / 60;
+                const profit = adPrice * (margin / 100);
+                const seconds = Math.floor((adPrice - profit) / costPerSec);
+                document.getElementById('calcOutput').innerText = seconds + " 秒";
+            }
+
+            // --- データの収集と整形 ---
+            function getInputData(pid) {
+                const date = document.getElementById('inDate').value;
+                const cat = document.getElementById('inCategory').value;
+                const img = document.getElementById('inImage').value; 
+                const statusRadio = document.querySelector('input[name="appStatus"]:checked');
+                const status = statusRadio ? statusRadio.value : 'coming';
+                
+                // 多言語データの取得
+                const langs =['ja', 'en', 'de', 'fr', 'es'];
+                let names={}, titles={}, bodies={};
+                langs.forEach(l => {
+                    const s = l==='ja' ? '' : l.charAt(0).toUpperCase() + l.slice(1);
+                    names['project_'+l] = document.getElementById('inProject'+s).value;
+                    titles['title_'+l] = document.getElementById('inTitle'+s).value;
+                    bodies['body_'+l] = document.getElementById('inBody'+s).value;
+                });
+            
+                const privacyHtml = document.getElementById('inPrivacyHtml') ? document.getElementById('inPrivacyHtml').value : "";
+
+                // 1. Master用 に privacy_html を追加
+                const master = { project_id: pid, date, category: cat, image: img, status, privacy_html: privacyHtml, ...names, ...titles, ...bodies };
+            
+                // 2. Index用 (お知らせ重視・紹介文なし・画像は固定パス化)
+                const indexItem = {
+                    id: Date.now(), 
+                    date, category: cat,
+                    image: `${pid}/index.png`, 
+                    link: `${pid}/index.html`,
+                    ...names, ...titles
+                };
+            
+                // 3. Catalog用 (紹介文重視・お知らせなし)
+                const catalogItem = {
+                    project_id: pid,
+                    status,
+                    image: `${pid}/index.png`,
+                    ...names, ...bodies
+                };
+            
+                // 4. AppNews用 (お知らせのみ)
+                const newsItem = {
+                    date, category: cat,
+                    ...titles
+                };
+            
+                return { master, indexItem, catalogItem, newsItem };
+            }
+
+            // --- ★追加: プライバシーポリシー関連のロジック ---
+            // 1. 入力枠の開閉（ボタンの上に出現）
+            function togglePrivacyInput() {
+                const area = document.getElementById('privacyInputArea');
+                if (area.style.display === 'none') {
+                    area.style.display = 'block';
+                    // 入力欄にフォーカスを当てる
+                    document.getElementById('inPrivacyHtml').focus();
+                } else {
+                    area.style.display = 'none';
+                }
+            }
+    
+            // 2. プレビューの切り替え（安全版）
+            function togglePrivacyPreview() {
+                const previewBox = document.getElementById('privacyPreviewBox');
+                const iframe = document.getElementById('privacyPreviewIframe');
+                const normalContent = document.getElementById('normalPreviewContent');
+                
+                if (previewBox.style.display === 'none') {
+                    let htmlData = document.getElementById('inPrivacyHtml').value;
+                    if (!htmlData) {
+                        htmlData = "<h3 style='color:#999; text-align:center; margin-top:50px;'>※HTMLが入力されていません</h3>";
+                    } else {
+                        htmlData = `<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><style>body{font-family:sans-serif; padding:20px; line-height:1.6; color:#333; background:#fff;} .lang-ja, .lang-en, .lang-de, .lang-fr, .lang-es { display:none; } .lang-${previewLang} { display:block; }</style></head><body>${htmlData}</body></html>`;
+                    }
+                    
+                    iframe.srcdoc = htmlData;
+                    previewBox.style.display = 'flex';
+                    normalContent.style.display = 'none'; // 通常プレビューを隠す
+                } else {
+                    previewBox.style.display = 'none';
+                    normalContent.style.display = 'block'; // 通常プレビューを戻す
+                    iframe.srcdoc = ""; 
+                }
+            }
+    
+            // 3. 手順書のコピー機能
+            function copyPrivacyManual() {
+                // TESTSEND_html_manual.js の中に `const privacyManualText = "..."` という変数が定義されている前提
+                if (typeof privacyManualText !== 'undefined') {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = privacyManualText;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    try {
+                        document.execCommand('copy');
+                        alert("✅ HTML生成手順書をコピーしました。\nAI（ChatGPT等）に貼り付けてHTMLを生成してください。");
+                    } catch (err) {
+                        alert("❌ コピーに失敗しました。");
+                    }
+                    document.body.removeChild(textarea);
+                } else {
+                    alert("⚠️ エラー: TESTSEND_html_manual.js が読み込まれていないか、変数 privacyManualText が定義されていません。");
+                }
+            }
+
+            // 4. --- HTML生成手順書の保存機能 ---
+            async function saveManualJs() {
+                const textarea = document.getElementById('raw-html-manual');
+                const contentToSave = textarea.value;
+                
+                if(!confirm(`TESTSEND_html_manual.js を手動で上書き保存します。よろしいですか？`)) return;
+
+                try {
+                    const token = localStorage.getItem("gh_token");
+                    const path = "TESTSEND_html_manual.js";
+                    
+                    let sha = null;
+                    try {
+                        const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
+                            headers: { Authorization: `token ${token}` }
+                        });
+                        if (res.ok) {
+                            const json = await res.json();
+                            sha = json.sha;
+                        }
+                    } catch(e) {} // 新規作成時はエラーになるので無視
+
+                    const encoded = btoa(unescape(encodeURIComponent(contentToSave)));
+                    
+                    const putRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
+                        method: "PUT",
+                        headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                        body: JSON.stringify({ message: "Update TESTSEND_html_manual.js", content: encoded, sha: sha })
+                    });
+                    
+                    if (!putRes.ok) throw new Error(`APIリクエスト失敗`);
+                    alert("✅ 手順書を保存しました！");
+                    location.reload();
+                } catch(e) {
+                    alert("❌ 保存に失敗しました。\n" + e.message);
+                }
+            }
+
+            // 5. --- メモ(txt)専用の保存機能 ---
+            async function saveMemoText() {
+                const textarea = document.getElementById('raw-memo');
+                const contentToSave = textarea.value;
+                
+                if(!confirm(`メモを memo.txt としてGitHubに保存します。よろしいですか？`)) return;
+
+                try {
+                    const token = localStorage.getItem("gh_token");
+                    const path = "memo.txt"; // .txtとして保存
+                    
+                    let sha = null;
+                    try {
+                        const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
+                            headers: { Authorization: `token ${token}` }
+                        });
+                        if (res.ok) {
+                            const json = await res.json();
+                            sha = json.sha;
+                        }
+                    } catch(e) {} // 新規作成時は無視
+
+                    const encoded = btoa(unescape(encodeURIComponent(contentToSave)));
+                    
+                    const putRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
+                        method: "PUT",
+                        headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                        body: JSON.stringify({ message: "Update memo.txt", content: encoded, sha: sha })
+                    });
+                    
+                    if (!putRes.ok) throw new Error(`APIリクエスト失敗`);
+                    alert("✅ メモを保存しました！");
+                } catch(e) {
+                    alert("❌ 保存に失敗しました。\n" + e.message);
+                }
+            }
+
+            // 6. (重要) getInputData 関数に入力値を反映させる
+            // ※既存の getInputData() 関数の中の master オブジェクト定義部分を書き換える必要があります。
+
+            // --- GitHub Actions 監視ロジック ---
+            async function startBuildMonitor() {
+                const toast = document.getElementById('build-toast');
+                const icon = document.getElementById('toast-icon');
+                const msg = document.getElementById('toast-msg');
+                
+                // トーストを表示
+                toast.style.display = 'flex';
+                icon.className = 'spinner';
+                icon.textContent = '';
+                msg.innerHTML = `データの保存完了。<br>GitHubで公開準備中...（約1〜3分）`;
+    
+                const token = localStorage.getItem("gh_token");
+                // GitHub Actionsの最新の実行履歴(1件)を取得するAPI
+                const apiUrl = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/actions/runs?per_page=1`;
+    
+                // GitHub側のAction起動に数秒ラグがあるため、5秒待ってから監視開始
+                await new Promise(resolve => setTimeout(resolve, 5000));
+    
+                // 10秒に1回、進捗を確認するタイマーをセット
+                const checkInterval = setInterval(async () => {
+                    try {
+                        const res = await fetch(apiUrl, { headers: { Authorization: `token ${token}` } });
+                        if (!res.ok) throw new Error("API Limit or Error");
+                        const data = await res.json();
+                        
+                        if (data.workflow_runs && data.workflow_runs.length > 0) {
+                            const run = data.workflow_runs[0];
+                            
+                            // 状態が「完了(completed)」になったら
+                            if (run.status === 'completed') {
+                                clearInterval(checkInterval); // タイマー停止
+                                
+                                if (run.conclusion === 'success') {
+                                    // 成功時：リロードボタンを表示
+                                    icon.className = '';
+                                    icon.textContent = '✅';
+                                    msg.innerHTML = `公開準備が完了しました！<br><button class="toast-btn" onclick="location.reload()">最新状態にリロード</button>`;
+                                } else {
+                                    // 失敗時
+                                    icon.className = '';
+                                    icon.textContent = '❌';
+                                    msg.innerHTML = `公開エラーが発生しました。<br><a href="https://github.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/actions" target="_blank" style="color:#ffcccc;">Actionsを確認</a>`;
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        clearInterval(checkInterval);
+                        icon.className = '';
+                        icon.textContent = '⚠️';
+                        msg.textContent = "監視通信に失敗しましたが、裏で処理は進んでいます。";
+                    }
+                }, 10000); // 10,000ミリ秒 = 10秒間隔でチェック
+            }
+
+            // プレビューエリアのスクロール制御
+            let isPreviewScrolledDown = false;
+
+            function togglePreviewScroll() {
+                const previewArea = document.querySelector('.preview-area');
+                const btn = document.getElementById('previewScrollBtn');
+                
+                if (!isPreviewScrolledDown) {
+                    // 一番下へスクロール
+                    previewArea.scrollTo({ top: previewArea.scrollHeight, behavior: 'smooth' });
+                    btn.textContent = '▲';
+                    isPreviewScrolledDown = true;
+                } else {
+                    // 一番上へスクロール
+                    previewArea.scrollTo({ top: 0, behavior: 'smooth' });
+                    btn.textContent = '▼';
+                    isPreviewScrolledDown = false;
+
+                    // 詳細ページプレビューの中身もトップに戻す
+                    // 1. 新規作成プレビュー(div)の場合：スムーズに上へスクロール
+                    const simPreview = document.getElementById('simulatedPagePreview');
+                    if (simPreview && simPreview.style.display !== 'none') {
+                        simPreview.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                    
+                    // 2. 既存プロジェクトプレビュー(iframe)の場合：リロードさせて上に戻す
+                    const realPreview = document.getElementById('realPagePreview');
+                    if (realPreview && realPreview.style.display !== 'none') {
+                        const iframe = document.getElementById('prevIframe');
+                        if (iframe && iframe.src) {
+                            // ※ブラウザのセキュリティ制限を回避するため、srcを再代入してリロードします
+                            iframe.src = iframe.src; 
+                        }
+                    }
+                }
+            }
+
+            // 手動でスクロールした時も、現在位置を判定してボタンの矢印を同期させる
+            window.addEventListener('DOMContentLoaded', () => {
+                const previewArea = document.querySelector('.preview-area');
+                previewArea.addEventListener('scroll', () => {
+                    const btn = document.getElementById('previewScrollBtn');
+                    if (!btn) return;
+                    
+                    // スクロール位置が全体の半分より下なら「上向き矢印」にする
+                    if (previewArea.scrollTop > (previewArea.scrollHeight - previewArea.clientHeight) / 2) {
+                        btn.textContent = '▲';
+                        isPreviewScrolledDown = true;
+                    } else {
+                        btn.textContent = '▼';
+                        isPreviewScrolledDown = false;
+                    }
+                });
+            });
+        
+        // 返信ボックスの開閉
+        function toggleReplyBox(id) {
+            const box = document.getElementById(`reply-box-${id}`);
+            box.style.display = box.style.display === "none" || box.style.display === "" ? "block" : "none";
+        }
+        
+        // ユーザーへの返信処理
+        async function sendReply(id) {
+            const replyBody = document.getElementById(`reply-text-${id}`).value.trim();
+            if (!replyBody) { alert("返信内容を入力してください。"); return; }
+            
+            if (!confirm("入力した内容でユーザーにメールを送信します。よろしいですか？")) return;
+        
+            // ボタンを無効化して連打防止
+            const btn = event.currentTarget;
+            btn.textContent = "送信中...";
+            btn.disabled = true;
+        
+            try {
+                const response = await fetch(CONTACT_GAS_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: new URLSearchParams({ action: "reply", id: id, replyBody: replyBody })
+                });
+        
+                // 成功したら一覧を再読み込み
+                alert("✅ 返信メールを送信しました！");
+                loadContacts(); 
+                
+            } catch (err) {
+                alert("❌ 返信の送信に失敗しました。");
+                btn.textContent = "🚀 返信メールを送信してステータスを更新";
+                btn.disabled = false;
+            }
+        }
+        </script>
+    </body>
+    </html>
