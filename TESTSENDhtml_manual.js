@@ -231,7 +231,7 @@ Email: keiapplab@gmail.com
     </div>
 </div>
 
-// フォーム追加：
+<!-- フォーム追加： -->
 <script>
         function toggleContact() {
             var wrapper = document.getElementById('contactWrapper');
