@@ -74,6 +74,7 @@
         </button>
         
         <div id="contactWrapper" class="contact-frame-wrapper">
+            <!-- srcを空にしておく -->
             <iframe id="contactIframe" src="" loading="lazy"></iframe>
         </div>
     </div>
@@ -90,17 +91,15 @@
         var iframe = document.getElementById('contactIframe');
         var btn = document.querySelector('.open-contact-btn');
         
-        // タイトルからアプリ名を取得（例: "プライバシーポリシー | FreeCallApp" -> "FreeCallApp"）
-        // 取得できない場合はデフォルト値を使用
         var appName = document.title.split('|')[1] ? document.title.split('|')[1].trim() : "FreeCallApp";
 
         if (wrapper.style.display === 'none' || wrapper.style.display === '') {
             wrapper.style.display = 'block';
             
-            // iframeのsrcが空の場合のみセット（リロード防止）
-            // support.htmlにプロジェクト名を渡す
-            if (!iframe.src) {
-                iframe.src = "https://keiapplab.github.io/KeiAppLab/support.html?project=" + encodeURIComponent(appName);
+            // ★修正点: getAttributeで属性そのものをチェック & 相対パスを使用
+            var currentSrc = iframe.getAttribute('src');
+            if (!currentSrc || currentSrc === "") {
+                iframe.src = "../support.html?project=" + encodeURIComponent(appName);
             }
             
             btn.innerHTML = "❌ フォームを閉じる";
