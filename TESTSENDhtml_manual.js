@@ -245,7 +245,7 @@ Email: keiapplab@gmail.com
                 wrapper.style.display = 'block';
                 // まだ読み込まれていない場合のみsrcをセット（無駄な通信防止）
                 if (!iframe.src) {
-                    iframe.src = "../contact.html?project=" + encodeURIComponent(appName);
+                    iframe.src = "../support.html?project=" + encodeURIComponent(appName);
                 }
                 btn.innerHTML = "❌ フォームを閉じる";
                 btn.style.backgroundColor = "#666";
