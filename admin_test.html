@@ -862,8 +862,9 @@
                 document.getElementById('loginOverlay').style.display = 'none';
                 document.getElementById('mainWrapper').style.display = 'block';
                 updatePreview();
-                initProjectList(); // admin_master.js から履歴を生成
-                initImageSelector(); // 初回はデフォルト画像リスト
+                initProjectList(); 
+                // ▼▼▼ 起動した瞬間に、裏側で最新の画像リストを完璧に読み込んでおく ▼▼▼
+                fetchAndRenderImages(); 
             }
             
             function logout() { localStorage.removeItem('gh_token'); location.reload(); }
@@ -1034,6 +1035,9 @@
                     }
                 }
                 updatePreview();
+            
+                // ▼▼▼ プロジェクト名が変わった時だけ、そのプロジェクト用の画像を裏で読み込み直す ▼▼▼
+                fetchAndRenderImages();
             }
     
             // 特定のID以外の言語フィールドを空にする関数
@@ -1141,11 +1145,7 @@
 
             // 開閉制御
             function toggleImageSelect() { 
-                const wrapper = document.querySelector('.custom-select');
-                wrapper.classList.toggle('open'); 
-                if (wrapper.classList.contains('open')) {
-                    fetchAndRenderImages(); // 開くたびに最新状態をチェック
-                }
+                document.querySelector('.custom-select').classList.toggle('open'); 
             }
     
             function selectImage(fullPath, fileName) {
