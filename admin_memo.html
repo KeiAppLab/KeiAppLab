@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KEI Lab グローバル・メモ</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap');
+
+        body { 
+            margin: 0; padding: 20px; box-sizing: border-box;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: #1e1e1e; color: #ddd;
+            height: 100vh; display: flex; flex-direction: column;
+        }
+
+        .header { display: flex; align-items: baseline; margin-bottom: 15px; border-bottom: 2px solid #555; padding-bottom: 10px; }
+        .header h2 { margin: 0; color: #fff; font-size: 1.3rem; display: flex; align-items: center; }
+        .header-desc { margin-left: 20px; color: #aaa; font-size: 0.85rem; }
+
+        /* アイコン装飾 */
+        .flipped-icon { display: inline-block; transform: scaleX(-1); vertical-align: middle; }
+        .memo-capsule { background-color: rgba(135, 206, 250, 0.2); border-radius: 11px; padding: 0 4px; margin: 0 5px; display: inline-block; line-height: 1.2; font-family: 'Roboto', sans-serif; font-weight: bold; }
+
+        /* メモエリア（左右分割） */
+        .memo-container { display: flex; gap: 20px; flex-grow: 1; height: calc(100% - 100px); }
+        .memo-box { flex: 1; display: flex; flex-direction: column; background: #2d2d30; padding: 15px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+
+        .memo-tab { font-weight: bold; color: #fff; margin-bottom: 10px; font-size: 1rem; display: flex; justify-content: space-between; align-items: center; }
+        .save-status { font-size: 0.75rem; color: #888; }
+        .save-status.saving { color: #e67e22; }
+        .save-status.saved { color: #27ae60; }
+
+        /* リッチテキスト編集エリア (contenteditable) */
+        .editor {
+            flex-grow: 1; width: 100%; overflow-y: auto;
+            background: #f4f6f8; color: #333; font-family: sans-serif; font-size: 15px; line-height: 1.6;
+            padding: 15px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;
+            outline: none; text-align: left;
+        }
+        .editor:focus { border-color: #007acc; background: #fff; }
+
+        /* カスタム右クリックメニュー */
+        #formatMenu {
+            display: none; position: fixed; background: #ffffff; border: 1px solid #ccc;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); border-radius: 6px; z-index: 10000;
+            padding: 5px 0; min-width: 160px;
+        }
+        .menu-item {
+            padding: 8px 15px; font-size: 0.9rem; color: #333; cursor: pointer;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .menu-item:hover { background: #007acc; color: white; }
+        .menu-sep { border-top: 1px solid #eee; margin: 5px 0; }
+
+        /* ボタン */
+        .btn-save { padding: 8px; margin-top: 10px; background: #444; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+        .btn-save:hover { background: #555; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2><span class="flipped-icon">💦</span><span class="memo-capsule"> ( ..) </span>φメモメモ</h2>
+        <div class="header-desc">
+            装飾機能：範囲を選択して右クリックで変換できます。<span id="global-status" class="save-status">同期中...</span>
+        </div>
+    </div>
+
+    <div class="memo-container">
+        <!-- 左のメモ -->
+        <div class="memo-box">
+            <div class="memo-tab"><span>🇯🇵 日本</span> <span id="status-left" class="save-status"></span></div>
+            <div id="editorLeft" class="editor" contenteditable="true" oninput="triggerAutoSave()"></div>
+            <button class="btn-save" onclick="manualSave()">💾 手動保存</button>
+        </div>
+
+        <!-- 右のメモ -->
+        <div class="memo-box">
+            <div class="memo-tab"><span>メモメモφ<span class="flipped-icon" style="transform:scaleX(1)">💦</span></span> <span id="status-right" class="save-status"></span></div>
+            <div id="editorRight" class="editor" contenteditable="true" oninput="triggerAutoSave()"></div>
+            <button class="btn-save" onclick="manualSave()">💾 手動保存</button>
+        </div>
+    </div>
+
+    <!-- 右クリック装飾メニュー -->
+    <div id="formatMenu">
+        <div class="menu-item" onclick="applyFormat('bold')"><strong>Ｂ 強調</strong> <span>Ctrl+B</span></div>
+        <div class="menu-item" onclick="applyFormat('italic')"><i>Ｉ 斜体</i> <span>Ctrl+I</span></div>
+        <div class="menu-item" onclick="applyFormat('strikeThrough')"><s>Ｓ 斜線</s></div>
+        <div class="menu-sep"></div>
+        <div class="menu-item" onclick="applyFormat('foreColor', '#d93025')"><span style="color:#d93025">■ 赤文字</span></div>
+        <div class="menu-item" onclick="applyFormat('foreColor', '#1a73e8')"><span style="color:#1a73e8">■ 青文字</span></div>
+        <div class="menu-item" onclick="applyFormat('foreColor', '#333333')"><span>■ 元の色に戻す</span></div>
+        <div class="menu-sep"></div>
+        <div class="menu-item" onclick="applyFormat('removeFormat')">🧹 全ての装飾を解除</div>
+    </div>
+
+    <script>
+        const GITHUB_CONFIG = { owner: "KeiAppLab", repo: "KeiAppLab", path: "admin_memo.json" };
+        let currentSha = null;
+        let autoSaveTimer = null;
+
+        // 1. 文字装飾の実行
+        function applyFormat(command, value = null) {
+            document.execCommand(command, false, value);
+            hideMenu();
+            triggerAutoSave();
+        }
+
+        // 2. 右クリックメニューの制御
+        const editors = document.querySelectorAll('.editor');
+        const menu = document.getElementById('formatMenu');
+
+        editors.forEach(ed => {
+            ed.addEventListener('contextmenu', e => {
+                e.preventDefault();
+                menu.style.display = 'block';
+                menu.style.left = e.clientX + 'px';
+                menu.style.top = e.clientY + 'px';
+            });
+        });
+
+        function hideMenu() { menu.style.display = 'none'; }
+        window.addEventListener('click', hideMenu);
+        menu.addEventListener('mouseleave', hideMenu);
+
+        // 3. GitHubとの通信（読み込み）
+        async function loadMemo() {
+            const token = localStorage.getItem("gh_token");
+            if (!token) return;
+            try {
+                const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}?t=${Date.now()}`, {
+                    headers: { Authorization: `token ${token}` }, cache: 'no-store'
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    currentSha = data.sha;
+                    const content = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+                    document.getElementById('editorLeft').innerHTML = content.left || "";
+                    document.getElementById('editorRight').innerHTML = content.right || "";
+                    updateStatus("同期済み", "saved");
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        // 4. GitHubへ保存
+        async function saveMemo(isAuto = false) {
+            const token = localStorage.getItem("gh_token");
+            if (!token) return;
+
+            updateStatus("保存中...", "saving");
+
+            const content = {
+                left: document.getElementById('editorLeft').innerHTML,
+                right: document.getElementById('editorRight').innerHTML
+            };
+            const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(content, null, 4))));
+
+            try {
+                // SHAの再取得（競合防止）
+                const getRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`, {
+                    headers: { Authorization: `token ${token}` }, cache: 'no-store'
+                });
+                const sha = (await getRes.json()).sha;
+
+                const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`, {
+                    method: "PUT",
+                    headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: "Update admin_memo.json", content: encoded, sha: sha })
+                });
+
+                if (res.ok) updateStatus("クラウドに保存済", "saved");
+            } catch (e) { updateStatus("保存失敗", ""); }
+        }
+
+        function triggerAutoSave() {
+            updateStatus("編集中...", "");
+            if (autoSaveTimer) clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(() => saveMemo(true), 3000);
+        }
+
+        function manualSave() { saveMemo(false); }
+
+        function updateStatus(msg, cls) {
+            const statusEls = [document.getElementById('status-left'), document.getElementById('status-right'), document.getElementById('global-status')];
+            statusEls.forEach(el => { if(el){ el.textContent = msg; el.className = "save-status " + cls; } });
+        }
+
+        window.addEventListener('load', loadMemo);
+    </script>
+</body>
+</html>
