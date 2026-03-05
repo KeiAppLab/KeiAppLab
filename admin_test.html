@@ -981,7 +981,8 @@
                 
                 currentProjectId = data.project_id;
                 updatePreview();
-                checkProjectImages(data.project_id);
+                // ▼ 最新の画像取得関数を呼び出す ▼
+                fetchAndRenderImages(); 
                 checkProjectUrl(data.project_id);
             }
             
@@ -993,11 +994,12 @@
                 if(!val) { 
                     clearFieldsExcept('inProject');
                     document.getElementById('inDate').value = getTodayString();
-                    document.getElementById('lastEditDatePop').style.display = "none"; // ★追加: POPを消す
+                    document.getElementById('lastEditDatePop').style.display = "none"; 
                     currentProjectId = "";
                     setImageValue("");
-                    initImageSelector(); // 画像リストをデフォルトに戻す
-                    checkProjectUrl(""); // iframeプレビューを非表示に戻す
+                    // ▼ 修正: 1つ目 ▼
+                    fetchAndRenderImages();
+                    checkProjectUrl(""); 
                     updatePreview(); 
                     return; 
                 }
@@ -1005,23 +1007,20 @@
                 if (typeof adminMasterData !== 'undefined') {
                     const post = adminMasterData.find(p => p.project_ja === val);
                     if (post) {
-                        // 履歴と完全に一致すれば、そのデータを自動入力
                         fillForm(post);
                     } else {
-                        // 履歴に存在しない文字が打たれた場合 =「新規作成」と判断して他をクリア
+                        // 新規作成と判断して他をクリア
                         clearFieldsExcept('inProject');
                         document.getElementById('inDate').value = getTodayString();
-                        document.getElementById('lastEditDatePop').style.display = "none"; // ★追加: POPを消す
+                        document.getElementById('lastEditDatePop').style.display = "none";
                         currentProjectId = "";
                         setImageValue("");
-                        initImageSelector();
+                        // ▼ 修正: 2つ目 ▼
+                        fetchAndRenderImages();
                         checkProjectUrl(""); 
                     }
                 }
                 updatePreview();
-            
-                // ▼▼▼ プロジェクト名が変わった時だけ、そのプロジェクト用の画像を裏で読み込み直す ▼▼▼
-                fetchAndRenderImages();
             }
     
             // 特定のID以外の言語フィールドを空にする関数
@@ -1042,8 +1041,13 @@
                 const enName = this.value.trim();
                 if (enName) {
                     currentProjectId = enName.replace(/\s+/g, '_').toLowerCase();
-                    await checkProjectImages(currentProjectId);
+                    // ▼ 修正: 最新の画像取得関数を呼び出す ▼
+                    fetchAndRenderImages(); 
                     checkProjectUrl(currentProjectId);
+                } else {
+                    // ▼ 英語名が空になったらIDをリセットして画像を更新 ▼
+                    currentProjectId = "";
+                    fetchAndRenderImages();
                 }
                 updatePreview();
             });
