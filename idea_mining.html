@@ -443,4 +443,100 @@
         // --- 削除承認ワークフロー ---
         function handleDeleteClick(id) {
             const item = ideaData.find(d => d.id == id);
-            if (!item.delete_votes) item.delete_votes =
+            if (!item.delete_votes) item.delete_votes = [];
+            
+            const isExecutive = EXECUTIVES.includes(currentUser);
+            const isAuthor = (currentUser === item.author);
+
+            // 1. 投票（トグル動作）
+            if (item.delete_votes.includes(currentUser)) {
+                // すでに自分が押していたら、取り消す
+                item.delete_votes = item.delete_votes.filter(u => u !== currentUser);
+            } else {
+                // 自分が権限者（発案者または役員）なら投票を追加
+                if (isAuthor || isExecutive) {
+                    item.delete_votes.push(currentUser);
+                } else {
+                    alert("権限エラー：このプロジェクトの削除に関わる権限がありません。");
+                    return;
+                }
+            }
+
+            // 2. 実行判定（役員が2名揃ったかチェック）
+            const execVotes = item.delete_votes.filter(v => EXECUTIVES.includes(v));
+            
+            if (execVotes.length >= 2) {
+                // 役員2名の承認が揃った！
+                if (confirm("【最終確認】\n代表・副代表の2名の承認が揃いました。このプロジェクト案を完全に削除しますか？")) {
+                    ideaData = ideaData.filter(d => d.id !== id); // 配列から削除
+                    alert("プロジェクト案を削除しました。同期を開始します。");
+                    renderCards();
+                    saveToGitHub(); // 即時保存
+                    return;
+                }
+            }
+
+            // まだ揃っていない場合は描画更新のみ
+            renderCards();
+            triggerAutoSave();
+        }
+
+        // --- 右クリックメニューの制御 (admin_memo.html の進化版) ---
+        function setupContextMenu(editor) {
+            const menu = document.getElementById('formatMenu');
+
+            editor.addEventListener('contextmenu', e => {
+                e.preventDefault();
+                menu.style.display = 'block';
+
+                let posX = e.clientX - 8;
+                let posY = e.clientY - 8;
+
+                const menuWidth = menu.offsetWidth;
+                const menuHeight = menu.offsetHeight;
+                const windowWidth = window.innerWidth;
+                const windowHeight = window.innerHeight;
+
+                if (posX + menuWidth > windowWidth) posX = windowWidth - menuWidth - 10;
+                if (posY + menuHeight > windowHeight) posY = windowHeight - menuHeight - 10;
+                if (posX < 0) posX = 10;
+                if (posY < 0) posY = 10;
+
+                menu.style.left = posX + 'px';
+                menu.style.top = posY + 'px';
+            });
+        }
+
+        // メニューを消す
+        window.addEventListener('click', () => {
+            document.getElementById('formatMenu').style.display = 'none';
+        });
+
+        // 装飾の実行
+        function applyFormat(command, value = null) {
+            document.execCommand(command, false, value);
+            triggerAutoSave();
+        }
+
+        // コピペの実行
+        async function execCmd(action) {
+            try {
+                if (action === 'copy') {
+                    document.execCommand('copy');
+                } else if (action === 'paste') {
+                    const text = await navigator.clipboard.readText();
+                    // 貼り付ける際も50文字制限を適用
+                    if (text.length >= 50) {
+                        alert("⚠️ 50文字を超えるテキストの貼り付けは制限されています。");
+                        return;
+                    }
+                    document.execCommand('insertText', false, text);
+                }
+                triggerAutoSave();
+            } catch (err) {
+                alert("ブラウザの制限により実行できません。ショートカットキーを使用してください。");
+            }
+        }
+    </script>
+</body>
+</html>
