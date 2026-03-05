@@ -32,8 +32,8 @@
             letter-spacing: -2px; /* 全体的に文字間を少し詰める */
         }
         /* 個別の引き寄せ設定 */
-        .pull-right { margin-right: -4px; } /* 右側を次の文字に近づける */
-        .pull-left { margin-left: -4px; }   /* 左側を前の文字に近づける */
+        .pull-right { margin-right: -10px; } /* 右側を次の文字に近づける */
+        .pull-left { margin-left: -10px; }   /* 左側を前の文字に近づける */
         /* カプセル内の目(..)のフォントと隙間 */
         .memo-face-tight {
             font-family: 'Roboto', sans-serif;
@@ -98,7 +98,7 @@
         <!-- 右のメモ -->
         <div class="memo-box">
             <div class="memo-tab"><span class="tight-wrapper">
-        <span class="flipped-icon pull-right">💦</span> <span class="pull-right">φ(.. )メモメモ</span> <span id="status-left" class="save-status"></span></div>
+        <span class="flipped-icon pull-right">💦</span> <span class="pull-right">φ(.. )メモメモ</span> <span id="status-right" class="save-status"></span></div>
             <div id="editorRight" class="editor" contenteditable="true" oninput="triggerAutoSave()"></div>
             <button class="btn-save" onclick="manualSave()">💾 手動保存</button>
         </div>
