@@ -29,10 +29,10 @@
         .tight-wrapper {
             display: inline-flex;
             align-items: center;
-            letter-spacing: -2px; /* 全体的に文字間を少し詰める */
+            letter-spacing: 2px; /* 全体的に文字間を少し詰める */
         }
         /* 個別の引き寄せ設定 */
-        .pull-right { margin-right: -10px; } /* 右側を次の文字に近づける */
+        .pull-right { margin-right: 10px; } /* 右側を次の文字に近づける */
         .pull-left { margin-left: -10px; }   /* 左側を前の文字に近づける */
         /* カプセル内の目(..)のフォントと隙間 */
         .memo-face-tight {
@@ -81,24 +81,32 @@
 <body>
 
     <div class="header">
-        <h2><span class="flipped-icon">💦</span><span class="memo-capsule">(   ..)</span>φメモメモ</h2>
+        <h2><span class="flipped-icon">💦</span><span class="memo-capsule">(  ..)</span>φメモメモ</h2>
         <div class="header-desc">
             装飾機能：範囲を選択して右クリックで変換できます。<span id="global-status" class="save-status">同期中...</span>
         </div>
     </div>
 
     <div class="memo-container">
-        <!-- 左のメモ -->
+        <!-- 左のメモ：提示されたシンプルな形式を維持 -->
         <div class="memo-box">
-            <div class="memo-tab"><span>メモメモ( ..)φ💦</span> <span id="status-left" class="save-status"></span></div>
+            <div class="memo-tab">
+                <span>メモメモ( ..)φ💦</span> 
+                <span id="status-left" class="save-status"></span>
+            </div>
             <div id="editorLeft" class="editor" contenteditable="true" oninput="triggerAutoSave()"></div>
             <button class="btn-save" onclick="manualSave()">💾 手動保存</button>
         </div>
 
-        <!-- 右のメモ -->
+        <!-- 右のメモ：一塊のまま、カプセル化 -->
         <div class="memo-box">
-            <div class="memo-tab"><span class="tight-wrapper">
-        <span class="flipped-icon pull-right">💦</span> <span class="pull-right">φ(.. )メモメモ</span> <span id="status-right" class="save-status"></span></div>
+            <div class="memo-tab">
+                <span>
+                    <span class="flipped-icon">💦</span>
+                    φ<span class="memo-face-capsule">(.. )</span>メモメモ
+                </span>
+                <span id="status-right" class="save-status"></span>
+            </div>
             <div id="editorRight" class="editor" contenteditable="true" oninput="triggerAutoSave()"></div>
             <button class="btn-save" onclick="manualSave()">💾 手動保存</button>
         </div>
