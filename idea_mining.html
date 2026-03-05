@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>みんなの！原石Project大発掘会議</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700;900&family=Roboto:wght@400;700;900&display=swap');
+
+        /* --- 基本設定 --- */
+        body {
+            margin: 0; padding: 0; font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: #2c3e50; color: #333; overflow-x: hidden;
+            /* メモフォントサイズの一括管理レバー（ここを変えれば全部変わります） */
+            --memo-font-size: 11px; 
+        }
+        *, *::before, *::after { box-sizing: border-box; }
+
+        /* --- ヘッダー（上部固定） --- */
+        .fixed-header {
+            position: fixed; top: 0; left: 0; width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            border-bottom: 2px solid #0056b3;
+            padding: 10px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        /* タイトル部分 */
+        .header-title-wrapper { display: flex; align-items: center; gap: 15px; }
+        .title-block { line-height: 1.1; }
+        .ruby-text { font-size: 0.7rem; color: #e67e22; font-weight: bold; margin-left: 30px; display: block; }
+        .main-text { font-size: 1.4rem; font-weight: 900; color: #333; font-family: 'Noto Serif JP', serif; }
+        .flipped-icon { display: inline-block; transform: scaleX(-1); }
+        .purpose-text { font-size: 0.85rem; color: #666; max-width: 400px; line-height: 1.3; }
+
+        /* 右側コントロール部分 */
+        .header-controls { display: flex; align-items: center; gap: 15px; }
+        .save-status { font-size: 0.85rem; font-weight: bold; color: #27ae60; }
+        .save-status.saving { color: #e67e22; }
+        
+        .btn-add {
+            background: linear-gradient(135deg, #d4af37, #f3e5ab, #d4af37);
+            color: #333; border: 1px solid #b8860b; padding: 8px 20px;
+            border-radius: 25px; font-weight: 900; cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2); transition: all 0.2s;
+        }
+        .btn-add:hover { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(0,0,0,0.3); }
+
+        /* --- メインエリア（余白ゼロでカードを敷き詰める） --- */
+        .main-container {
+            margin-top: 70px; /* ヘッダーの高さ分下げる */
+            padding: 20px;
+            display: flex; flex-wrap: wrap; gap: 20px;
+            justify-content: flex-start;
+        }
+
+        /* --- メモカード（600px固定・6色ループ） --- */
+        .memo-card {
+            width: calc(33.333% - 14px); /* 横3列 */
+            height: 600px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            display: flex; flex-direction: column;
+            overflow: hidden; border: 1px solid rgba(0,0,0,0.1);
+            position: relative;
+        }
+        /* 6色ループ設定（極めて淡い色） */
+        .memo-card:nth-child(6n+1) { background: #fff5e6; } /* 淡オレンジ */
+        .memo-card:nth-child(6n+2) { background: #e6f2ff; } /* 淡ブルー */
+        .memo-card:nth-child(6n+3) { background: #e6ffe6; } /* 淡グリーン */
+        .memo-card:nth-child(6n+4) { background: #ffffe6; } /* 淡イエロー */
+        .memo-card:nth-child(6n+5) { background: #ffe6f2; } /* 淡ピンク */
+        .memo-card:nth-child(6n+6) { background: #f0f0f0; } /* ベージュグレー */
+
+        /* --- タブ（ヘッダー部分） --- */
+        .card-tab {
+            background: rgba(255,255,255,0.5);
+            padding: 8px 12px; border-bottom: 1px solid rgba(0,0,0,0.1);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .tab-left { display: flex; align-items: baseline; gap: 10px; width: 60%; }
+        .card-title {
+            font-size: 1.1rem; font-weight: 900; color: #333;
+            border: none; background: transparent; outline: none;
+            width: 100%; cursor: text;
+        }
+        .card-title:focus { border-bottom: 1px dashed #0056b3; }
+        .card-date { font-size: 0.7rem; color: #888; white-space: nowrap; }
+
+        /* --- ツール・操作エリア（いいね・ゴミ箱） --- */
+        .tab-right { display: flex; align-items: center; gap: 8px; }
+        .author-id { font-size: 0.65rem; color: #666; background: rgba(0,0,0,0.05); padding: 2px 6px; border-radius: 10px; }
+
+        /* いいねボタンデザイン */
+        .like-container { display: flex; align-items: center; cursor: pointer; user-select: none; }
+        .like-icon-wrap { position: relative; width: 24px; height: 24px; display: flex; justify-content: center; align-items: center; }
+        .like-heart { font-size: 1.2rem; transition: transform 0.2s; }
+        .like-text {
+            position: absolute; top: -2px; right: -8px;
+            color: #d93025; font-size: 8px; font-weight: 900;
+            transform: rotate(40deg); text-shadow: 1px 1px 0 #fff, -1px -1px 0 #fff;
+        }
+        .like-counter { background: #fff; border: 1px solid #ccc; font-size: 0.75rem; padding: 1px 6px; border-radius: 10px; margin-left: 2px; font-weight: bold; }
+        .like-container:hover .like-heart { transform: scale(1.2); }
+
+        /* ゴミ箱承認ボタン */
+        .trash-btn {
+            font-size: 1.2rem; cursor: pointer; user-select: none;
+            position: relative; display: flex; justify-content: center; align-items: center;
+            width: 28px; height: 28px; border-radius: 4px; transition: 0.2s;
+        }
+        .trash-btn:hover { background: rgba(0,0,0,0.1); }
+        .trash-status {
+            position: absolute; bottom: -10px; right: -5px;
+            background: #fff; border: 1px solid #333; font-size: 8px; font-weight: 900;
+            padding: 0 3px; border-radius: 3px; white-space: nowrap; box-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        /* --- エディタ部分 --- */
+        .card-editor {
+            flex-grow: 1; padding: 15px; overflow-y: auto;
+            font-size: var(--memo-font-size); line-height: 1.6; color: #333;
+            outline: none; white-space: pre-wrap;
+        }
+
+        /* --- スクロールアニメーション（3列ごと） --- */
+        .scroll-divider {
+            width: 100%; display: flex; justify-content: center; padding: 20px 0;
+            opacity: 0.6; pointer-events: none;
+        }
+        .arrow-cascade span {
+            display: block; width: 15px; height: 15px;
+            border-bottom: 3px solid #fff; border-right: 3px solid #fff;
+            transform: rotate(45deg); margin: -5px; animation: cascade 2s infinite;
+        }
+        .arrow-cascade span:nth-child(2) { animation-delay: 0.2s; }
+        .arrow-cascade span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes cascade { 0% { opacity: 0; transform: rotate(45deg) translate(-5px, -5px); } 50% { opacity: 1; } 100% { opacity: 0; transform: rotate(45deg) translate(5px, 5px); } }
+
+        /* --- トップへ戻るボタン --- */
+        .back-to-top {
+            position: fixed; bottom: 30px; right: 30px; width: 50px; height: 50px;
+            background: #0056b3; border-radius: 10px; display: flex; justify-content: center; align-items: center;
+            cursor: pointer; opacity: 0; visibility: hidden; transition: 0.3s; z-index: 9000;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .back-to-top.show { opacity: 1; visibility: visible; }
+        .back-to-top:hover { background: #003d82; transform: translateY(-3px); }
+
+        /* カスタム右クリックメニュー (太字・コピペ専用) */
+        #formatMenu {
+            display: none; position: fixed; background: #ffffff; border: 1px solid #ccc;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); border-radius: 6px; z-index: 10000; padding: 5px 0; min-width: 140px;
+        }
+        .menu-item { padding: 8px 15px; font-size: 0.9rem; color: #333; cursor: pointer; display: flex; justify-content: space-between; }
+        .menu-item:hover { background: #007acc; color: white; }
+        .menu-sep { border-top: 1px solid #eee; margin: 5px 0; }
+        
+        /* 保護用オーバーレイ */
+        #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #2c3e50; z-index: 9999; display: flex; justify-content: center; align-items: center; color: white; font-weight: bold; font-size: 1.5rem; }
+    </style>
+</head>
+<body>
+
+    <div id="loadingOverlay">GitHubと通信中...お待ちください</div>
+
+    <!-- ヘッダー -->
+    <div class="fixed-header">
+        <div class="header-title-wrapper">
+            <div class="title-block">
+                <span class="ruby-text">みんなの！</span>
+                <span class="main-text"><span class="flipped-icon">💭</span> 原石Project大発掘会議</span>
+            </div>
+            <div class="purpose-text">ここは未来のプロダクトの種を共有し、磨き上げるブレインストーミングの場です。<br>太字装飾は右クリックから。</div>
+        </div>
+        <div class="header-controls">
+            <span id="globalStatus" class="save-status">同期済み</span>
+            <button class="btn-add" onclick="addNewCard()">🌟 ＋プロジェクト案の追加</button>
+        </div>
+    </div>
+
+    <!-- メインエリア -->
+    <div class="main-container" id="cardsContainer">
+        <!-- JSでここにカードが生成されます -->
+    </div>
+
+    <!-- 右クリックメニュー -->
+    <div id="formatMenu">
+        <div class="menu-item" onclick="applyFormat('bold')"><strong>Ｂ 太字</strong> <span>Ctrl+B</span></div>
+        <div class="menu-sep"></div>
+        <div class="menu-item" onclick="execCmd('copy')">📋 コピー <span>Ctrl+C</span></div>
+        <div class="menu-item" onclick="execCmd('paste')">📄 貼り付け <span>Ctrl+V</span></div>
+    </div>
+
+    <!-- トップへ戻るボタン -->
+    <div id="backToTop" class="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="21" x2="12" y2="8"></line><polyline points="5 15 12 8 19 15"></polyline><line x1="5" y1="2" x2="19" y2="2"></line>
+        </svg>
+    </div>
+
+    <script>
+        // --- 設定と権限定義 ---
+        const GITHUB_CONFIG = { owner: "KeiAppLab", repo: "KeiAppLab", path: "idea_mining.json" };
+        const EXECUTIVES = ["Ksansansan", "papa-chan"]; // 代表・副代表のID
+        
+        let currentUser = "";
+        let currentSha = null;
+        let ideaData =[];
+        let autoSaveTimer = null;
+
+        // --- 初期化処理 ---
+        window.addEventListener('load', async () => {
+            const token = localStorage.getItem("gh_token");
+            if (!token) { alert("admin.html で先にログインしてください。"); return; }
+            
+            try {
+                // 自分自身のGitHub IDを取得
+                const userRes = await fetch("https://api.github.com/user", { headers: { Authorization: `token ${token}` }});
+                const userData = await userRes.json();
+                currentUser = userData.login;
+                
+                await loadData();
+                document.getElementById('loadingOverlay').style.display = 'none';
+            } catch (err) {
+                alert("認証エラーが発生しました。");
+            }
+        });
+
+        // スクロール監視（トップへ戻るボタン表示）
+        window.addEventListener('scroll', () => {
+            const btn = document.getElementById('backToTop');
+            if (window.scrollY > 300) btn.classList.add('show');
+            else btn.classList.remove('show');
+        });
+
+        // --- データ読み込み ---
+        async function loadData() {
+            const token = localStorage.getItem("gh_token");
+            try {
+                const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}?t=${Date.now()}`, {
+                    headers: { Authorization: `token ${token}` }, cache: 'no-store'
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    currentSha = data.sha;
+                    const content = decodeURIComponent(escape(atob(data.content)));
+                    ideaData = JSON.parse(content);
+                } else { ideaData =[]; }
+                renderCards();
+            } catch(e) { console.error(e); ideaData =[]; renderCards(); }
+        }
+
+        // --- オートセーブ（保存）処理 ---
+        async function triggerAutoSave() {
+            document.getElementById('globalStatus').textContent = "編集中...";
+            document.getElementById('globalStatus').className = "save-status saving";
+            if (autoSaveTimer) clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(() => saveToGitHub(), 3000);
+        }
+
+        async function saveToGitHub() {
+            const token = localStorage.getItem("gh_token");
+            document.getElementById('globalStatus').textContent = "保存中...";
+            
+            // 画面の入力内容をデータに反映
+            document.querySelectorAll('.memo-card').forEach(card => {
+                const id = card.getAttribute('data-id');
+                const title = card.querySelector('.card-title').value;
+                const content = card.querySelector('.card-editor').innerHTML;
+                const item = ideaData.find(d => d.id == id);
+                if (item) { item.title = title; item.content = content; }
+            });
+
+            const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(ideaData, null, 4))));
+
+            try {
+                // SHA再取得（競合回避）
+                const getRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}?t=${Date.now()}`, { headers: { Authorization: `token ${token}` }, cache: 'no-store' });
+                if (getRes.ok) currentSha = (await getRes.json()).sha;
+
+                const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`, {
+                    method: "PUT",
+                    headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: "Auto update idea_mining.json", content: encoded, sha: currentSha })
+                });
+
+                if (res.ok) {
+                    currentSha = (await res.json()).content.sha;
+                    document.getElementById('globalStatus').textContent = "同期済み";
+                    document.getElementById('globalStatus').className = "save-status";
+                }
+            } catch (e) { document.getElementById('globalStatus').textContent = "保存失敗"; }
+        }
+
+        // --- 新規追加 ---
+        function addNewCard() {
+            const now = new Date();
+            const dateStr = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
+            
+            const newItem = {
+                id: Date.now(),
+                date: dateStr,
+                title: "新しいプロジェクト案",
+                author: currentUser,
+                content: "",
+                likes: [],
+                delete_votes:[]
+            };
+            // 先頭に追加
+            ideaData.unshift(newItem);
+            renderCards();
+            triggerAutoSave(); // すぐ保存
+        }
+
+        // --- 描画処理 ---
+        function renderCards() {
+            const container = document.getElementById('cardsContainer');
+            container.innerHTML = '';
+
+            ideaData.forEach((item, index) => {
+                // 3の倍数のあとにスクロールアニメーションを挿入
+                if (index > 0 && index % 3 === 0) {
+                    const divider = document.createElement('div');
+                    divider.className = 'scroll-divider';
+                    divider.innerHTML = '<div class="arrow-cascade"><span></span><span></span><span></span></div>';
+                    container.appendChild(divider);
+                }
+
+                // 承認フロー（ステートマシン）の表示計算
+                let trashIcon = '🗑️';
+                let trashStatus = '';
+                let trashColor = '#666';
+                
+                const votes = item.delete_votes ||[];
+                const isAuthor = (currentUser === item.author);
+                const isExecutive = EXECUTIVES.includes(currentUser);
+
+                // 状態判定
+                if (votes.length > 0) {
+                    const hasAuthorVote = votes.includes(item.author);
+                    const execVotes = votes.filter(v => EXECUTIVES.includes(v)).length;
+
+                    if (hasAuthorVote && execVotes === 0) {
+                        trashIcon = '🟡'; trashStatus = '申請中';
+                    } else if (!hasAuthorVote && execVotes === 1) {
+                        trashIcon = '✂️'; trashStatus = '強制1/2'; trashColor = 'orange';
+                    } else if (hasAuthorVote && execVotes === 1) {
+                        trashIcon = '🔴'; trashStatus = '承認1/2'; trashColor = 'red';
+                    } else if (execVotes >= 2) {
+                        // 実際には役員2名揃うとデータが消えるのでここは表示されない
+                    }
+                }
+
+                // いいね計算
+                const likes = item.likes ||[];
+                const isLiked = likes.includes(currentUser);
+                const heartIcon = isLiked ? '❤️' : '🤍';
+
+                const card = document.createElement('div');
+                card.className = 'memo-card';
+                card.setAttribute('data-id', item.id);
+
+                card.innerHTML = `
+                    <div class="card-tab">
+                        <div class="tab-left">
+                            <input type="text" class="card-title" value="${item.title}" oninput="triggerAutoSave()">
+                            <span class="card-date">${item.date}</span>
+                        </div>
+                        <div class="tab-right">
+                            <div class="author-id">${item.author}</div>
+                            
+                            <div class="like-container" onclick="toggleLike(${item.id})">
+                                <div class="like-icon-wrap">
+                                    <span class="like-heart">${heartIcon}</span>
+                                    <span class="like-text">いいね</span>
+                                </div>
+                                <div class="like-counter">${likes.length}</div>
+                            </div>
+                            
+                            <div class="trash-btn" onclick="handleDeleteClick(${item.id})" style="color:${trashColor};" title="削除ワークフロー">
+                                ${trashIcon}
+                                ${trashStatus ? `<span class="trash-status" style="color:${trashColor}">${trashStatus}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-editor" contenteditable="true" oninput="triggerAutoSave()">${item.content}</div>
+                `;
+                container.appendChild(card);
+
+                // 50文字制限・右クリックイベントの付与
+                const editor = card.querySelector('.card-editor');
+                setupEditorSecurity(editor);
+                setupContextMenu(editor);
+            });
+        }
+
+        // --- 50文字削除制限の鉄壁ガード ---
+        function setupEditorSecurity(editor) {
+            // キーボード（Backspace / Delete）
+            editor.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' || e.key === 'Delete') {
+                    const sel = window.getSelection();
+                    if (sel.toString().length >= 50) {
+                        e.preventDefault();
+                        alert("⚠️ 安全装置：一度に50文字以上の削除は制限されています。");
+                    }
+                }
+            });
+            // 切り取り（Ctrl+X）
+            editor.addEventListener('cut', (e) => {
+                const sel = window.getSelection();
+                if (sel.toString().length >= 50) {
+                    e.preventDefault();
+                    alert("⚠️ 安全装置：50文字以上の切り取りは制限されています。");
+                }
+            });
+            // ペースト上書き
+            editor.addEventListener('paste', (e) => {
+                const sel = window.getSelection();
+                if (sel.toString().length >= 50) {
+                    e.preventDefault();
+                    alert("⚠️ 安全装置：50文字以上の文字を上書きして消すことはできません。");
+                }
+            });
+        }
+
+        // --- いいねトグル ---
+        function toggleLike(id) {
+            const item = ideaData.find(d => d.id == id);
+            if (!item.likes) item.likes =[];
+            
+            if (item.likes.includes(currentUser)) {
+                item.likes = item.likes.filter(u => u !== currentUser); // 外す
+            } else {
+                item.likes.push(currentUser); // 付ける
+            }
+            renderCards();
+            triggerAutoSave();
+        }
+
+        // --- 削除承認ワークフロー ---
+        function handleDeleteClick(id) {
+            const item = ideaData.find(d => d.id == id);
+            if (!item.delete_votes) item.delete_votes =
