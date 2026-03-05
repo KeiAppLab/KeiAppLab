@@ -23,7 +23,7 @@
             display: inline-block; /* 必須：これがないと反転も移動もできません */
             transform: scaleX(-1); 
             vertical-align: middle;
-            margin-right: -10px; /* ▼ 修正：数値を大きくして、さらに強く引き寄せます ▼ */
+            margin-right: -5px; /* ▼ 修正：数値を大きくして、さらに強く引き寄せます ▼ */
             position: relative; /* 念のため、文字と重なりすぎないよう少し位置を微調整 */
             top: -1px;
         }
@@ -31,10 +31,10 @@
         .tight-wrapper {
             display: inline-flex;
             align-items: center;
-            letter-spacing: 2px; /* 全体的に文字間を少し詰める */
+            letter-spacing: 0px; /* 全体的に文字間を少し詰める */
         }
         /* 個別の引き寄せ設定 */
-        .pull-right { margin-right: -1px; } /* 右側を次の文字に近づける */
+        .pull-right { margin-right: -5px; } /* 右側を次の文字に近づける */
         .pull-left { margin-left: -1px; }   /* 左側を前の文字に近づける */
         /* カプセル内の目(..)のフォントと隙間 */
         .memo-face-tight {
@@ -104,8 +104,7 @@
         <div class="memo-box">
             <div class="memo-tab">
                 <span>
-                    <span class="flipped-icon">💦</span>
-                    φ<span class="memo-face-capsule">(.. )</span>メモメモ
+                    <span class="flipped-icon">💦</span>φ<span class="memo-face-capsule">(.. )</span>メモメモ
                 </span>
                 <span id="status-right" class="save-status"></span>
             </div>
