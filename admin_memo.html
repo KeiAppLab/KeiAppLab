@@ -18,54 +18,47 @@
         .header h2 { margin: 0; color: #fff; font-size: 1.3rem; display: flex; align-items: center; }
         .header-desc { margin-left: 20px; color: #aaa; font-size: 0.85rem; }
 
-        /* --- アイコンと文字の引き寄せ設定 --- */
+        /* --- アイコンと文字の引き寄せ設定（整理版） --- */
         .flipped-icon { 
-            display: inline-block; /* 必須：これがないと反転も移動もできません */
+            display: inline-block; 
             transform: scaleX(-1); 
             vertical-align: middle;
-            margin-right: -5px; /* ▼ 修正：数値を大きくして、さらに強く引き寄せます ▼ */
         }
-        /* 顔文字と記号の隙間を詰めるクラス */
-        .tight-wrapper {
-            display: inline-flex;
-            align-items: center;
-            letter-spacing: 5px; /* 全体的に文字間を少し詰める */
-        }
-        /* 個別の引き寄せ設定 */
-        .pull-right { margin-right: 10px; } /* 右側を次の文字に近づける */
-        .pull-left { margin-left: 10px; }   /* 左側を前の文字に近づける */
-        /* カプセル内の目(..)のフォントと隙間 */
+
+        /* カプセル内の目(..)のフォント */
         .memo-face-tight {
             font-family: 'Roboto', sans-serif;
             letter-spacing: -1px; /* 点同士を近づける */
-            padding: 0 1px;
         }
+
         /* --- 顔文字(.. )を包むメタルカプセル（3D・テカリ仕様） --- */
-        .memo-face-capsule {
+        .metal-capsule {
             display: inline-block;
             line-height: 1.2;
             vertical-align: middle;
             font-family: 'Roboto', sans-serif;
-            letter-spacing: -1px;
             font-weight: bold;
-            padding: 0 6px;
             border-radius: 12px;
-            margin-left: -2px;
-            color: #333; /* 文字色は濃いグレーで引き締める */
-
-            /* ▼▼▼ メタル質感の魔法 ▼▼▼ */
-            background: 
-                /* 右上のテカリ（ハイライト） */
-                radial-gradient(circle at 80% 20%, rgba(255,255,255,0.8) 0%, transparent 40%),
-                /* メタリックな反射のグラデーション */
-                linear-gradient(135deg, #ffffff 0%, #e0e0e0 30%, #b0b0b0 50%, #888 70%, #d0d0d0 100%);
-            /* 立体感を出す影（外側の影と、内側の押し出し感） */
+            color: #333;
             box-shadow: 
-                2px 2px 4px rgba(0,0,0,0.4),            /* 外側の斜め右下の影 */
-                inset 1px 1px 1px rgba(255,255,255,0.9), /* 内側上部のエッジ（光） */
-                inset -1px -1px 1px rgba(0,0,0,0.3);    /* 内側下部のエッジ（影） */
-            border: 1px solid #999; /* 境界線を細く入れてより金属らしく */
-            margin-left: -50px;/* ▼ 追加：φとの距離も少しだけ詰めたい場合はこれ ▼ */
+                2px 2px 4px rgba(0,0,0,0.4),            
+                inset 1px 1px 1px rgba(255,255,255,0.9), 
+                inset -1px -1px 1px rgba(0,0,0,0.3);    
+        }
+        /* 1. ノーマルメタル（上ヘッダー用） */
+        .metal-normal {
+            border: 1px solid #999;
+            background: radial-gradient(circle at 80% 20%, rgba(255,255,255,0.9) 0%, transparent 40%), linear-gradient(135deg, #ffffff 0%, #e0e0e0 30%, #b0b0b0 50%, #888 70%, #d0d0d0 100%);
+        }
+        /* 2. ほんのり赤みメタル（左メモ用） */
+        .metal-red {
+            border: 1px solid #a89090;
+            background: radial-gradient(circle at 80% 20%, rgba(255,255,255,0.9) 0%, transparent 40%), linear-gradient(135deg, #fff2f2 0%, #e6d8d8 30%, #bcaaaa 50%, #998585 70%, #d8caca 100%);
+        }
+        /* 3. ほんのり水色メタル（右メモ用） */
+        .metal-blue {
+            border: 1px solid #8fa2ad;
+            background: radial-gradient(circle at 80% 20%, rgba(255,255,255,0.9) 0%, transparent 40%), linear-gradient(135deg, #f2f8ff 0%, #d5e1e6 30%, #a6b9c2 50%, #809299 70%, #c4d4d9 100%);
         }
 
         /* メモエリア（左右分割） */
@@ -107,28 +100,44 @@
 <body>
 
     <div class="header">
-        <h2><span class="flipped-icon">💦</span><span class="memo-capsule">(  ..)</span>φメモメモ</h2>
+        <h2>
+            <!-- ① 💦と(の隙間はここ（margin-right）で調整 -->
+            <span class="flipped-icon" style="margin-right: 4px;">💦</span>
+            <span class="metal-capsule metal-normal" style="padding: 0 4px;">
+                (
+                <!-- ② (と..の隙間はここ（margin-left）で調整 -->
+                <span style="margin-left: 2px; letter-spacing: -1px;">..</span>
+                )
+            </span>
+            <!-- ③ )とφの隙間はここ（margin-left）で調整 -->
+            <span style="margin-left: 2px;">φ</span>メモメモ
+        </h2>
         <div class="header-desc">
             装飾機能：範囲を選択して右クリックで変換できます。<span id="global-status" class="save-status">同期中...</span>
         </div>
     </div>
 
     <div class="memo-container">
-        <!-- 左のメモ：提示されたシンプルな形式を維持 -->
+        <!-- 左のメモ -->
         <div class="memo-box">
             <div class="memo-tab">
-                <span>メモメモ( ..)φ💦</span> 
+                <span>
+                    メモメモ
+                    <!-- (と..の間に隙間を作らないよう、タグを密着させます) -->
+                    <span class="metal-capsule metal-red" style="padding: 0 4px; margin-left: 2px;">(<span class="memo-face-tight">..</span>)</span>
+                    <span style="margin-left: 2px; margin-right: 4px;">φ</span><span class="flipped-icon">💦</span>
+                </span>
                 <span id="status-left" class="save-status"></span>
             </div>
             <div id="editorLeft" class="editor" contenteditable="true" oninput="triggerAutoSave()"></div>
             <button class="btn-save" onclick="manualSave()">💾 手動保存</button>
         </div>
 
-        <!-- 右のメモ：一塊のまま、カプセル化 -->
+        <!-- 右のメモ -->
         <div class="memo-box">
             <div class="memo-tab">
                 <span>
-                    <span class="flipped-icon">💦</span>φ<span class="memo-face-capsule">(.. )</span>メモメモ
+                    <span class="flipped-icon" style="margin-right: 4px;">💦</span><span style="margin-right: 2px;">φ</span><span class="metal-capsule metal-blue" style="padding: 0 4px; margin-right: 2px;">(<span class="memo-face-tight">..</span>)</span>メモメモ
                 </span>
                 <span id="status-right" class="save-status"></span>
             </div>
@@ -139,8 +148,12 @@
 
     <!-- 右クリック装飾メニュー -->
     <div id="formatMenu">
+        <!-- 追加：コピーと貼り付け -->
+        <div class="menu-item" onclick="execCmd('copy')">📋 コピー <span>Ctrl+C</span></div>
+        <div class="menu-item" onclick="execCmd('paste')">📄 貼り付け <span>Ctrl+V</span></div>
+        <div class="menu-sep"></div>
+        
         <div class="menu-item" onclick="applyFormat('bold')"><strong>Ｂ 強調</strong> <span>Ctrl+B</span></div>
-        <div class="menu-item" onclick="applyFormat('italic')"><i>Ｉ 斜体</i> <span>Ctrl+I</span></div>
         <div class="menu-item" onclick="applyFormat('strikeThrough')"><s>Ｓ 斜線</s></div>
         <div class="menu-sep"></div>
         <div class="menu-item" onclick="applyFormat('foreColor', '#d93025')"><span style="color:#d93025">■ 赤文字</span></div>
@@ -155,14 +168,31 @@
         let currentSha = null;
         let autoSaveTimer = null;
 
-        // 1. 文字装飾の実行
+        // 1. 文字装飾・コピー・貼り付けの実行
         function applyFormat(command, value = null) {
             document.execCommand(command, false, value);
             hideMenu();
             triggerAutoSave();
         }
+        
+        // コピー＆ペースト用の関数（ブラウザのセキュリティ制限を回避するため）
+        async function execCmd(action) {
+            hideMenu();
+            try {
+                if (action === 'copy') {
+                    document.execCommand('copy');
+                } else if (action === 'paste') {
+                    // 最新のブラウザでは、直接クリップボードからテキストを読むAPIを使います
+                    const text = await navigator.clipboard.readText();
+                    document.execCommand('insertText', false, text);
+                }
+                triggerAutoSave();
+            } catch (err) {
+                alert("ブラウザのセキュリティにより実行できませんでした。Ctrl+C または Ctrl+V を使用してください。");
+            }
+        }
 
-        // 2. 右クリックメニューの制御
+        // 2. 右クリックメニューの高度な制御
         const editors = document.querySelectorAll('.editor');
         const menu = document.getElementById('formatMenu');
 
@@ -170,8 +200,34 @@
             ed.addEventListener('contextmenu', e => {
                 e.preventDefault();
                 menu.style.display = 'block';
-                menu.style.left = e.clientX + 'px';
-                menu.style.top = e.clientY + 'px';
+
+                // ▼▼▼ 修正：カーソルに被せつつ、画面外へのはみ出しを防ぐ高度な計算 ▼▼▼
+                let posX = e.clientX - 8; // マウスより左へ8px
+                let posY = e.clientY - 8; // マウスより上へ8px
+
+                // メニューの実際の幅と高さを取得
+                const menuWidth = menu.offsetWidth;
+                const menuHeight = menu.offsetHeight;
+
+                // 画面の幅と高さを取得
+                const windowWidth = window.innerWidth;
+                const windowHeight = window.innerHeight;
+
+                // 右側にはみ出す場合、左にずらす
+                if (posX + menuWidth > windowWidth) {
+                    posX = windowWidth - menuWidth - 10;
+                }
+                // 下側にはみ出す場合、上にずらす（画面下に固定されるように見えます）
+                if (posY + menuHeight > windowHeight) {
+                    posY = windowHeight - menuHeight - 10;
+                }
+                // 上や左にはみ出さないための保険
+                if (posX < 0) posX = 10;
+                if (posY < 0) posY = 10;
+
+                menu.style.left = posX + 'px';
+                menu.style.top = posY + 'px';
+                // ▲▲▲ 修正ここまで ▲▲▲
             });
         });
 
