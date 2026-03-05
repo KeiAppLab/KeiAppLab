@@ -23,9 +23,7 @@
             display: inline-block; /* 必須：これがないと反転も移動もできません */
             transform: scaleX(-1); 
             vertical-align: middle;
-            margin-right: -10px; /* ▼ 修正：数値を大きくして、さらに強く引き寄せます ▼ */
-            position: relative; /* 念のため、文字と重なりすぎないよう少し位置を微調整 */
-            top: -1px;
+            margin-right: -5px; /* ▼ 修正：数値を大きくして、さらに強く引き寄せます ▼ */
         }
         /* 顔文字と記号の隙間を詰めるクラス */
         .tight-wrapper {
@@ -34,15 +32,41 @@
             letter-spacing: 5px; /* 全体的に文字間を少し詰める */
         }
         /* 個別の引き寄せ設定 */
-        .pull-right { margin-right: 50px; } /* 右側を次の文字に近づける */
-        .pull-left { margin-left: -10px; }   /* 左側を前の文字に近づける */
+        .pull-right { margin-right: 10px; } /* 右側を次の文字に近づける */
+        .pull-left { margin-left: 10px; }   /* 左側を前の文字に近づける */
         /* カプセル内の目(..)のフォントと隙間 */
         .memo-face-tight {
             font-family: 'Roboto', sans-serif;
             letter-spacing: -1px; /* 点同士を近づける */
             padding: 0 1px;
         }
-        .memo-capsule { background-color: rgba(135, 206, 250, 0.2); border-radius: 11px; padding: 0 4px; margin: 0 5px; display: inline-block; line-height: 1.2; font-family: 'Roboto', sans-serif; font-weight: bold; }
+        /* --- 顔文字(.. )を包むメタルカプセル（3D・テカリ仕様） --- */
+        .memo-face-capsule {
+            display: inline-block;
+            line-height: 1.2;
+            vertical-align: middle;
+            font-family: 'Roboto', sans-serif;
+            letter-spacing: -1px;
+            font-weight: bold;
+            padding: 0 6px;
+            border-radius: 12px;
+            margin-left: -2px;
+            color: #333; /* 文字色は濃いグレーで引き締める */
+
+            /* ▼▼▼ メタル質感の魔法 ▼▼▼ */
+            background: 
+                /* 右上のテカリ（ハイライト） */
+                radial-gradient(circle at 80% 20%, rgba(255,255,255,0.8) 0%, transparent 40%),
+                /* メタリックな反射のグラデーション */
+                linear-gradient(135deg, #ffffff 0%, #e0e0e0 30%, #b0b0b0 50%, #888 70%, #d0d0d0 100%);
+            /* 立体感を出す影（外側の影と、内側の押し出し感） */
+            box-shadow: 
+                2px 2px 4px rgba(0,0,0,0.4),            /* 外側の斜め右下の影 */
+                inset 1px 1px 1px rgba(255,255,255,0.9), /* 内側上部のエッジ（光） */
+                inset -1px -1px 1px rgba(0,0,0,0.3);    /* 内側下部のエッジ（影） */
+            border: 1px solid #999; /* 境界線を細く入れてより金属らしく */
+            margin-left: -50px;/* ▼ 追加：φとの距離も少しだけ詰めたい場合はこれ ▼ */
+        }
 
         /* メモエリア（左右分割） */
         .memo-container { display: flex; gap: 20px; flex-grow: 1; height: calc(100% - 100px); }
