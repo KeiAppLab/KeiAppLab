@@ -22,8 +22,10 @@
         .flipped-icon { 
             display: inline-block; /* 必須：これがないと反転も移動もできません */
             transform: scaleX(-1); 
-            transition: transform 0.2s ease-out;
             vertical-align: middle;
+            margin-right: -10px; /* ▼ 修正：数値を大きくして、さらに強く引き寄せます ▼ */
+            position: relative; /* 念のため、文字と重なりすぎないよう少し位置を微調整 */
+            top: -1px;
         }
         /* 顔文字と記号の隙間を詰めるクラス */
         .tight-wrapper {
@@ -32,8 +34,8 @@
             letter-spacing: 2px; /* 全体的に文字間を少し詰める */
         }
         /* 個別の引き寄せ設定 */
-        .pull-right { margin-right: 10px; } /* 右側を次の文字に近づける */
-        .pull-left { margin-left: -10px; }   /* 左側を前の文字に近づける */
+        .pull-right { margin-right: -1px; } /* 右側を次の文字に近づける */
+        .pull-left { margin-left: -1px; }   /* 左側を前の文字に近づける */
         /* カプセル内の目(..)のフォントと隙間 */
         .memo-face-tight {
             font-family: 'Roboto', sans-serif;
