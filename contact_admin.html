@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>お問い合わせ管理 (Gmail連携)</title>
+    <style>
+        /* 元のファイルのデザイン設定をベースにしています */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: #1e1e1e; /* ダークモード背景 */
+            color: #ddd;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center; /* 画面中央に配置 */
+        }
+
+        .container {
+            max-width: 800px;
+            text-align: center;
+            padding: 20px;
+        }
+
+        h2 {
+            color: #fff;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        p {
+            color: #aaa;
+            line-height: 1.8;
+            margin-bottom: 40px;
+        }
+
+        /* ボタンのスタイル */
+        .btn-gmail {
+            background: #27ae60;
+            color: white;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            
+            /* 指定されていたインラインスタイルをCSSクラス化 */
+            font-size: 1.2rem;
+            padding: 20px 40px;
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
+            display: inline-block;
+            text-decoration: none;
+        }
+
+        .btn-gmail:hover {
+            background: #219653;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(39, 174, 96, 0.6);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>📩 お問い合わせ管理（Gmail連携）</h2>
+        <p>
+            お問い合わせの対応は、セキュリティと管理の利便性から Gmail 上で行います。<br>
+            ユーザーからの新規お問い合わせは、自動的に指定のGmailに転送されます。<br>
+            届いた通知メールに対してそのまま「返信」を押すことで、ユーザーへ回答が可能です。<br>
+          ※KeiAppLab@gmail.comにログインしておく必要があります。
+        </p>
+        
+        <!-- Gmailを別タブで開くボタン -->
+        <!-- authuser=keiapplab@gmail.com を指定して特定のアカウントで開こうとします -->
+        <button class="btn-gmail" onclick="window.open('https://mail.google.com/mail/u/?authuser=keiapplab@gmail.com', '_blank')">
+            ✉️ Gmailを開いて対応する
+        </button>
+    </div>
+
+</body>
+</html>
