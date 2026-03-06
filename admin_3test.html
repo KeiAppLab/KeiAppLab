@@ -479,26 +479,19 @@
             display: none; align-items: center; justify-content: center;
         }
 
-        /* --- アニメーション座標（計算式を完全再現） --- */
-        /* Stage 1: ①が出現 (0, 0) */
-        .rename-overlay.stage-1 .box1 { opacity: 1; visibility: visible; transform: translate(0, 0); z-index: 10; }
-        
-        /* Stage 2: ①が(x-200, y+90)へ。②が(0, 0)に出現 */
-        .rename-overlay.stage-2 .box1 { opacity: 1; visibility: visible; transform: translate(-200px, 90px); z-index: 9; }
-        .rename-overlay.stage-2 .box2 { opacity: 1; visibility: visible; transform: translate(0, 0); z-index: 10; }
-
-        /* Stage 3: ①が(0, 180)へ。②が(x-200, y+90)へ。③が(0, 0)に出現 */
-        .rename-overlay.stage-3 .box1 { opacity: 1; visibility: visible; transform: translate(0, 180px); z-index: 8; }
-        .rename-overlay.stage-3 .box2 { opacity: 1; visibility: visible; transform: translate(-200px, 90px); z-index: 9; }
-        .rename-overlay.stage-3 .box3 { opacity: 1; visibility: visible; transform: translate(0, 0); z-index: 10; }
-        
-        /* ▼▼▼ 修正：確定ボタンの出現座標を y=90 に変更 ▼▼▼ */
-        .rename-overlay.stage-3 .rn-submit { 
-            opacity: 1; 
-            visibility: visible; 
-            transform: translate(0, 90px); 
-            z-index: 20; 
+        /* --- アニメーション座標（一気に飛び出すポップアウト方式） --- */
+        /* 初期状態 (閉じている時) は全て (0,0) の位置に隠して少し縮小しておく */
+        .rename-box, .rn-submit {
+            transform: translate(0, 0) scale(0.8); 
         }
+
+        /* 展開時 (.open クラス付与時) に、指定座標へ一気に移動する */
+        .rename-overlay.open .box1 { opacity: 1; visibility: visible; transform: translate(0px, 210px) scale(1); z-index: 8; }
+        .rename-overlay.open .box2 { opacity: 1; visibility: visible; transform: translate(-220px, 120px) scale(1); z-index: 9; }
+        .rename-overlay.open .box3 { opacity: 1; visibility: visible; transform: translate(0px, 30px) scale(1); z-index: 10; }
+        
+        /* 確定ボタンは①と③の中間 (0, 170) へ */
+        .rename-overlay.open .rn-submit { opacity: 1; visibility: visible; transform: translate(0px, 170px) scale(1); z-index: 20; }
       
     </style>
 </head>
@@ -2798,45 +2791,43 @@
                 btn.style.position = 'relative';
                 btn.style.zIndex = '9999'; 
     
-                // ▼ 修正: 基点(origin)は画面全体の左上(0,0)が基準になるので計算がシンプルになります ▼
-                const origin = document.getElementById('renameOrigin');
-                // ボタンの右端(right)から箱の幅(305)を引いた絶対X座標
-                origin.style.left = (btnRect.right - 305) + 'px';
-                // ボタンの下端(bottom)から少し下(10px)の絶対Y座標
-                origin.style.top = (btnRect.bottom + 10) + 'px';
-                
-                // 現在のマスターデータを取得して、入力欄にセットする
-                const post = adminMasterData.find(p => p.project_id === currentProjectId);
-                document.getElementById('rnEn').value = post.project_en || "";
-                document.getElementById('rnJp').value = post.project_ja || "";
-                document.getElementById('rnId').value = post.project_id || "";
+               // ▼ 修正: 基点(origin)の出現位置を (x-154, y+0) に変更 ▼
+            const origin = document.getElementById('renameOrigin');
+            // ボタンの右端(right)から 154px 左へずらす
+            const originLeft = (btnRect.right - editorRect.left) - 154; 
+            origin.style.left = originLeft + 'px';
+            // ボタンの真下(y+0)
+            origin.style.top = (btnRect.bottom - titleRect.bottom) + 'px';
+            
+            // 現在のマスターデータを取得して、入力欄にセットする
+            const post = adminMasterData.find(p => p.project_id === currentProjectId);
+            document.getElementById('rnEn').value = post.project_en || "";
+            document.getElementById('rnJp').value = post.project_ja || "";
+            document.getElementById('rnId').value = post.project_id || "";
+
+            // UIを初期状態にリセットして表示
+            overlay.style.display = 'block';
+            overlay.className = 'rename-overlay active'; // クラスリセット
+            document.getElementById('rnSubmitBtn').style.display = 'block';
+            document.getElementById('rnLoading').style.display = 'none';
+
+            // ▼ 修正: 一気に全ての箱とボタンを飛び出させる（.openを付与） ▼
+            // ※display:block がブラウザに認識された直後に動かすため、50msだけ待ちます
+            setTimeout(() => { overlay.classList.add('open'); }, 50);   
+        }
     
-                // UIを初期状態にリセットして表示
-                overlay.style.display = 'block';
-                overlay.className = 'rename-overlay active'; // ▼ active クラスを追加してクリックを有効化
-                document.getElementById('rnSubmitBtn').style.display = 'block';
-                document.getElementById('rnSubmitBtn').style.opacity = '0';
-                document.getElementById('rnSubmitBtn').style.visibility = 'hidden';
-                document.getElementById('rnLoading').style.display = 'none';
-    
-                // アニメーションを段階的（0.6秒間隔）に実行
-                setTimeout(() => { overlay.classList.add('stage-1'); }, 100);   // ①出現
-                setTimeout(() => { overlay.classList.add('stage-2'); }, 700);   // ①左へ、②出現
-                setTimeout(() => { overlay.classList.add('stage-3'); }, 1300);  // ①右へ、②左へ、③出現、確定ボタン出現
-            }
-    
-            // 逆順アニメーションで閉じる
-            function closeRenameUI() {
-                const overlay = document.getElementById('renameOverlay');
-                overlay.classList.remove('stage-3');
-                setTimeout(() => { overlay.classList.remove('stage-2'); }, 600);
-                setTimeout(() => { overlay.classList.remove('stage-1'); }, 1200);
-                setTimeout(() => { 
-                    overlay.style.display = 'none'; 
-                    // ▼ 追加：ボタンのZ-indexを元に戻す ▼
-                    document.getElementById('btnRenameProj').style.zIndex = 'auto';
-                }, 1800); 
-            }
+             // ▼ 修正: アニメーションで一気に閉じる ▼
+        function closeRenameUI() {
+            const overlay = document.getElementById('renameOverlay');
+            overlay.classList.remove('open'); // 飛び出していたものを(0,0)にシュッと戻す
+            
+            // 戻るアニメーションの時間（0.6秒）だけ待ってから完全に非表示にする
+            setTimeout(() => { 
+                overlay.style.display = 'none'; 
+                // ボタンのZ-indexを元に戻す
+                document.getElementById('btnRenameProj').style.zIndex = 'auto';
+            }, 600); 
+        }
     
             // 変更を確定し、3つのファイル書き換えとフォルダ引越しを実行する
             async function executeRename() {
