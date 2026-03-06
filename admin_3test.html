@@ -421,7 +421,7 @@
 
         .rename-origin {
             position: absolute;
-            width: 260px; /* 少しスリムにしました */
+            width: 305px;
         }
 
         /* ▼▼ 箱の中を黒に、縁取りも黒に ▼▼ */
@@ -458,6 +458,7 @@
             opacity: 0; visibility: hidden;
             transition: all 0.6s ease;
             box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            z-index: 20; /* 確実に箱より前に出す */
         }
         .rn-submit:hover { background: #a93226; }
         
@@ -481,8 +482,13 @@
         .rename-overlay.stage-3 .box2 { opacity: 1; visibility: visible; transform: translate(-200px, 90px); z-index: 9; }
         .rename-overlay.stage-3 .box3 { opacity: 1; visibility: visible; transform: translate(0, 0); z-index: 10; }
         
-        /* 確定ボタンは①(y=180)と③(y=0)のセンターのEND、つまり①の下(y+270)に出現 */
-        .rename-overlay.stage-3 .rn-submit { opacity: 1; visibility: visible; transform: translate(0, 270px); z-index: 7; }
+        /* ▼▼▼ 修正：確定ボタンの出現座標を y=90 に変更 ▼▼▼ */
+        .rename-overlay.stage-3 .rn-submit { 
+            opacity: 1; 
+            visibility: visible; 
+            transform: translate(0, 90px); 
+            z-index: 20; 
+        }
       
     </style>
 </head>
@@ -1004,6 +1010,12 @@
             
             // --- パネル切り替え ---
             function switchPanel(id) {
+                // ▼▼▼ 追加：もしプロジェクト変更UIが開いていたらアニメで閉じる ▼▼▼
+                const overlay = document.getElementById('renameOverlay');
+                if (overlay && overlay.style.display === 'block') {
+                    closeRenameUI();
+                }
+                // ▲▲▲ 追加ここまで ▲▲▲
                 document.querySelectorAll('.panel').forEach(e => e.classList.remove('active'));
                 document.querySelectorAll('.menu-btn').forEach(e => e.classList.remove('active'));
                 document.getElementById('panel-' + id).classList.add('active');
@@ -2773,12 +2785,11 @@
                 btn.style.position = 'relative';
                 btn.style.zIndex = '9999'; // オーバーレイ(9000)より高くする
     
-                // ▼ 修正: 基点(origin)の出現位置をボタンのエンド(右端)に合わせる ▼
+                // ▼▼▼ 修正：幅305pxに合わせて右端を揃える計算 ▼▼▼
                 const origin = document.getElementById('renameOrigin');
-                // btnRect.right からオーバーレイの左端座標を引いて相対座標にし、箱の幅(260)を引く
-                const originLeft = (btnRect.right - editorRect.left) - 260; 
+                // 箱の幅(305)を引いて、右端が揃うように計算
+                const originLeft = (btnRect.right - editorRect.left) - 305; 
                 origin.style.left = originLeft + 'px';
-                // ボタンの下に表示されるよう、Y座標を計算
                 origin.style.top = (btnRect.bottom - titleRect.bottom + 5) + 'px';
                 
                 // 現在のマスターデータを取得して、入力欄にセットする
