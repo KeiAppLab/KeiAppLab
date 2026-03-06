@@ -411,17 +411,27 @@
 
         /* ▼▼▼ プロジェクト変更用 アニメーションUIのスタイル ▼▼▼ */
         .rename-overlay {
-            /* 画面全体ではなく、JSで計算したエリア（ボタンの下）に配置するため fixed を使用 */
-            position: fixed; 
-            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(3px);
+            /* 画面全体を覆う透明なレイヤー（はみ出し防止） */
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             z-index: 9000; display: none; 
-            /* 枠からはみ出たアニメーションも見えるようにする */
-            overflow: visible; 
+            pointer-events: none; /* 下の要素がクリックできるように基本は透過 */
+        }
+        .rename-overlay.active {
+            pointer-events: auto; /* アクティブ時のみクリックをキャッチ */
+        }
+
+        /* ▼追加: 黒い半透明の幕（JSでサイズを計算して表示） */
+        .rename-backdrop {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(3px);
+            z-index: 9001; /* 幕は一番下 */
         }
 
         .rename-origin {
             position: absolute;
             width: 305px;
+            z-index: 9002; /* 箱やボタンは幕の上 */
         }
 
         /* ▼▼ 箱の中を黒に、縁取りも黒に ▼▼ */
@@ -894,6 +904,9 @@
 
     <!-- ▼▼▼ プロジェクト変更用 アニメーションUI ▼▼▼ -->
     <div id="renameOverlay" class="rename-overlay" onclick="if(event.target===this) toggleRenameUI()">
+        <!-- ▼追加: 黒い幕専用のレイヤー（これをJSで切り抜きます） -->
+        <div id="renameBackdrop" class="rename-backdrop"></div>
+        
         <div id="renameOrigin" class="rename-origin">
             
             <!-- ③ プロジェクトID -->
@@ -2775,22 +2788,22 @@
                 const titleRect = editorTitle.getBoundingClientRect();
     
                 // ▼ 修正: オーバーレイを「タイトルの下」から張る ▼
-                overlay.style.top = (titleRect.bottom + 15) + 'px'; // タイトルの少し下から
-                // 左座標の微調整: padding分(20px)を引いてピッタリ合わせる
-                overlay.style.left = (editorRect.left) + 'px';      
-                overlay.style.width = editorRect.width + 'px';    
-                overlay.style.height = (editorRect.bottom - titleRect.bottom - 15) + 'px'; 
+                const backdrop = document.getElementById('renameBackdrop');
+                backdrop.style.top = (titleRect.bottom + 15) + 'px'; 
+                backdrop.style.left = editorRect.left + 'px';      
+                backdrop.style.width = editorRect.width + 'px';    
+                backdrop.style.height = (editorRect.bottom - titleRect.bottom - 15) + 'px'; 
     
-                // ▼ 追加: ボタンをオーバーレイの上に持ってくる魔法 ▼
+                // ボタンをオーバーレイの上に持ってくる魔法
                 btn.style.position = 'relative';
-                btn.style.zIndex = '9999'; // オーバーレイ(9000)より高くする
+                btn.style.zIndex = '9999'; 
     
-                // ▼▼▼ 修正：幅305pxに合わせて右端を揃える計算 ▼▼▼
+                // ▼ 修正: 基点(origin)は画面全体の左上(0,0)が基準になるので計算がシンプルになります ▼
                 const origin = document.getElementById('renameOrigin');
-                // 箱の幅(305)を引いて、右端が揃うように計算
-                const originLeft = (btnRect.right - editorRect.left) - 305; 
-                origin.style.left = originLeft + 'px';
-                origin.style.top = (btnRect.bottom - titleRect.bottom + 5) + 'px';
+                // ボタンの右端(right)から箱の幅(305)を引いた絶対X座標
+                origin.style.left = (btnRect.right - 305) + 'px';
+                // ボタンの下端(bottom)から少し下(10px)の絶対Y座標
+                origin.style.top = (btnRect.bottom + 10) + 'px';
                 
                 // 現在のマスターデータを取得して、入力欄にセットする
                 const post = adminMasterData.find(p => p.project_id === currentProjectId);
@@ -2800,7 +2813,7 @@
     
                 // UIを初期状態にリセットして表示
                 overlay.style.display = 'block';
-                overlay.className = 'rename-overlay'; // クラスリセット
+                overlay.className = 'rename-overlay active'; // ▼ active クラスを追加してクリックを有効化
                 document.getElementById('rnSubmitBtn').style.display = 'block';
                 document.getElementById('rnSubmitBtn').style.opacity = '0';
                 document.getElementById('rnSubmitBtn').style.visibility = 'hidden';
