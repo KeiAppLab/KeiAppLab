@@ -421,35 +421,34 @@
 
         .rename-origin {
             position: absolute;
-            width: 320px; /* 入力枠(305px)＋余白が綺麗に収まるサイズ */
+            width: 260px; /* 少しスリムにしました */
         }
 
+        /* ▼▼ 箱の中を黒に、縁取りも黒に ▼▼ */
         .rename-box {
             position: absolute; top: 0; left: 0; width: 100%;
-            background: #1a1a1a; 
+            background: #1a1a1a; /* 箱の中を黒(濃いグレー)に */
             padding: 15px; border-radius: 6px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.8); 
-            border: 2px solid #000; 
+            border: 2px solid #000; /* 黒の縁取り */
             opacity: 0; visibility: hidden;
             transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
             box-sizing: border-box;
         }
-        .rename-box label { color: #ffffff; margin-top: 0; font-weight: bold; }
+        .rename-box label { color: #ffffff; margin-top: 0; font-weight: bold; } /* タイトルは白 */
         
+        /* ▼ 入力欄の縁取りを赤に。入力中(focus)は太く赤く光らせる ▼ */
         .rename-box input {
             background: #fff !important;
             color: #111 !important;
-            border: 2px solid #e74c3c !important; 
+            border: 2px solid #e74c3c !important; /* 赤い縁取り */
             transition: all 0.2s;
-            width: 100% !important; /* 箱いっぱいに広げる */
         }
         .rename-box input:focus {
-            border: 3px solid #ff0000 !important; 
+            border: 3px solid #ff0000 !important; /* 入力中は太い赤 */
             box-shadow: 0 0 10px rgba(255, 0, 0, 0.8) !important;
             outline: none;
         }
-
-        #rnId { background-color: #fffacd !important; }
 
         /* 保存ボタン */
         .rn-submit {
@@ -469,21 +468,21 @@
             display: none; align-items: center; justify-content: center;
         }
 
-        /* --- アニメーション座標（幅拡張に伴う再計算） --- */
+        /* --- アニメーション座標（計算式を完全再現） --- */
         /* Stage 1: ①が出現 (0, 0) */
         .rename-overlay.stage-1 .box1 { opacity: 1; visibility: visible; transform: translate(0, 0); z-index: 10; }
         
-        /* Stage 2: ①が左(x-330, y+90)へ。②が(0, 0)に出現 */
-        .rename-overlay.stage-2 .box1 { opacity: 1; visibility: visible; transform: translate(-330px, 90px); z-index: 9; }
+        /* Stage 2: ①が(x-200, y+90)へ。②が(0, 0)に出現 */
+        .rename-overlay.stage-2 .box1 { opacity: 1; visibility: visible; transform: translate(-200px, 90px); z-index: 9; }
         .rename-overlay.stage-2 .box2 { opacity: 1; visibility: visible; transform: translate(0, 0); z-index: 10; }
 
-        /* Stage 3: ①が下(0, 180)へ。②が左(x-330, y+90)へ。③が(0, 0)に出現 */
+        /* Stage 3: ①が(0, 180)へ。②が(x-200, y+90)へ。③が(0, 0)に出現 */
         .rename-overlay.stage-3 .box1 { opacity: 1; visibility: visible; transform: translate(0, 180px); z-index: 8; }
-        .rename-overlay.stage-3 .box2 { opacity: 1; visibility: visible; transform: translate(-330px, 90px); z-index: 9; }
+        .rename-overlay.stage-3 .box2 { opacity: 1; visibility: visible; transform: translate(-200px, 90px); z-index: 9; }
         .rename-overlay.stage-3 .box3 { opacity: 1; visibility: visible; transform: translate(0, 0); z-index: 10; }
         
-        /* ▼ 修正：確定ボタンを③と①の中間、つまり右側の空間(x+330, y+90)に出現させる ▼ */
-        .rename-overlay.stage-3 .rn-submit { opacity: 1; visibility: visible; transform: translate(330px, 90px); z-index: 7; }
+        /* 確定ボタンは①(y=180)と③(y=0)のセンターのEND、つまり①の下(y+270)に出現 */
+        .rename-overlay.stage-3 .rn-submit { opacity: 1; visibility: visible; transform: translate(0, 270px); z-index: 7; }
       
     </style>
 </head>
@@ -1003,13 +1002,8 @@
                 const t = localStorage.getItem('gh_token'); if(t) checkIdentity(t); renderUserList();
             });
             
-            // --- 2. パネル切り替え ---
-            function switchPanel(panelId) {
-                // ▼▼▼ サイドバーが押された時、変更UIが開いていたら閉じる ▼▼▼
-                const overlay = document.getElementById('renameOverlay');
-                if (overlay && overlay.style.display === 'block') {
-                    closeRenameUI();
-                }
+            // --- パネル切り替え ---
+            function switchPanel(id) {
                 document.querySelectorAll('.panel').forEach(e => e.classList.remove('active'));
                 document.querySelectorAll('.menu-btn').forEach(e => e.classList.remove('active'));
                 document.getElementById('panel-' + id).classList.add('active');
@@ -2781,8 +2775,10 @@
     
                 // ▼ 修正: 基点(origin)の出現位置をボタンのエンド(右端)に合わせる ▼
                 const origin = document.getElementById('renameOrigin');
-                const originLeft = (btnRect.right - editorRect.left) - 320; 
+                // btnRect.right からオーバーレイの左端座標を引いて相対座標にし、箱の幅(260)を引く
+                const originLeft = (btnRect.right - editorRect.left) - 260; 
                 origin.style.left = originLeft + 'px';
+                // ボタンの下に表示されるよう、Y座標を計算
                 origin.style.top = (btnRect.bottom - titleRect.bottom + 5) + 'px';
                 
                 // 現在のマスターデータを取得して、入力欄にセットする
