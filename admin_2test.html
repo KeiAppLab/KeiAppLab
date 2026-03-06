@@ -231,6 +231,24 @@
         .btn-save { background: #27ae60; color: white; }
         .btn-copy { background: #e67e22; color: white; margin-top: 20px; }
 
+        /* ▼▼▼ ここから追加：プロジェクト変更ボタン用 ▼▼▼ */
+        .btn-rename-proj {
+            background: #555; /* 濃いグレー */
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            margin: 0; /* マージンをリセット */
+            width: auto; /* 幅を文字に合わせる */
+            transition: background 0.2s;
+        }
+        .btn-rename-proj:hover {
+            background: #888; /* カーソルがある時グレー */
+        }
+        /* ▲▲▲ ここまで追加 ▲▲▲ */
+        
         /* （プレビュー上下移動ボタン） */
         .scroll-toggle-btn {
             background-color: #0056b3;
@@ -587,17 +605,25 @@
                             <!-- 日本語 -->
                             <div id="group-ja" class="lang-input-group active">
                                 <div class="form-group">
-                                    <label>プロジェクト名 (JP)　admin_master.js</label>
+                                    <!-- ▼ 修正：ラベルの変更、ID表示、変更ボタンの追加 ▼ -->
+                                    <div class="label-row" style="margin-bottom: 5px;">
+                                        <label style="margin:0;">プロジェクト名 (JP)　<span id="displayProjectId" style="color:#3498db; font-weight:bold;">project_id:""</span></label>
+                                        <button type="button" class="btn-rename-proj" onclick="window.location.href='project_config.html'">♻️ project[id,jp,en]変更</button>
+                                    </div>
                                     <div class="input-group">
-                                        <input type="text" id="inProject" class="input-white" oninput="autoFillProject()">
-                                        <select id="projectSelectHelper" class="input-white" onchange="syncProjectSelect()"><option value="">▼ 履歴...</option></select>
+                                        <input type="text" id="inProject" class="input-white" placeholder="入力または右から選択" oninput="autoFillProject()" autocomplete="off">
+                                        <select id="projectSelectHelper" class="input-white" onchange="syncProjectSelect()">
+                                            <option value="">▼ 履歴... (admin_master.js)</option>
+                                        </select>
                                     </div>
                                 </div>
-                                <div class="form-group"><label>お知らせ・キャッチコピー (JP)</label><textarea id="inTitle" class="input-white" rows="2" oninput="updatePreview()"></textarea></div>
+                                <!-- ▼ 修正：ラベル名の変更 ▼ -->
+                                <div class="form-group"><label>お知らせ・キャッチコピー (JP)　index_news.js</label><textarea id="inTitle" class="input-white" rows="2" oninput="updatePreview()"></textarea></div>
                                 
                                 <div class="form-group">
                                     <div class="label-row">
-                                        <label>アプリ紹介本文 (JP)</label>
+                                        <!-- ▼ 修正：ラベル名の変更 ▼ -->
+                                        <label>アプリ紹介本文 (JP)　apps_catalog.js</label>
                                         <div class="status-switch">
                                             <label class="status-label"><input type="radio" name="appStatus" value="released" onchange="updatePreview()"> リリース済み</label>
                                             <label class="status-label"><input type="radio" name="appStatus" value="coming" checked onchange="updatePreview()"> Coming Soon</label>
@@ -980,6 +1006,15 @@
                 }
                 
                 currentProjectId = data.project_id;
+                
+                // ▼▼▼ ここから追加：ロック処理とID表示 ▼▼▼
+                document.getElementById('inProject').readOnly = true;
+                document.getElementById('inProject').style.backgroundColor = "#e0e0e0"; // ロック感を出すグレー
+                document.getElementById('inProjectEn').readOnly = true;
+                document.getElementById('inProjectEn').style.backgroundColor = "#ccc"; 
+                document.getElementById('displayProjectId').textContent = `project_id:"${data.project_id}"`;
+                // ▲▲▲ ここまで追加 ▲▲▲
+
                 updatePreview();
                 fetchAndRenderImages(); // ▼ 新しい超速画像読み込み関数に切り替え ▼
                 checkProjectUrl(data.project_id);
@@ -989,6 +1024,14 @@
             function autoFillProject() {
                 const val = document.getElementById('inProject').value.trim();
                 
+                // ▼▼▼ ここから追加：ロック解除とID表示リセット ▼▼▼
+                document.getElementById('inProject').readOnly = false;
+                document.getElementById('inProject').style.backgroundColor = "#ffffff";
+                document.getElementById('inProjectEn').readOnly = false;
+                document.getElementById('inProjectEn').style.backgroundColor = "#e0e0e0"; // 英語のデフォルト色に戻す
+                document.getElementById('displayProjectId').textContent = `project_id:""`;
+                // ▲▲▲ ここまで追加 ▲▲▲
+
                 // 入力欄が空の場合の完全リセット
                 if(!val) { 
                     clearFieldsExcept('inProject');
@@ -1035,17 +1078,6 @@
                 });
             }
     
-            // 英語名入力でID生成
-            document.getElementById('inProjectEn').addEventListener('input', async function() {
-                const enName = this.value.trim();
-                if (enName) {
-                    currentProjectId = enName.replace(/\s+/g, '_').toLowerCase();
-                    fetchAndRenderImages(); // ▼ 修正：新しい超速画像読み込み関数に切り替え ▼
-                    checkProjectUrl(currentProjectId);
-                }
-                updatePreview();
-            });
-            
             // --- 🖼️ 超進化版：画像ファイル管理ロジック ---
             let cachedIndexPhotos =[];
             let currentProjectPhotos =[];
