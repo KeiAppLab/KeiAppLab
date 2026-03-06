@@ -424,28 +424,30 @@
             width: 260px; /* 少しスリムにしました */
         }
 
-        /* ▼ 修正：箱の余白と縁取りを「黒」に ▼ */
+        /* ▼▼ 箱の中を黒に、縁取りも黒に ▼▼ */
         .rename-box {
             position: absolute; top: 0; left: 0; width: 100%;
-            background: #fff; padding: 15px; border-radius: 6px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5); 
+            background: #1a1a1a; /* 箱の中を黒(濃いグレー)に */
+            padding: 15px; border-radius: 6px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.8); 
             border: 2px solid #000; /* 黒の縁取り */
             opacity: 0; visibility: hidden;
             transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
             box-sizing: border-box;
         }
-        .rename-box label { color: #333; margin-top: 0; font-weight: bold; }
+        .rename-box label { color: #ffffff; margin-top: 0; font-weight: bold; } /* タイトルは白 */
         
-        /* ▼ 修正：入力欄の縁取りを「赤」に ▼ */
+        /* ▼ 入力欄の縁取りを赤に。入力中(focus)は太く赤く光らせる ▼ */
         .rename-box input {
-            border: 2px solid #e74c3c !important; 
             background: #fff !important;
             color: #111 !important;
+            border: 2px solid #e74c3c !important; /* 赤い縁取り */
+            transition: all 0.2s;
         }
-
-        /* ▼ 修正：project_id の入力欄を「黄色」に ▼ */
-        #rnId {
-            background-color: #fffacd !important; /* 薄い黄色 */
+        .rename-box input:focus {
+            border: 3px solid #ff0000 !important; /* 入力中は太い赤 */
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.8) !important;
+            outline: none;
         }
 
         /* 保存ボタン */
@@ -455,7 +457,7 @@
             border-radius: 4px; border: 2px solid #000; cursor: pointer;
             opacity: 0; visibility: hidden;
             transition: all 0.6s ease;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
         .rn-submit:hover { background: #a93226; }
         
@@ -466,21 +468,21 @@
             display: none; align-items: center; justify-content: center;
         }
 
-        /* --- アニメーション座標（ご指示の通りに設定） --- */
+        /* --- アニメーション座標（計算式を完全再現） --- */
         /* Stage 1: ①が出現 (0, 0) */
         .rename-overlay.stage-1 .box1 { opacity: 1; visibility: visible; transform: translate(0, 0); z-index: 10; }
         
-        /* Stage 2: ①が左へ-200px, 下へ+90px。②が(0, 0)に出現 */
+        /* Stage 2: ①が(x-200, y+90)へ。②が(0, 0)に出現 */
         .rename-overlay.stage-2 .box1 { opacity: 1; visibility: visible; transform: translate(-200px, 90px); z-index: 9; }
         .rename-overlay.stage-2 .box2 { opacity: 1; visibility: visible; transform: translate(0, 0); z-index: 10; }
 
-        /* Stage 3: ①が右へ+200px, 下へ+90px。②が左へ-200px, 下へ+90px。③が(0, 0)に出現 */
-        .rename-overlay.stage-3 .box1 { opacity: 1; visibility: visible; transform: translate(200px, 90px); z-index: 8; }
+        /* Stage 3: ①が(0, 180)へ。②が(x-200, y+90)へ。③が(0, 0)に出現 */
+        .rename-overlay.stage-3 .box1 { opacity: 1; visibility: visible; transform: translate(0, 180px); z-index: 8; }
         .rename-overlay.stage-3 .box2 { opacity: 1; visibility: visible; transform: translate(-200px, 90px); z-index: 9; }
         .rename-overlay.stage-3 .box3 { opacity: 1; visibility: visible; transform: translate(0, 0); z-index: 10; }
         
-        /* 確定ボタンは③のすぐ下（+90px）に出現させて画面外消滅を防ぐ */
-        .rename-overlay.stage-3 .rn-submit { opacity: 1; visibility: visible; transform: translate(0, 90px); z-index: 7; }
+        /* 確定ボタンは①(y=180)と③(y=0)のセンターのEND、つまり①の下(y+270)に出現 */
+        .rename-overlay.stage-3 .rn-submit { opacity: 1; visibility: visible; transform: translate(0, 100px); z-index: 7; }
       
     </style>
 </head>
@@ -2739,36 +2741,45 @@
             // ▼▼▼ プロジェクト変更（リネーム）UIとお引越しロジック ▼▼▼
             // アニメーション付きでUIを開く
             function toggleRenameUI() {
-                if (!currentProjectId) {
-                    alert("⚠️ 変更するプロジェクトを「履歴」から選択してください。");
-                    return;
-                }
-                
-                const overlay = document.getElementById('renameOverlay');
-                
-                if (overlay.style.display === 'block') {
-                    closeRenameUI();
-                    return;
-                }
-    
-                // ▼▼▼ 修正：オーバーレイを「ボタンの下からエディタの底まで」に限定する ▼▼▼
+            if (!currentProjectId) {
+                alert("⚠️ 変更するプロジェクトを「履歴」から選択してください。");
+                return;
+            }
+            
+            const overlay = document.getElementById('renameOverlay');
+            
+            if (overlay.style.display === 'block') {
+                closeRenameUI();
+                return;
+            }
+
+            // ▼ 修正: 要素の取得 ▼
                 const btn = document.getElementById('btnRenameProj');
-                const btnRect = btn.getBoundingClientRect();
                 const editorArea = document.querySelector('.editor-area');
+                const editorTitle = editorArea.querySelector('h2'); // 「📝 記事・プロジェクト作成」のタイトル
+                
+                const btnRect = btn.getBoundingClientRect();
                 const editorRect = editorArea.getBoundingClientRect();
+                const titleRect = editorTitle.getBoundingClientRect();
     
-                // オーバーレイのサイズと位置を計算
-                overlay.style.top = (btnRect.bottom + 10) + 'px'; // ボタンの10px下から
-                overlay.style.left = editorRect.left + 'px';      // エディタの左端から
-                overlay.style.width = editorRect.width + 'px';    // エディタの幅
-                overlay.style.height = (editorRect.bottom - btnRect.bottom - 10) + 'px'; // 底までの高さ
+                // ▼ 修正: オーバーレイを「タイトルの下」から張る ▼
+                overlay.style.top = (titleRect.bottom + 15) + 'px'; // タイトルの少し下から
+                // 左座標の微調整: padding分(20px)を引いてピッタリ合わせる
+                overlay.style.left = (editorRect.left) + 'px';      
+                overlay.style.width = editorRect.width + 'px';    
+                overlay.style.height = (editorRect.bottom - titleRect.bottom - 15) + 'px'; 
     
-                // ▼▼▼ ①の出現位置を「ボタンのエンド（右端）」に合わせる ▼▼▼
+                // ▼ 追加: ボタンをオーバーレイの上に持ってくる魔法 ▼
+                btn.style.position = 'relative';
+                btn.style.zIndex = '9999'; // オーバーレイ(9000)より高くする
+    
+                // ▼ 修正: 基点(origin)の出現位置をボタンのエンド(右端)に合わせる ▼
                 const origin = document.getElementById('renameOrigin');
-                // originの幅(260px)を引いて、右端が揃うように計算
+                // btnRect.right からオーバーレイの左端座標を引いて相対座標にし、箱の幅(260)を引く
                 const originLeft = (btnRect.right - editorRect.left) - 260; 
                 origin.style.left = originLeft + 'px';
-                origin.style.top = '10px'; // オーバーレイの天井から10px下
+                // ボタンの下に表示されるよう、Y座標を計算
+                origin.style.top = (btnRect.bottom - titleRect.bottom + 5) + 'px';
                 
                 // 現在のマスターデータを取得して、入力欄にセットする
                 const post = adminMasterData.find(p => p.project_id === currentProjectId);
@@ -2796,7 +2807,11 @@
                 overlay.classList.remove('stage-3');
                 setTimeout(() => { overlay.classList.remove('stage-2'); }, 600);
                 setTimeout(() => { overlay.classList.remove('stage-1'); }, 1200);
-                setTimeout(() => { overlay.style.display = 'none'; }, 1800); // 全て戻ったら消す
+                setTimeout(() => { 
+                    overlay.style.display = 'none'; 
+                    // ▼ 追加：ボタンのZ-indexを元に戻す ▼
+                    document.getElementById('btnRenameProj').style.zIndex = 'auto';
+                }, 1800); 
             }
     
             // 変更を確定し、3つのファイル書き換えとフォルダ引越しを実行する
