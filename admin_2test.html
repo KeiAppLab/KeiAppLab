@@ -981,8 +981,7 @@
                 
                 currentProjectId = data.project_id;
                 updatePreview();
-                // ▼ 最新の画像取得関数を呼び出す ▼
-                fetchAndRenderImages(); 
+                fetchAndRenderImages(); // ▼ 新しい超速画像読み込み関数に切り替え ▼
                 checkProjectUrl(data.project_id);
             }
             
@@ -1041,13 +1040,8 @@
                 const enName = this.value.trim();
                 if (enName) {
                     currentProjectId = enName.replace(/\s+/g, '_').toLowerCase();
-                    // ▼ 修正: 最新の画像取得関数を呼び出す ▼
-                    fetchAndRenderImages(); 
+                    fetchAndRenderImages(); // ▼ 修正：新しい超速画像読み込み関数に切り替え ▼
                     checkProjectUrl(currentProjectId);
-                } else {
-                    // ▼ 英語名が空になったらIDをリセットして画像を更新 ▼
-                    currentProjectId = "";
-                    fetchAndRenderImages();
                 }
                 updatePreview();
             });
