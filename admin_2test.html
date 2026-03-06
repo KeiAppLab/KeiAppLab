@@ -1006,20 +1006,27 @@
                 }
                 
                 currentProjectId = data.project_id;
-                // ▼ロック処理を削除し、ID表示だけを残す▼
+                
                 document.getElementById('displayProjectId').textContent = `project_id:"${data.project_id}"`;
 
+                // ▼▼▼ Project (EN) のみをロックする ▼▼▼
+                const enInput = document.getElementById('inProjectEn');
+                enInput.readOnly = true;
+                enInput.style.backgroundColor = "#b0b0b0"; // ロック感のある濃いグレーにする
+
                 updatePreview();
-                fetchAndRenderImages(); // ▼ 新しい超速画像読み込み関数に切り替え ▼
+                fetchAndRenderImages(); 
                 checkProjectUrl(data.project_id);
             }
             
-            // ★修正: 日本語プロジェクト名を変更した時の処理（完全リセット対応）
+            // 日本語プロジェクト名を変更した時の処理（完全リセット対応）
             function autoFillProject() {
                 const val = document.getElementById('inProject').value.trim();
                 
-                // ▼ロック解除処理を削除し、ID表示のリセットだけを残す▼
-                document.getElementById('displayProjectId').textContent = `project_id:""`;
+                // ▼▼▼ Project (EN) のロックを解除し、元の色に戻す ▼▼▼
+                const enInput = document.getElementById('inProjectEn');
+                enInput.readOnly = false;
+                enInput.style.backgroundColor = "#e0e0e0"; // 通常の入力可能なグレーに戻す
 
                 // 入力欄が空の場合の完全リセット
                 if(!val) {
