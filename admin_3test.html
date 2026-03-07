@@ -16,8 +16,24 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700;900&family=Roboto:wght@400;500;900&display=swap');
 
+        /* ▼▼▼ 追加：画面全体を覆う「1枚のカーボン幕」 ▼▼▼ */
+        :root {
+            /* 8px 6K綾織り・完全半透明SVG */
+            --carbon-8px-twill: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cdefs%3E%3ClinearGradient id='vw' x1='0%25' y1='0%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='rgba(0,0,0,0.4)'/%3E%3Cstop offset='50%25' stop-color='rgba(255,255,255,0.08)'/%3E%3Cstop offset='100%25' stop-color='rgba(0,0,0,0.4)'/%3E%3C/linearGradient%3E%3ClinearGradient id='vl' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='rgba(0,0,0,0.5)'/%3E%3Cstop offset='50%25' stop-color='rgba(0,0,0,0)'/%3E%3Cstop offset='100%25' stop-color='rgba(0,0,0,0.5)'/%3E%3C/linearGradient%3E%3ClinearGradient id='hw' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='rgba(0,0,0,0.4)'/%3E%3Cstop offset='50%25' stop-color='rgba(255,255,255,0.06)'/%3E%3Cstop offset='100%25' stop-color='rgba(0,0,0,0.4)'/%3E%3C/linearGradient%3E%3ClinearGradient id='hl' x1='0%25' y1='0%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='rgba(0,0,0,0.5)'/%3E%3Cstop offset='50%25' stop-color='rgba(0,0,0,0)'/%3E%3Cstop offset='100%25' stop-color='rgba(0,0,0,0.5)'/%3E%3C/linearGradient%3E%3Cg id='V'%3E%3Crect width='4' height='8' fill='url(%23vw)'/%3E%3Crect width='4' height='8' fill='url(%23vl)'/%3E%3C/g%3E%3Cg id='H'%3E%3Crect width='8' height='4' fill='url(%23hw)'/%3E%3Crect width='8' height='4' fill='url(%23hl)'/%3E%3C/g%3E%3C/defs%3E%3Cuse href='%23H' x='8' y='0'/%3E%3Cuse href='%23H' x='12' y='4'/%3E%3Cuse href='%23H' x='-4' y='4'/%3E%3Cuse href='%23H' x='0' y='8'/%3E%3Cuse href='%23H' x='4' y='12'/%3E%3Cuse href='%23V' x='0' y='12'/%3E%3Cuse href='%23V' x='0' y='-4'/%3E%3Cuse href='%23V' x='4' y='0'/%3E%3Cuse href='%23V' x='8' y='4'/%3E%3Cuse href='%23V' x='12' y='8'/%3E%3C/svg%3E");
+        }
+
+        .global-carbon-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-image: var(--carbon-8px-twill);
+            background-size: 8px 8px; /* サイズ調整箇所 */
+            pointer-events: none; /* ★重要：クリックをすり抜けさせる魔法 */
+            z-index: 1; /* 背景色より上、コンテンツより下に配置 */
+        }
+        
         /* --- 全体レイアウト --- */
-        body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Arial, sans-serif; background: #1e1e1e; color: #ddd; height: 100vh; overflow: hidden; }
+        /* 背景を一番深い黒に変更 */
+        body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Arial, sans-serif; background: #0a0a0a; color: #ddd; height: 100vh; overflow: hidden; }
         #mainWrapper { display: none; height: 100%; }
 
         /* --- ログイン画面 --- */
@@ -35,16 +51,17 @@
 
         /* --- メイン画面 --- */
         .dashboard { display: grid; grid-template-columns: 250px 1fr; height: 100%; }
-        .sidebar { background: #252526; border-right: 1px solid #333; display: flex; flex-direction: column; padding: 10px; box-sizing: border-box; }
-        .sidebar h1 { font-size: 1.2rem; color: #fff; margin: 20px 10px; border-bottom: 2px solid #007acc; padding-bottom: 10px; }
+        /* サイドバーの色とZ-indexを設定 */
+        .sidebar { background: #252526; border-right: 1px solid #111; display: flex; flex-direction: column; padding: 10px; box-sizing: border-box; position: relative; z-index: 5; }
+        .sidebar h1 { font-size: 1.2rem; color: #fff; margin: 20px 10px; border-bottom: 2px solid #007acc; padding-bottom: 10px; text-shadow: 2px 2px 4px #000; }
         .menu-btn { padding: 15px; margin-bottom: 5px; cursor: pointer; border-radius: 5px; color: #aaa; font-weight: bold; transition: 0.2s; display: flex; align-items: center; gap: 10px; }
         .menu-btn:hover { background: #3c3c3c; color: #fff; }
         .menu-btn.active { background: #007acc; color: white; }
         .spacer { flex-grow: 1; min-height: 20px; border-bottom: 1px solid #333; margin-bottom: 10px; }
 
-        .main-content { position: relative; overflow: hidden; height: 100%; }
-        /* paddingの値を 上15px 右15px 下15px 左30px に変更します */
-        .panel { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; overflow-y: auto; padding: 15px 15px 15px 30px; box-sizing: border-box; }
+        /* メインコンテンツの色とZ-indexを設定 */
+        .main-content { position: relative; overflow: hidden; height: 100%; background: #1e1e1e; z-index: 5; }
+        .panel { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; overflow-y: auto; padding: 15px 15px 15px 30px; box-sizing: border-box; z-index: 10; }
         .panel.active { display: block; }
 
         /* --- CMSレイアウト (40:60) --- */
@@ -509,6 +526,8 @@
     </style>
 </head>
 <body>
+    <!-- ▼▼▼ 追加：画面全体にカーボンの質感を被せる幕 ▼▼▼ -->
+    <div class="global-carbon-overlay"></div>
     <div id="build-toast">
         <div id="toast-icon" class="spinner"></div>
         <div id="toast-msg" style="font-size: 0.9rem;">🔄 サイトデータを保存しました...</div>
