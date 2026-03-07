@@ -460,17 +460,17 @@
 
         /* 保存ボタン */
         .rn-submit {
-            position: absolute; top: 0; right: 0;
-            width: max-content; /* ▼ 修正: 100%を解除し、文字の幅に合わせる ▼ */
+            position: absolute; top: 0; right: 0; /* ← leftを消して right: 0 に変更 */
+            width: 100%;
             background: #c0392b; color: white; 
-            padding: 8px 30px; /* ▼ 修正: 左右の余白を少しだけ確保してスリム化 ▼ */
+            padding: 8px 12px; /* ▼ 修正：上下の余白を削ってスリムに ▼ */
             font-weight: bold;
             border-radius: 4px; border: 2px solid #000; cursor: pointer;
             opacity: 0; visibility: hidden;
             transition: all 0.6s ease;
             box-shadow: 0 5px 15px rgba(0,0,0,0.5);
             z-index: 20; 
-            transform-origin: top right;
+            transform-origin: top right; /* ← 起点を右上に */
         }
         
         .rn-loading {
@@ -2809,11 +2809,11 @@
             const origin = document.getElementById('renameOrigin');
             
             // 右端からの距離 = (画面全体の幅 - ボタンの右端) + 左へズラす分(154px)
-            const rightOffset = (window.innerWidth - btnRect.right) + 0;
+            const rightOffset = (window.innerWidth - btnRect.right) + 154;
             origin.style.left = 'auto'; // leftの指定を無効化
             origin.style.right = rightOffset + 'px';
             // ボタンの真下(y+0) ※fixedなので画面の絶対座標でOK
-            origin.style.top = btnRect.top + 'px';
+            origin.style.top = btnRect.bottom + 'px';
             
             // 現在のマスターデータを取得して、入力欄にセットする
             const post = adminMasterData.find(p => p.project_id === currentProjectId);
