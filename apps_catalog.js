@@ -48,7 +48,7 @@ const appsCatalogData = [
         "project_id": "gorila",
         "status": "coming",
         "image": "gorila/index.png",
-        "project_ja": "GORIRA",
+        "project_ja": "ゴリラパニック",
         "project_en": "GORILA",
         "project_de": "Gratis Anruf-App",
         "project_fr": "App d'appels gratuits",
