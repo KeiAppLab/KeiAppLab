@@ -436,39 +436,41 @@
 
         /* ▼▼ 箱の中を黒に、縁取りも黒に ▼▼ */
         .rename-box {
-            position: absolute; top: 0; left: 0; width: 100%;
-            background: #1a1a1a; /* 箱の中を黒(濃いグレー)に */
+            position: absolute; top: 0; right: 0; /* ← leftを消して right: 0 に変更 */
+            width: 100%;
+            background: #1a1a1a; 
             padding: 15px; border-radius: 6px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.8); 
-            border: 2px solid #000; /* 黒の縁取り */
+            border: 2px solid #000; 
             opacity: 0; visibility: hidden;
             transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
             box-sizing: border-box;
+            transform-origin: top right; /* ← アニメーションの起点も右上に */
         }
-        .rename-box label { color: #ffffff; margin-top: 0; font-weight: bold; } /* タイトルは白 */
+        .rename-box label { color: #ffffff; margin-top: 0; font-weight: bold; }
         
-        /* ▼ 入力欄の縁取りを赤に。入力中(focus)は太く赤く光らせる ▼ */
         .rename-box input {
-            background: #fff !important;
-            color: #111 !important;
-            border: 2px solid #e74c3c !important; /* 赤い縁取り */
-            transition: all 0.2s;
+            background: #fff !important; color: #111 !important;
+            border: 2px solid #e74c3c !important; transition: all 0.2s;
         }
         .rename-box input:focus {
-            border: 3px solid #ff0000 !important; /* 入力中は太い赤 */
-            box-shadow: 0 0 10px rgba(255, 0, 0, 0.8) !important;
-            outline: none;
+            border: 3px solid #ff0000 !important; 
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.8) !important; outline: none;
         }
 
         /* 保存ボタン */
         .rn-submit {
-            position: absolute; top: 0; left: 0; width: 100%;
-            background: #c0392b; color: white; padding: 12px; font-weight: bold;
+            position: absolute; top: 0; right: 0; /* ← leftを消して right: 0 に変更 */
+            width: 100%;
+            background: #c0392b; color: white; 
+            padding: 8px 12px; /* ▼ 修正：上下の余白を削ってスリムに ▼ */
+            font-weight: bold;
             border-radius: 4px; border: 2px solid #000; cursor: pointer;
             opacity: 0; visibility: hidden;
             transition: all 0.6s ease;
             box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            z-index: 20; /* 確実に箱より前に出す */
+            z-index: 20; 
+            transform-origin: top right; /* ← 起点を右上に */
         }
         .rn-submit:hover { background: #a93226; }
         
@@ -897,8 +899,8 @@
 
     <!-- ▼▼▼ プロジェクト変更用 アニメーションUI ▼▼▼ -->
     <div id="renameOverlay" class="rename-overlay" onclick="if(event.target===this) toggleRenameUI()">
-        <!-- ▼追加: 黒い幕専用のレイヤー（これをJSで切り抜きます） -->
-        <div id="renameBackdrop" class="rename-backdrop"></div>
+        <!-- ▼ 修正: クリックで閉じる命令（onclick="closeRenameUI()"）を追加 ▼ -->
+        <div id="renameBackdrop" class="rename-backdrop" onclick="closeRenameUI()" style="cursor: pointer;"></div>
         
         <div id="renameOrigin" class="rename-origin">
             
@@ -2772,32 +2774,36 @@
             }
 
             // ▼ 修正: 要素の取得 ▼
-                const btn = document.getElementById('btnRenameProj');
-                const editorArea = document.querySelector('.editor-area');
-                const editorTitle = editorArea.querySelector('h2'); // 「📝 記事・プロジェクト作成」のタイトル
-                
-                const btnRect = btn.getBoundingClientRect();
-                const editorRect = editorArea.getBoundingClientRect();
-                const titleRect = editorTitle.getBoundingClientRect();
+            const btn = document.getElementById('btnRenameProj');
+            const editorArea = document.querySelector('.editor-area');
+            const editorTitle = editorArea.querySelector('h2'); 
+            const panelArea = document.querySelector('.panel.active'); // サイドバーとの境界を知るため追加
+            
+            const btnRect = btn.getBoundingClientRect();
+            const editorRect = editorArea.getBoundingClientRect();
+            const titleRect = editorTitle.getBoundingClientRect();
+            const panelRect = panelArea.getBoundingClientRect(); // パネル全体の座標
     
-                // ▼ 修正: オーバーレイを「タイトルの下」から張る ▼
-                const backdrop = document.getElementById('renameBackdrop');
-                backdrop.style.top = (titleRect.bottom + 15) + 'px'; 
-                backdrop.style.left = editorRect.left + 'px';      
-                backdrop.style.width = editorRect.width + 'px';    
-                backdrop.style.height = (editorRect.bottom - titleRect.bottom - 15) + 'px'; 
-    
-                // ボタンをオーバーレイの上に持ってくる魔法
-                btn.style.position = 'relative';
-                btn.style.zIndex = '9999'; 
-    
-               // ▼ 修正: 基点(origin)の出現位置を (x-154, y+0) に変更 ▼
+            // ▼ 修正: 黒い幕を「サイドバーのキワ（パネルの左端）」から「エディタの右端」までピタッと張る ▼
+            const backdrop = document.getElementById('renameBackdrop');
+            backdrop.style.top = (titleRect.bottom + 15) + 'px'; 
+            backdrop.style.left = panelRect.left + 'px';      
+            backdrop.style.width = (editorRect.right - panelRect.left) + 'px';    
+            backdrop.style.height = (editorRect.bottom - titleRect.bottom - 15) + 'px'; 
+
+            // ボタンをオーバーレイの上に持ってくる魔法
+            btn.style.position = 'relative';
+            btn.style.zIndex = '9999'; 
+
+            // ▼ 修正: 基点(origin)を「右上基準」で計算し、(x-154, y+0) からスタートさせる ▼
             const origin = document.getElementById('renameOrigin');
-            // ボタンの右端(right)から 154px 左へずらす
-            const originLeft = (btnRect.right - editorRect.left) - 154; 
-            origin.style.left = originLeft + 'px';
-            // ボタンの真下(y+0)
-            origin.style.top = (btnRect.bottom - titleRect.bottom) + 'px';
+            
+            // 右端からの距離 = (画面全体の幅 - ボタンの右端) + 左へズラす分(154px)
+            const rightOffset = (window.innerWidth - btnRect.right) + 154;
+            origin.style.left = 'auto'; // leftの指定を無効化
+            origin.style.right = rightOffset + 'px';
+            // ボタンの真下(y+0) ※fixedなので画面の絶対座標でOK
+            origin.style.top = btnRect.bottom + 'px';
             
             // 現在のマスターデータを取得して、入力欄にセットする
             const post = adminMasterData.find(p => p.project_id === currentProjectId);
