@@ -2805,14 +2805,13 @@
             btn.style.position = 'relative';
             btn.style.zIndex = '9999'; 
 
-            // ▼ 修正: 基点(origin)を「右上基準」で計算し、(x-154, y+0) からスタートさせる ▼
+            // ▼ 修正: 基点(origin)をボタンの「右下角」に完全一致させる（これがX=0, Y=0になります） ▼
             const origin = document.getElementById('renameOrigin');
             
-            // 右端からの距離 = (画面全体の幅 - ボタンの右端) + 左へズラす分(154px)
-            const rightOffset = (window.innerWidth - btnRect.right) + 154;
-            origin.style.left = 'auto'; // leftの指定を無効化
+            // 右端からの距離 = (画面全体の幅 - ボタンの右端) 
+            const rightOffset = window.innerWidth - btnRect.right; 
+            origin.style.left = 'auto'; 
             origin.style.right = rightOffset + 'px';
-            // ボタンの真下(y+0) ※fixedなので画面の絶対座標でOK
             origin.style.top = btnRect.bottom + 'px';
             
             // 現在のマスターデータを取得して、入力欄にセットする
