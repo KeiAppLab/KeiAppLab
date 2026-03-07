@@ -45,10 +45,10 @@ const appsCatalogData = [
         "body_es": "Características\n・Totalmente gratis: Obtén tiempo de llamada simplemente viendo anuncios de video cortos.\n・Exclusivo para teléfonos fijos: Ideal para llamadas cortas a tiendas u oficinas públicas.\n・Sin registro: Úselo al instante sin tediosos procesos de suscripción."
     },
     {
-        "project_id": "gorila",
+        "project_id": "gorilala",
         "status": "coming",
-        "image": "gorila/index.png",
-        "project_ja": "ゴリラパニック",
+        "image": "gorilala/index.png",
+        "project_ja": "ゴリラパニック2",
         "project_en": "GORILA",
         "project_de": "Gratis Anruf-App",
         "project_fr": "App d'appels gratuits",
