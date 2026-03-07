@@ -231,7 +231,7 @@
         .btn-save { background: #27ae60; color: white; }
         .btn-copy { background: #e67e22; color: white; margin-top: 20px; }
 
-        /* ▼▼▼ ここから追加：プロジェクト変更ボタン用 ▼▼▼ */
+        /* ▼▼▼ プロジェクト変更ボタン用 ▼▼▼ */
         .btn-rename-proj {
             background: #555; /* 濃いグレー */
             color: white;
@@ -247,7 +247,6 @@
         .btn-rename-proj:hover {
             background: #888; /* カーソルがある時グレー */
         }
-        /* ▲▲▲ ここまで追加 ▲▲▲ */
         
         /* （プレビュー上下移動ボタン） */
         .scroll-toggle-btn {
@@ -408,7 +407,104 @@
         .memo-face {
             letter-spacing: 2px; /* 点の間隔を調整 */
         }
-        /* ↑↑↑ ここまで ↑↑↑ */
+
+
+        /* ▼▼▼ プロジェクト変更用 アニメーションUIのスタイル ▼▼▼ */
+        .rename-overlay {
+            /* 画面全体を覆う透明なレイヤー（はみ出し防止） */
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 9000; display: none; 
+            pointer-events: none; /* 下の要素がクリックできるように基本は透過 */
+        }
+        .rename-overlay.active {
+            pointer-events: auto; /* アクティブ時のみクリックをキャッチ */
+        }
+
+        /* ▼追加: 黒い半透明の幕（JSでサイズを計算して表示） */
+        .rename-backdrop {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(3px);
+            z-index: 9001; /* 幕は一番下 */
+        }
+
+        .rename-origin {
+            position: absolute;
+            width: 305px;
+            z-index: 9002; /* 箱やボタンは幕の上 */
+        }
+
+        /* ▼▼ 箱の中を黒に、縁取りも黒に ▼▼ */
+        .rename-box {
+            position: absolute; top: 0; right: 0; /* ← right: 0 */
+            width: 100%;
+            background: #1a1a1a; 
+            padding: 15px; border-radius: 6px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.8); 
+            border: 2px solid #000; 
+            opacity: 0; visibility: hidden;
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-sizing: border-box;
+            transform-origin: top right; /* ← アニメーションの起点も右上に */
+        }
+        .rename-box label { color: #ffffff; margin-top: 0; font-weight: bold; }
+        
+        .rename-box input {
+            background: #fff !important; color: #111 !important;
+            border: 2px solid #e74c3c !important; transition: all 0.2s;
+        }
+        .rename-box input:focus {
+            border: 3px solid #ff0000 !important; 
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.8) !important; outline: none;
+        }
+
+        /* 「⚠️変更を確定して保存」ボタン */
+        .rn-submit {
+            position: absolute; top: 0; right: 0; 
+            width: 60%; box-sizing: border-box; 
+            /* 赤系の豪華なグラデーション */
+            background: linear-gradient(135deg, #ff4e50 0%, #c0392b 100%); 
+            color: white; 
+            padding: 8px 5px; /* 少し高さを出して押しやすく */
+            font-weight: 900;
+            font-size: 1rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5); /* 文字の影 */
+            border-radius: 6px; 
+            border: 1px solid #8e281e; /* 枠線を黒から濃い赤に変更して馴染ませる */
+            cursor: pointer;
+            opacity: 0; visibility: hidden;
+            /* 通常の影 + 内側の光沢(inset)で立体感を出す */
+            box-shadow: 0 5px 15px rgba(192, 57, 43, 0.4), inset 0 2px 0 rgba(255,255,255,0.3);
+            z-index: 20; 
+            transform-origin: top right; 
+            transition: all 0.6s ease, transform 0.2s, box-shadow 0.2s; /* アニメーション追加 */
+        }
+        /* ホバー時はさらに光らせる */
+        .rn-submit:hover { 
+            background: linear-gradient(135deg, #ff6b6b 0%, #e74c3c 100%); 
+            box-shadow: 0 8px 20px rgba(192, 57, 43, 0.6), inset 0 2px 0 rgba(255,255,255,0.5);
+        }
+        
+        .rn-loading {
+            position: absolute; top: 0; left: 0; width: 100%;
+            background: #f39c12; color: #fff; padding: 12px;
+            border-radius: 4px; font-weight: bold; text-align: center;
+            display: none; align-items: center; justify-content: center;
+        }
+
+        /* --- アニメーション座標（一気に飛び出すポップアウト方式） --- */
+        /* 初期状態 (閉じている時) は全て (0,0) の位置に隠して少し縮小しておく */
+        .rename-box, .rn-submit {
+            transform: translate(0, 0) scale(0.8); 
+        }
+
+        /* 展開時 (.open クラス付与時) に、指定座標へ一気に移動する */
+        .rename-overlay.open .box1 { opacity: 1; visibility: visible; transform: translate(0px, 210px) scale(1); z-index: 8; }
+        .rename-overlay.open .box2 { opacity: 1; visibility: visible; transform: translate(-220px, 120px) scale(1); z-index: 9; }
+        .rename-overlay.open .box3 { opacity: 1; visibility: visible; transform: translate(0px, 30px) scale(1); z-index: 10; }
+        
+        /* 確定ボタンは①と③の中間 (0, 170) へ */
+        .rename-overlay.open .rn-submit { opacity: 1; visibility: visible; transform: translate(0px, 140px) scale(1); z-index: 20; }
       
     </style>
 </head>
@@ -608,7 +704,7 @@
                                     <!-- ▼ 修正：ラベルの変更、ID表示、変更ボタンの追加 ▼ -->
                                     <div class="label-row" style="margin-bottom: 5px;">
                                         <label style="margin:0;">プロジェクト名 (JP)　<span id="displayProjectId" style="color:#3498db; font-weight:bold;">project_id:""</span></label>
-                                        <button type="button" class="btn-rename-proj" onclick="window.location.href='project_config.html'">♻️ project[id,jp,en]変更</button>
+                                        <button type="button" id="btnRenameProj" class="btn-rename-proj" onclick="toggleRenameUI()">♻️ project[id,jp,en]変更</button>
                                     </div>
                                     <div class="input-group">
                                         <input type="text" id="inProject" class="input-white" placeholder="入力または右から選択" oninput="autoFillProject()" autocomplete="off">
@@ -812,6 +908,42 @@
         </div>
     </div>
 
+    <!-- ▼▼▼ プロジェクト変更用 アニメーションUI ▼▼▼ -->
+    <div id="renameOverlay" class="rename-overlay" onclick="if(event.target===this) toggleRenameUI()">
+        <!-- ▼ 修正: クリックで閉じる命令（onclick="closeRenameUI()"）を追加 ▼ -->
+        <div id="renameBackdrop" class="rename-backdrop" onclick="closeRenameUI()" style="cursor: pointer;"></div>
+        
+        <div id="renameOrigin" class="rename-origin">
+            
+            <!-- ③ プロジェクトID -->
+            <div id="rnBox3" class="rename-box box3">
+                <label>③ project_id</label>
+                <input type="text" id="rnId" class="input-gray-en" placeholder="変更不可のID">
+            </div>
+
+            <!-- ② プロジェクト名 (JP) -->
+            <div id="rnBox2" class="rename-box box2">
+                <label>② プロジェクト名 (JP)</label>
+                <input type="text" id="rnJp" class="input-white">
+            </div>
+
+            <!-- ① Project (EN) -->
+            <div id="rnBox1" class="rename-box box1">
+                <label>① Project (EN)</label>
+                <input type="text" id="rnEn" class="input-gray-en">
+            </div>
+
+            <!-- 確定ボタン -->
+            <button id="rnSubmitBtn" class="btn-save rn-submit" onclick="executeRename()">⚠️ 変更を確定して保存</button>
+
+            <!-- 保存中の表示 -->
+            <div id="rnLoading" class="rn-loading">
+                <div class="spinner" style="width:20px;height:20px;border-width:3px;margin:0 10px 0 0;"></div>
+                保存中... (フォルダ引越し中)
+            </div>
+        </div>
+    </div>
+    
     <!-- ▼▼▼ 右クリックメニューのHTML ▼▼▼ -->
     <div id="contextMenu">
         <div class="context-item" id="menuPaste">📋 Paste image (貼り付け)</div>
@@ -897,6 +1029,12 @@
             
             // --- パネル切り替え ---
             function switchPanel(id) {
+                // ▼▼▼ 追加：もしプロジェクト変更UIが開いていたらアニメで閉じる ▼▼▼
+                const overlay = document.getElementById('renameOverlay');
+                if (overlay && overlay.style.display === 'block') {
+                    closeRenameUI();
+                }
+                // ▲▲▲ 追加ここまで ▲▲▲
                 document.querySelectorAll('.panel').forEach(e => e.classList.remove('active'));
                 document.querySelectorAll('.menu-btn').forEach(e => e.classList.remove('active'));
                 document.getElementById('panel-' + id).classList.add('active');
@@ -2628,6 +2766,223 @@
                         msg.textContent = "監視通信に失敗しましたが、裏で処理は進んでいます。";
                     }
                 }, 10000); // 10,000ミリ秒 = 10秒間隔でチェック
+            }
+
+
+            // ▼▼▼ プロジェクト変更（リネーム）UIとお引越しロジック ▼▼▼
+            // アニメーション付きでUIを開く
+            function toggleRenameUI() {
+                // ▼ 修正: 未選択時はアラートを出さず、何もせずに終了する ▼
+                if (!currentProjectId) {
+                    return;
+                }
+                
+                const overlay = document.getElementById('renameOverlay');
+            
+            if (overlay.style.display === 'block') {
+                closeRenameUI();
+                return;
+            }
+
+            // ▼ 修正: 要素の取得 ▼
+            const btn = document.getElementById('btnRenameProj');
+            const editorArea = document.querySelector('.editor-area');
+            const editorTitle = editorArea.querySelector('h2'); 
+            const panelArea = document.querySelector('.panel.active'); // サイドバーとの境界を知るため追加
+            
+            const btnRect = btn.getBoundingClientRect();
+            const editorRect = editorArea.getBoundingClientRect();
+            const titleRect = editorTitle.getBoundingClientRect();
+            const panelRect = panelArea.getBoundingClientRect(); // パネル全体の座標
+    
+            // ▼ 修正: 黒い幕を「サイドバーのキワ（パネルの左端）」から「エディタの右端」までピタッと張る ▼
+            const backdrop = document.getElementById('renameBackdrop');
+            backdrop.style.top = (titleRect.bottom + 15) + 'px'; 
+            backdrop.style.left = panelRect.left + 'px';      
+            backdrop.style.width = (editorRect.right - panelRect.left) + 'px';    
+            backdrop.style.height = (editorRect.bottom - titleRect.bottom - 15) + 'px'; 
+
+            // ボタンをオーバーレイの上に持ってくる魔法
+            btn.style.position = 'relative';
+            btn.style.zIndex = '9999'; 
+
+            // ▼ 修正: 基点(origin)を「右上基準」で計算し、(x-0, y+0) からスタートさせる ▼
+            const origin = document.getElementById('renameOrigin');
+            
+            // --- ⚙️ 微調整用の設定（ここでお好みの位置に1px単位で調整できます） ---
+            const adjustX = 0; // X座標のズレ調整（プラスで左へ、マイナスで右へ動く）
+            const adjustY = 0; // Y座標のズレ調整（プラスで下へ、マイナスで上へ動く）
+
+            // 右端からの距離 = (画面の幅 - ボタンの右端) + 調整値
+            const rightOffset = (window.innerWidth - btnRect.right) + adjustX;
+            origin.style.left = 'auto'; // leftの指定を無効化
+            origin.style.right = rightOffset + 'px';
+            
+            // ▼ ボタンの「上端(top)」を基準にする ▼
+            origin.style.top = (btnRect.top + adjustY) + 'px';
+            
+            // 現在のマスターデータを取得して、入力欄にセットする
+            const post = adminMasterData.find(p => p.project_id === currentProjectId);
+            document.getElementById('rnEn').value = post.project_en || "";
+            document.getElementById('rnJp').value = post.project_ja || "";
+            document.getElementById('rnId').value = post.project_id || "";
+
+            // UIを初期状態にリセットして表示
+            overlay.style.display = 'block';
+            overlay.className = 'rename-overlay active'; // クラスリセット
+            document.getElementById('rnSubmitBtn').style.display = 'block';
+            document.getElementById('rnLoading').style.display = 'none';
+
+            // ▼ 修正: 一気に全ての箱とボタンを飛び出させる（.openを付与） ▼
+            // ※display:block がブラウザに認識された直後に動かすため、50msだけ待ちます
+            setTimeout(() => { overlay.classList.add('open'); }, 50);   
+        }
+    
+             // ▼ 修正: アニメーションで一気に閉じる ▼
+        function closeRenameUI() {
+            const overlay = document.getElementById('renameOverlay');
+            overlay.classList.remove('open'); // 飛び出していたものを(0,0)にシュッと戻す
+            
+            // 戻るアニメーションの時間（0.6秒）だけ待ってから完全に非表示にする
+            setTimeout(() => { 
+                overlay.style.display = 'none'; 
+                // ボタンのZ-indexを元に戻す
+                document.getElementById('btnRenameProj').style.zIndex = 'auto';
+            }, 600); 
+        }
+    
+            // 変更を確定し、3つのファイル書き換えとフォルダ引越しを実行する
+            async function executeRename() {
+                const newEn = document.getElementById('rnEn').value.trim();
+                const newJp = document.getElementById('rnJp').value.trim();
+                const newId = document.getElementById('rnId').value.trim();
+    
+                if (!newId || !newJp || !newEn) {
+                    alert("全ての項目を入力してください。");
+                    return;
+                }
+    
+                if (!/^[a-zA-Z0-9_\-\.]+$/.test(newId)) {
+                    alert("エラー：project_id に日本語やスペースは使用できません。\n半角英数字と一部記号(_ - .)のみで入力してください。");
+                    return;
+                }
+    
+                // ID重複チェック（他のプロジェクトと被っていないか）
+                if (newId !== currentProjectId && adminMasterData.some(p => p.project_id === newId)) {
+                    alert(`エラー：ID「${newId}」は既に存在します。別のIDを指定してください。`);
+                    return;
+                }
+    
+                if(!confirm(`以下の内容でプロジェクトの中核データを変更します。\n\nJP: ${newJp}\nEN: ${newEn}\nID: ${newId}\n\n※IDが変更された場合、フォルダのお引越し処理が行われます。\nよろしいですか？`)) return;
+    
+                // UI切り替え（ボタンを消して「保存中...」にする）
+                document.getElementById('rnSubmitBtn').style.display = 'none';
+                document.getElementById('rnLoading').style.display = 'flex';
+    
+                const oldId = currentProjectId;
+                const token = localStorage.getItem("gh_token");
+    
+                try {
+                    // --- 1. JSデータの書き換え (3つのファイルを連動更新) ---
+                    
+                    // A. admin_master.js
+                    let newMaster = [...adminMasterData];
+                    let mIdx = newMaster.findIndex(p => p.project_id === oldId);
+                    if(mIdx >= 0) {
+                        newMaster[mIdx].project_id = newId;
+                        newMaster[mIdx].project_ja = newJp;
+                        newMaster[mIdx].project_en = newEn;
+                    }
+    
+                    // B. index_news.js (リンクのパスと画像パスの中のフォルダ名を書き換える)
+                    let newIndexNews =[...indexNewsData];
+                    newIndexNews.forEach(item => {
+                        if (item.link && item.link.startsWith(oldId + '/')) {
+                            item.link = item.link.replace(oldId + '/', newId + '/');
+                            item.image = item.image.replace(oldId + '/', newId + '/');
+                            item.project_ja = newJp;
+                            item.project_en = newEn;
+                        }
+                    });
+    
+                    // C. apps_catalog.js
+                    let newCatalog = [...appsCatalogData];
+                    let cIdx = newCatalog.findIndex(p => p.project_id === oldId);
+                    if(cIdx >= 0) {
+                        newCatalog[cIdx].project_id = newId;
+                        newCatalog[cIdx].project_ja = newJp;
+                        newCatalog[cIdx].project_en = newEn;
+                        newCatalog[cIdx].image = newCatalog[cIdx].image.replace(oldId + '/', newId + '/');
+                    }
+    
+                    // GitHubへ一気に保存
+                    await writeJsFile('admin_master.js', newMaster, `Rename project ${oldId} to ${newId}`);
+                    await writeJsFile('index_news.js', newIndexNews, `Rename project ${oldId} to ${newId}`);
+                    await writeJsFile('apps_catalog.js', newCatalog, `Rename project ${oldId} to ${newId}`);
+    
+                    // --- 2. フォルダのお引越し処理 (IDが変更された場合のみ実行) ---
+                    if (oldId !== newId) {
+                        // 古いフォルダ内のファイル一覧（index.html, index.png, news.js など）を取得
+                        const getRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${oldId}`, {
+                            headers: { Authorization: `token ${token}` }
+                        });
+                        
+                        if (getRes.ok) {
+                            const files = await getRes.json();
+                            
+                            // 取得したファイルを1つずつ、新しいフォルダにコピーし、古いものを消す
+                            for (let file of files) {
+                                if (file.type === 'file') {
+                                    // ファイルの中身(Base64)を取得
+                                    const fileRes = await fetch(file.url, { headers: { Authorization: `token ${token}` }});
+                                    const fileData = await fileRes.json();
+                                    
+                                    // ▼▼▼ 修正: titleタグの動的書き換えロジック ▼▼▼
+                                    let contentToSave = fileData.content;
+                                    
+                                    // もし移動するファイルが index.html なら、中身を解読して置換する
+                                    if (file.name === 'index.html') {
+                                        try {
+                                            // Base64を元のHTML文字列に戻す
+                                            let htmlString = decodeURIComponent(escape(atob(fileData.content)));
+                                            
+                                            // 正規表現で <title>〜</title> の中身を新しい日本語プロジェクト名に書き換える
+                                            htmlString = htmlString.replace(/<title>.*?<\/title>/i, `<title>${newJp}</title>`);
+                                            
+                                            // 再度Base64にエンコードし直す
+                                            contentToSave = btoa(unescape(encodeURIComponent(htmlString)));
+                                        } catch (decodeErr) {
+                                            console.error("HTMLの書き換えに失敗しました。そのままコピーします。", decodeErr);
+                                            // 失敗時は元のBase64をそのまま使う
+                                        }
+                                    }
+                                    // ▲▲▲ 修正ここまで ▲▲▲
+
+                                    // 新しいフォルダ(newId)に作成（書き換えた contentToSave を使う）
+                                    await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${newId}/${file.name}`, {
+                                        method: "PUT",
+                                        headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                                        body: JSON.stringify({ message: `Move file to ${newId}`, content: contentToSave })
+                                    });
+                                    
+                                    // 古いフォルダ(oldId)のファイルを削除
+                                    await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${oldId}/${file.name}`, {
+                                        method: "DELETE",
+                                        headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+                                        body: JSON.stringify({ message: `Delete old file`, sha: file.sha })
+                                    });
+                                }
+                            }
+                        }
+                    }
+    
+                    alert("✅ プロジェクトの変更と、データの再構築が完了しました！");
+                    location.reload(); // 全て終わったらリロードして最新状態にする
+    
+                } catch (e) {
+                    alert("❌ エラーが発生しました。コンソールを確認してください。\n" + e.message);
+                    closeRenameUI();
+                }
             }
 
             // プレビューエリアのスクロール制御
