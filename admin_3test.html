@@ -460,19 +460,18 @@
 
         /* 保存ボタン */
         .rn-submit {
-            position: absolute; top: 0; right: 0; /* ← leftを消して right: 0 に変更 */
-            width: 100%;
+            position: absolute; top: 0; right: 0;
+            width: max-content; /* ▼ 修正: 100%を解除し、文字の幅に合わせる ▼ */
             background: #c0392b; color: white; 
-            padding: 8px 12px; /* ▼ 修正：上下の余白を削ってスリムに ▼ */
+            padding: 8px 30px; /* ▼ 修正: 左右の余白を少しだけ確保してスリム化 ▼ */
             font-weight: bold;
             border-radius: 4px; border: 2px solid #000; cursor: pointer;
             opacity: 0; visibility: hidden;
             transition: all 0.6s ease;
             box-shadow: 0 5px 15px rgba(0,0,0,0.5);
             z-index: 20; 
-            transform-origin: top right; /* ← 起点を右上に */
+            transform-origin: top right;
         }
-        .rn-submit:hover { background: #a93226; }
         
         .rn-loading {
             position: absolute; top: 0; left: 0; width: 100%;
@@ -481,19 +480,30 @@
             display: none; align-items: center; justify-content: center;
         }
 
-        /* --- アニメーション座標（一気に飛び出すポップアウト方式） --- */
-        /* 初期状態 (閉じている時) は全て (0,0) の位置に隠して少し縮小しておく */
-        .rename-box, .rn-submit {
-            transform: translate(0, 0) scale(0.8); 
-        }
-
-        /* 展開時 (.open クラス付与時) に、指定座標へ一気に移動する */
-        .rename-overlay.open .box1 { opacity: 1; visibility: visible; transform: translate(0px, 210px) scale(1); z-index: 8; }
-        .rename-overlay.open .box2 { opacity: 1; visibility: visible; transform: translate(-220px, 120px) scale(1); z-index: 9; }
-        .rename-overlay.open .box3 { opacity: 1; visibility: visible; transform: translate(0px, 30px) scale(1); z-index: 10; }
+        /* =====================================================================
+           アニメーション座標設定エリア
+           ※原点(X:0, Y:0)は「♻️変更ボタンの右下角」です。
+           ※ transform: translate( Xpx, Ypx ); の数値を書き換えて微調整してください。
+             Xがマイナス（-）なら「左」へ。Yがプラス（+）なら「下」へ動きます。
+           ===================================================================== */
         
-        /* 確定ボタンは①と③の中間 (0, 170) へ */
-        .rename-overlay.open .rn-submit { opacity: 1; visibility: visible; transform: translate(0px, 170px) scale(1); z-index: 20; }
+        /* 状態①：箱①(EN) が出現 */
+        .rename-overlay.stage-1 .box1 { opacity: 1; visibility: visible; transform: translate(-154px, 0px); z-index: 10; }
+        
+        /* 状態②：箱①が移動、箱②(JP)が出現 */
+        .rename-overlay.stage-2 .box1 { opacity: 1; visibility: visible; transform: translate(-200px, 90px); z-index: 9; }
+        .rename-overlay.stage-2 .box2 { opacity: 1; visibility: visible; transform: translate(-154px, 0px); z-index: 10; }
+
+        /* 状態③（最終形態）：全要素が所定の場所に展開 */
+        /* 箱① (EN) */
+        .rename-overlay.stage-3 .box1 { opacity: 1; visibility: visible; transform: translate(0px, 180px); z-index: 8; }
+        /* 箱② (JP) */
+        .rename-overlay.stage-3 .box2 { opacity: 1; visibility: visible; transform: translate(-220px, 90px); z-index: 9; }
+        /* 箱③ (ID) */
+        .rename-overlay.stage-3 .box3 { opacity: 1; visibility: visible; transform: translate(0px, 0px); z-index: 10; }
+        
+        /* ⚠️確定ボタン（①と③の中間に配置） */
+        .rename-overlay.stage-3 .rn-submit { opacity: 1; visibility: visible; transform: translate(0px, 90px); z-index: 20; }
       
     </style>
 </head>
@@ -2799,11 +2809,11 @@
             const origin = document.getElementById('renameOrigin');
             
             // 右端からの距離 = (画面全体の幅 - ボタンの右端) + 左へズラす分(154px)
-            const rightOffset = (window.innerWidth - btnRect.right) + 154;
+            const rightOffset = (window.innerWidth - btnRect.right) + 0;
             origin.style.left = 'auto'; // leftの指定を無効化
             origin.style.right = rightOffset + 'px';
             // ボタンの真下(y+0) ※fixedなので画面の絶対座標でOK
-            origin.style.top = btnRect.bottom + 'px';
+            origin.style.top = btnRect.top + 'px';
             
             // 現在のマスターデータを取得して、入力欄にセットする
             const post = adminMasterData.find(p => p.project_id === currentProjectId);
