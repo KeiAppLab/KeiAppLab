@@ -72,7 +72,7 @@ const adminMasterData = [
         "image": "index_phot/index_about.png",
         "status": "coming",
         "privacy_html": "",
-        "project_ja": "GORIRA",
+        "project_ja": "ゴリラパニック",
         "project_en": "GORILA",
         "project_de": "Gratis Anruf-App",
         "project_fr": "App d'appels gratuits",
