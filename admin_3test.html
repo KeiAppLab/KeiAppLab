@@ -458,19 +458,28 @@
             box-shadow: 0 0 10px rgba(255, 0, 0, 0.8) !important; outline: none;
         }
 
-        /* 保存ボタン */
+        /* 「⚠️変更を確定して保存」ボタン */
         .rn-submit {
-            position: absolute; top: 0; right: 0; /* ← right: 0 */
-            width: 100%;
+            position: absolute; top: 0; right: 0; 
+            
+            /* ▼ ボタンの横幅（箱と同じにするなら 100%、小さくするなら 80% や 250px などに変更） */
+            width: 100%; 
+            
+            /* ▼ 修正：これがないと余白(padding)が加算されて箱より大きくなってしまう ▼ */
+            box-sizing: border-box; 
+            
             background: #c0392b; color: white; 
-            padding: 8px 12px; /* ▼ 修正：上下の余白を削ってスリムに ▼ */
+            
+            /* ▼ ボタン内の文字の周りの余白 (上下8px、左右12px) ▼ */
+            padding: 8px 12px; 
+            
             font-weight: bold;
             border-radius: 4px; border: 2px solid #000; cursor: pointer;
             opacity: 0; visibility: hidden;
             transition: all 0.6s ease;
             box-shadow: 0 5px 15px rgba(0,0,0,0.5);
             z-index: 20; 
-            transform-origin: top right; /* ← 起点を右上に */
+            transform-origin: top right; 
         }
         .rn-submit:hover { background: #a93226; }
         
@@ -2798,12 +2807,17 @@
             // ▼ 修正: 基点(origin)を「右上基準」で計算し、(x-0, y+0) からスタートさせる ▼
             const origin = document.getElementById('renameOrigin');
             
-            // 右端からの距離 = (画面全体の幅 - ボタンの右端) + 左へズラす分(0px)
-            const rightOffset = (window.innerWidth - btnRect.right) + 0;
+            // --- ⚙️ 微調整用の設定（ここでお好みの位置に1px単位で調整できます） ---
+            const adjustX = 0; // X座標のズレ調整（プラスで左へ、マイナスで右へ動く）
+            const adjustY = 0; // Y座標のズレ調整（プラスで下へ、マイナスで上へ動く）
+
+            // 右端からの距離 = (画面の幅 - ボタンの右端) + 調整値
+            const rightOffset = (window.innerWidth - btnRect.right) + adjustX;
             origin.style.left = 'auto'; // leftの指定を無効化
             origin.style.right = rightOffset + 'px';
-            // ボタンの真下(y+0) ※fixedなので画面の絶対座標でOK
-            origin.style.top = btnRect.bottom + 'px';
+            
+            // ▼ ボタンの「上端(top)」を基準にする ▼
+            origin.style.top = (btnRect.top + adjustY) + 'px';
             
             // 現在のマスターデータを取得して、入力欄にセットする
             const post = adminMasterData.find(p => p.project_id === currentProjectId);
