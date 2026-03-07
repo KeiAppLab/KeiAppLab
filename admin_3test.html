@@ -436,7 +436,7 @@
 
         /* ▼▼ 箱の中を黒に、縁取りも黒に ▼▼ */
         .rename-box {
-            position: absolute; top: 0; right: 0; /* ← leftを消して right: 0 に変更 */
+            position: absolute; top: 0; right: 0; /* ← right: 0 */
             width: 100%;
             background: #1a1a1a; 
             padding: 15px; border-radius: 6px;
@@ -460,7 +460,7 @@
 
         /* 保存ボタン */
         .rn-submit {
-            position: absolute; top: 0; right: 0; /* ← leftを消して right: 0 に変更 */
+            position: absolute; top: 0; right: 0; /* ← right: 0 */
             width: 100%;
             background: #c0392b; color: white; 
             padding: 8px 12px; /* ▼ 修正：上下の余白を削ってスリムに ▼ */
@@ -2795,11 +2795,11 @@
             btn.style.position = 'relative';
             btn.style.zIndex = '9999'; 
 
-            // ▼ 修正: 基点(origin)を「右上基準」で計算し、(x-154, y+0) からスタートさせる ▼
+            // ▼ 修正: 基点(origin)を「右上基準」で計算し、(x-0, y+0) からスタートさせる ▼
             const origin = document.getElementById('renameOrigin');
             
-            // 右端からの距離 = (画面全体の幅 - ボタンの右端) + 左へズラす分(154px)
-            const rightOffset = (window.innerWidth - btnRect.right) + 154;
+            // 右端からの距離 = (画面全体の幅 - ボタンの右端) + 左へズラす分(0px)
+            const rightOffset = (window.innerWidth - btnRect.right) + 0;
             origin.style.left = 'auto'; // leftの指定を無効化
             origin.style.right = rightOffset + 'px';
             // ボタンの真下(y+0) ※fixedなので画面の絶対座標でOK
