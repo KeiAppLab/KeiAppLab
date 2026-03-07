@@ -461,27 +461,29 @@
         /* 「⚠️変更を確定して保存」ボタン */
         .rn-submit {
             position: absolute; top: 0; right: 0; 
-            
-            /* ▼ ボタンの横幅（箱と同じにするなら 100%、小さくするなら 80% や 250px などに変更） */
-            width: 60%; 
-            
-            /* ▼ 修正：これがないと余白(padding)が加算されて箱より大きくなってしまう ▼ */
-            box-sizing: border-box; 
-            
-            background: #c0392b; color: white; 
-            
-            /* ▼ ボタン内の文字の周りの余白 (上下5px、左右5px) ▼ */
-            padding: 5px 5px; 
-            
+            width: 60%; box-sizing: border-box; 
+            /* 赤系の豪華なグラデーション */
+            background: linear-gradient(135deg, #ff4e50 0%, #c0392b 100%); 
+            color: white; 
+            padding: 5px 5px; /* 少し高さを出して押しやすく */
             font-weight: bold;
-            border-radius: 4px; border: 2px solid #000; cursor: pointer;
+            /* font-size: 0.9rem; */
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5); /* 文字の影 */
+            border-radius: 4px; 
+            border: 2px solid #8e281e; /* 枠線を黒から濃い赤に変更して馴染ませる */
+            cursor: pointer;
             opacity: 0; visibility: hidden;
-            transition: all 0.6s ease;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            /* 通常の影 + 内側の光沢(inset)で立体感を出す */
+            box-shadow: 0 5px 15px rgba(192, 57, 43, 0.4), inset 0 2px 0 rgba(255,255,255,0.3);
             z-index: 20; 
             transform-origin: top right; 
+            transition: all 0.6s ease, transform 0.2s, box-shadow 0.2s; /* アニメーション追加 */
         }
-        .rn-submit:hover { background: #a93226; }
+        /* ホバー時はさらに光らせる */
+        .rn-submit:hover { 
+            background: linear-gradient(135deg, #ff6b6b 0%, #e74c3c 100%); 
+            box-shadow: 0 8px 20px rgba(192, 57, 43, 0.6), inset 0 2px 0 rgba(255,255,255,0.5);
+        }
         
         .rn-loading {
             position: absolute; top: 0; left: 0; width: 100%;
@@ -2770,12 +2772,12 @@
             // ▼▼▼ プロジェクト変更（リネーム）UIとお引越しロジック ▼▼▼
             // アニメーション付きでUIを開く
             function toggleRenameUI() {
-            if (!currentProjectId) {
-                alert("⚠️ 変更するプロジェクトを「履歴」から選択してください。");
-                return;
-            }
-            
-            const overlay = document.getElementById('renameOverlay');
+                // ▼ 修正: 未選択時はアラートを出さず、何もせずに終了する ▼
+                if (!currentProjectId) {
+                    return;
+                }
+                
+                const overlay = document.getElementById('renameOverlay');
             
             if (overlay.style.display === 'block') {
                 closeRenameUI();
@@ -2935,11 +2937,32 @@
                                     const fileRes = await fetch(file.url, { headers: { Authorization: `token ${token}` }});
                                     const fileData = await fileRes.json();
                                     
-                                    // 新しいフォルダ(newId)に作成
+                                    // ▼▼▼ 修正: titleタグの動的書き換えロジック ▼▼▼
+                                    let contentToSave = fileData.content;
+                                    
+                                    // もし移動するファイルが index.html なら、中身を解読して置換する
+                                    if (file.name === 'index.html') {
+                                        try {
+                                            // Base64を元のHTML文字列に戻す
+                                            let htmlString = decodeURIComponent(escape(atob(fileData.content)));
+                                            
+                                            // 正規表現で <title>〜</title> の中身を新しい日本語プロジェクト名に書き換える
+                                            htmlString = htmlString.replace(/<title>.*?<\/title>/i, `<title>${newJp}</title>`);
+                                            
+                                            // 再度Base64にエンコードし直す
+                                            contentToSave = btoa(unescape(encodeURIComponent(htmlString)));
+                                        } catch (decodeErr) {
+                                            console.error("HTMLの書き換えに失敗しました。そのままコピーします。", decodeErr);
+                                            // 失敗時は元のBase64をそのまま使う
+                                        }
+                                    }
+                                    // ▲▲▲ 修正ここまで ▲▲▲
+
+                                    // 新しいフォルダ(newId)に作成（書き換えた contentToSave を使う）
                                     await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${newId}/${file.name}`, {
                                         method: "PUT",
                                         headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
-                                        body: JSON.stringify({ message: `Move file to ${newId}`, content: fileData.content })
+                                        body: JSON.stringify({ message: `Move file to ${newId}`, content: contentToSave })
                                     });
                                     
                                     // 古いフォルダ(oldId)のファイルを削除
