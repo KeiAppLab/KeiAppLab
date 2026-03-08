@@ -38,9 +38,21 @@
         /* ▲▲▲ 追加ここまで ▲▲▲ */
 
         /* --- 全体レイアウト --- */
-        /* ▼ 修正: 高さをタスクバー考慮の 100dvh にし、はみ出しを隠す ▼ */
-        body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Arial, sans-serif; color: #ddd; height: 100dvh; overflow: hidden; }
-        #mainWrapper { display: none; height: 100%; }
+        /* ▼ 修正: 高さをタスクバー考慮の 100dvh に変更 ▼ */
+        body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Arial, sans-serif; background: #1e1e1e; color: #ddd; height: 100dvh; overflow: hidden; }
+        #mainWrapper { display: none; height: 100%; position: relative; z-index: 1; }
+
+        /* ▼▼▼ 追加：第2層「独立したSVGカーボンパネル」の定義 ▼▼▼ */
+        #svg-carbon-panel {
+            position: fixed; top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background-image: var(--carbon-overlay);
+            /* カーボン自体の基本サイズ（これ以上大きくも小さくもならない） */
+            background-size: 16px 16px; 
+            background-repeat: repeat;
+            z-index: 1; /* 下地(0)より上、コンテンツ(2)より下 */
+            pointer-events: none; /* マウスクリックを邪魔しない */
+        }
 
         /* --- ログイン画面 --- */
         #loginOverlay { 
@@ -67,7 +79,15 @@
             display: flex; flex-direction: column; padding: 10px; box-sizing: border-box; 
             /* ▼ 修正: 拡大時にはみ出たメニューをスクロールできるようにする ▼ */
             overflow-y: auto; 
+            position: relative; /* z-indexを効かせるため */
         }
+        
+        /* ▼ 追加: 第3層「コンテンツ」をカーボンより上に浮き上がらせる魔法 ▼ */
+        .sidebar > *, .main-content > * {
+            position: relative;
+            z-index: 2; 
+        }
+
         .sidebar h1 { font-size: 1.2rem; color: #fff; margin: 20px 10px; border-bottom: 2px solid #007acc; padding-bottom: 10px; }
         .menu-btn { padding: 15px; margin-bottom: 5px; cursor: pointer; border-radius: 5px; color: #aaa; font-weight: bold; transition: 0.2s; display: flex; align-items: center; gap: 10px; }
         .menu-btn:hover { background: #3c3c3c; color: #fff; }
@@ -76,11 +96,10 @@
 
         .main-content { 
             position: relative; height: 100%; 
-            /* ▼ 修正: メインエリアのスクロールを有効にする ▼ */
+            background-color: #111111; /* メインエリアの下地の色 */
+            /* ▼ 修正: メインエリア自体のスクロールを有効に ▼ */
             overflow-y: auto; 
-            background-color: #111111;
         }
-        /* paddingの値を 上15px 右15px 下15px 左30px に変更します */
         .panel { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; overflow-y: auto; padding: 15px 15px 15px 30px; box-sizing: border-box; }
         .panel.active { display: block; }
 
@@ -579,10 +598,11 @@
 
     <!-- 2. メイン画面 -->
     <div id="mainWrapper">
+        <!-- ▼▼▼ 画面全体を覆う独立したSVGカーボンパネル ▼▼▼ -->
+        <div id="svg-carbon-panel"></div>
         <div class="dashboard">
-            
             <!-- ▼▼ サイドバー（左メニュー） ▼▼ -->
-            <div class="sidebar carbon-bg">
+            <div class="sidebar">
                 <h1>🚀 KEI Lab Admin</h1>
                 <div class="menu-btn active" onclick="switchPanel('calc')">
                     <span class="menu-icon">📈</span> 収益・秒数計算
@@ -992,9 +1012,29 @@
             // ▼▼▼ 設定 ▼▼▼
             const GITHUB_CONFIG = { owner: "KeiAppLab", repo: "KeiAppLab", path: "news-data.js" };
             let previewLang = 'ja';
-            let currentProjectId = "";
+            let currentProjectId = ""; // 現在入力中のプロジェクトID
     
-            // ▼▼▼ 追加: お父様考案「背景SVGサイズのみ絶対固定」の魔法 ▼▼▼
+            // ▼▼▼ 追加: お父様考案「SVGカーボンパネルのみ100%維持」の魔法 ▼▼▼
+            function maintainCarbonScale() {
+                // ブラウザの実際のズーム倍率を取得 (例: 125% なら 1.25)
+                const ratio = window.devicePixelRatio || 1;
+                const panel = document.getElementById('svg-carbon-panel');
+                
+                if (panel) {
+                    // パネル自体に「ブラウザズームの逆数」を掛けることで、常に物理的な等倍(100%)を維持し、謎の筋を消滅させる。
+                    panel.style.zoom = 1 / ratio;
+                    
+                    // ズームを打ち消した分、パネルのサイズが小さく(または大きく)なってしまうため、
+                    // 画面幅×ratio倍のサイズに強制的に広げて、画面の端までカーボンで埋め尽くす。
+                    panel.style.width = (100 * ratio) + 'vw';
+                    panel.style.height = (100 * ratio) + 'vh';
+                }
+            }
+            // 画面のズーム変更時と、初期ロード時に実行
+            window.addEventListener('resize', maintainCarbonScale);
+            window.addEventListener('DOMContentLoaded', maintainCarbonScale);
+    
+            // ▼▼▼ 「背景SVGサイズのみ絶対固定」の魔法 ▼▼▼
             function fixBackgroundSize() {
                 // ブラウザの現在のズーム倍率を取得 (例: 110% なら 1.1)
                 const ratio = window.devicePixelRatio || 1;
