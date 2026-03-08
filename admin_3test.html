@@ -22,13 +22,40 @@
             --carbon-8px-twill: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cdefs%3E%3ClinearGradient id='vw' x1='0%25' y1='0%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='rgba(0,0,0,0.4)'/%3E%3Cstop offset='50%25' stop-color='rgba(255,255,255,0.08)'/%3E%3Cstop offset='100%25' stop-color='rgba(0,0,0,0.4)'/%3E%3C/linearGradient%3E%3ClinearGradient id='vl' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='rgba(0,0,0,0.5)'/%3E%3Cstop offset='50%25' stop-color='rgba(0,0,0,0)'/%3E%3Cstop offset='100%25' stop-color='rgba(0,0,0,0.5)'/%3E%3C/linearGradient%3E%3ClinearGradient id='hw' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='rgba(0,0,0,0.4)'/%3E%3Cstop offset='50%25' stop-color='rgba(255,255,255,0.06)'/%3E%3Cstop offset='100%25' stop-color='rgba(0,0,0,0.4)'/%3E%3C/linearGradient%3E%3ClinearGradient id='hl' x1='0%25' y1='0%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='rgba(0,0,0,0.5)'/%3E%3Cstop offset='50%25' stop-color='rgba(0,0,0,0)'/%3E%3Cstop offset='100%25' stop-color='rgba(0,0,0,0.5)'/%3E%3C/linearGradient%3E%3Cg id='V'%3E%3Crect width='4' height='8' fill='url(%23vw)'/%3E%3Crect width='4' height='8' fill='url(%23vl)'/%3E%3C/g%3E%3Cg id='H'%3E%3Crect width='8' height='4' fill='url(%23hw)'/%3E%3Crect width='8' height='4' fill='url(%23hl)'/%3E%3C/g%3E%3C/defs%3E%3Cuse href='%23H' x='8' y='0'/%3E%3Cuse href='%23H' x='12' y='4'/%3E%3Cuse href='%23H' x='-4' y='4'/%3E%3Cuse href='%23H' x='0' y='8'/%3E%3Cuse href='%23H' x='4' y='12'/%3E%3Cuse href='%23V' x='0' y='12'/%3E%3Cuse href='%23V' x='0' y='-4'/%3E%3Cuse href='%23V' x='4' y='0'/%3E%3Cuse href='%23V' x='8' y='4'/%3E%3Cuse href='%23V' x='12' y='8'/%3E%3C/svg%3E");
         }
 
+        /* ▼▼▼ 修正：カーボンフィルム（中間層）の設定 ▼▼▼ */
         .global-carbon-overlay {
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
             background-image: var(--carbon-8px-twill);
-            background-size: 8px 8px; /* サイズ調整箇所 */
-            pointer-events: none; /* ★重要：クリックをすり抜けさせる魔法 */
-            z-index: 1; /* 背景色より上、コンテンツより下に配置 */
+            background-size: 8px 8px; 
+            background-attachment: fixed;
+            pointer-events: none; /* クリックを邪魔しない */
+            /* ▼ 重なり順を「ベース色(1)の上、文字(10)の下」である「2」に設定 ▼ */
+            z-index: 2; 
+            /* 質感を高めるため、少しだけ全体を暗くする効果をプラス */
+            background-color: rgba(0, 0, 0, 0.1); 
+        }
+
+        /* サイドバー（ベース色） */
+        .sidebar { 
+            background-color: #252526; 
+            border-right: 1px solid #111; 
+            display: flex; flex-direction: column; padding: 10px; box-sizing: border-box; 
+            position: relative; 
+            z-index: 1; /* 最下層に設定 */
+        }
+        
+        /* メインコンテンツ（ベース色） */
+        .main-content { 
+            background-color: #1e1e1e; 
+            position: relative; overflow: hidden; height: 100%; 
+            z-index: 1; /* 最下層に設定 */
+        }
+
+        /* 入力欄やパネルなどの「手前に出すべき要素」 */
+        .panel, .menu-btn, h1, h2 {
+            position: relative;
+            z-index: 10; /* カーボンの幕(2)よりも手前に出す */
         }
         
         /* --- 全体レイアウト --- */
