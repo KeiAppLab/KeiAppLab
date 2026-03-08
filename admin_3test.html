@@ -22,14 +22,9 @@
                【調整箇所 1：半透明の度合い（光と影の強さ）】
                下のSVGコードの中にある「rgba(255,255,255,0.08)」が光の強さ（現在8%）です。
                もっと光らせたい時は「0.15」などにします。
-               「rgba(0,0,0,0.5)」は影の濃さ（現在50%）です。
-               ▼ 究極版: crispEdges(隙間防止) + viewBox(座標固定) + オーバーラップ(0.5px食い込み) を適用
-               ハイライトも少し調整し、よりリアルなカーボン光沢に仕上げています。
-               ▼ オーバーサンプリング版：
-               内部解像度を10倍(160x160)に引き上げ、ブラウザのズーム時(110%等)の
-               小数点計算による丸め誤差(筋や隙間)を極限まで圧縮・消滅させます。
+               「rgba(0,0,0,0.3)」は影の濃さ（現在30%）です。
             */
-            --carbon-overlay: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cdefs%3E%3C!-- 縦糸の膨らみ --%3E%3ClinearGradient id='vw' x1='0' y1='0' x2='1' y2='0'%3E%3Cstop offset='0%25' stop-color='rgba(0,0,0,0.8)'/%3E%3Cstop offset='30%25' stop-color='rgba(255,255,255,0.4)'/%3E%3Cstop offset='70%25' stop-color='rgba(255,255,255,0.05)'/%3E%3Cstop offset='100%25' stop-color='rgba(0,0,0,0.8)'/%3E%3C/linearGradient%3E%3C!-- 縦糸の沈み込み --%3E%3ClinearGradient id='vl' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0%25' stop-color='rgba(0,0,0,0.9)'/%3E%3Cstop offset='20%25' stop-color='rgba(0,0,0,0)'/%3E%3Cstop offset='80%25' stop-color='rgba(0,0,0,0)'/%3E%3Cstop offset='100%25' stop-color='rgba(0,0,0,0.9)'/%3E%3C/linearGradient%3E%3C!-- 横糸の膨らみ --%3E%3ClinearGradient id='hw' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0%25' stop-color='rgba(0,0,0,0.8)'/%3E%3Cstop offset='30%25' stop-color='rgba(255,255,255,0.3)'/%3E%3Cstop offset='70%25' stop-color='rgba(255,255,255,0.05)'/%3E%3Cstop offset='100%25' stop-color='rgba(0,0,0,0.8)'/%3E%3C/linearGradient%3E%3C!-- 横糸の沈み込み --%3E%3ClinearGradient id='hl' x1='0' y1='0' x2='1' y2='0'%3E%3Cstop offset='0%25' stop-color='rgba(0,0,0,0.9)'/%3E%3Cstop offset='30%25' stop-color='rgba(0,0,0,0)'/%3E%3Cstop offset='80%25' stop-color='rgba(0,0,0,0)'/%3E%3Cstop offset='100%25' stop-color='rgba(0,0,0,0.9)'/%3E%3C/linearGradient%3E%3Cg id='V'%3E%3Crect width='4' height='8' fill='url(%23vw)'/%3E%3Crect width='4' height='8' fill='url(%23vl)'/%3E%3C/g%3E%3Cg id='H'%3E%3Crect width='8' height='4' fill='url(%23hw)'/%3E%3Crect width='8' height='4' fill='url(%23hl)'/%3E%3C/g%3E%3C/defs%3E%3C!-- ▼ 魔法の下敷き（真っ黒に塗りつぶして隙間を埋める） ▼ --%3E%3Crect width='100%25' height='100%25' fill='%23000'/%3E%3C!-- 2/2綾織りの数学的配置 --%3E%3Cuse href='%23H' x='8' y='0'/%3E%3Cuse href='%23H' x='12' y='4'/%3E%3Cuse href='%23H' x='-4' y='4'/%3E%3Cuse href='%23H' x='0' y='8'/%3E%3Cuse href='%23H' x='4' y='12'/%3E%3Cuse href='%23V' x='0' y='12'/%3E%3Cuse href='%23V' x='0' y='-4'/%3E%3Cuse href='%23V' x='4' y='0'/%3E%3Cuse href='%23V' x='8' y='4'/%3E%3Cuse href='%23V' x='12' y='8'/%3E%3C/svg%3E");
+            --carbon-overlay: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cdefs%3E%3ClinearGradient id='vw' x1='0%25' y1='0%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='rgba(0,0,0,0.4)'/%3E%3Cstop offset='50%25' stop-color='rgba(255,255,255,0.08)'/%3E%3Cstop offset='100%25' stop-color='rgba(0,0,0,0.4)'/%3E%3C/linearGradient%3E%3ClinearGradient id='vl' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='rgba(0,0,0,0.3)'/%3E%3Cstop offset='50%25' stop-color='rgba(0,0,0,0)'/%3E%3Cstop offset='100%25' stop-color='rgba(0,0,0,0.3)'/%3E%3C/linearGradient%3E%3ClinearGradient id='hw' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='rgba(0,0,0,0.4)'/%3E%3Cstop offset='50%25' stop-color='rgba(255,255,255,0.06)'/%3E%3Cstop offset='100%25' stop-color='rgba(0,0,0,0.4)'/%3E%3C/linearGradient%3E%3ClinearGradient id='hl' x1='0%25' y1='0%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='rgba(0,0,0,0.3)'/%3E%3Cstop offset='50%25' stop-color='rgba(0,0,0,0)'/%3E%3Cstop offset='100%25' stop-color='rgba(0,0,0,0.3)'/%3E%3C/linearGradient%3E%3Cg id='V'%3E%3Crect width='4' height='8' fill='url(%23vw)'/%3E%3Crect width='4' height='8' fill='url(%23vl)'/%3E%3C/g%3E%3Cg id='H'%3E%3Crect width='8' height='4' fill='url(%23hw)'/%3E%3Crect width='8' height='4' fill='url(%23hl)'/%3E%3C/g%3E%3C/defs%3E%3Cuse href='%23H' x='8' y='0'/%3E%3Cuse href='%23H' x='12' y='4'/%3E%3Cuse href='%23H' x='-4' y='4'/%3E%3Cuse href='%23H' x='0' y='8'/%3E%3Cuse href='%23H' x='4' y='12'/%3E%3Cuse href='%23V' x='0' y='12'/%3E%3Cuse href='%23V' x='0' y='-4'/%3E%3Cuse href='%23V' x='4' y='0'/%3E%3Cuse href='%23V' x='8' y='4'/%3E%3Cuse href='%23V' x='12' y='8'/%3E%3C/svg%3E");
         }
 
         .carbon-bg {
@@ -998,6 +993,26 @@
             const GITHUB_CONFIG = { owner: "KeiAppLab", repo: "KeiAppLab" };
             let previewLang = 'ja';
             let currentProjectId = ""; // 現在入力中のプロジェクトID
+
+            // ▼▼▼ 「25%単位ズーム・スナップ機能」 ▼▼▼
+            function enforceCleanZoom() {
+                // 現在のデバイス/ブラウザの実際のズーム倍率を取得 (例: 1.1)
+                const currentRatio = window.devicePixelRatio || 1;
+                
+                // 倍率を「25% (0.25) 単位」で最も近い数値に丸め込む
+                // (例: 1.1 -> 1.0, 1.2 -> 1.25, 1.35 -> 1.25, 1.4 -> 1.5)
+                const cleanRatio = Math.round(currentRatio * 4) / 4;
+    
+                // 今の倍率から、綺麗な倍率にするための「補正値」を計算
+                const correctionScale = cleanRatio / currentRatio;
+    
+                // body要素のzoomプロパティを使って、ブラウザの描画を強制的に「綺麗な倍率」に引き戻す
+                document.body.style.zoom = correctionScale;
+            }
+    
+            // 起動時、およびブラウザのズームが変更された時に自動で実行する
+            window.addEventListener('resize', enforceCleanZoom);
+            enforceCleanZoom();
 
             // ▼▼▼ ローディング制御とBase64取得関数 ▼▼▼
             function showEditorLoading(message) {
