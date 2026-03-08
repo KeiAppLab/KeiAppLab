@@ -29,17 +29,11 @@
 
         .carbon-bg {
             background-image: var(--carbon-overlay);
-            
-            /* 
-               【調整箇所 2：ピクセルの大きさ（緻密さ）】
-               現在は極限の「8px 8px」です。もう少し目を粗くしたい場合は
-               「12px 12px」や「16px 16px」に変更してください。
-            */
-            background-size: 16px 16px; 
-            
-            /* ▼ 背景は画面に完全固定。スクロールしても動きません ▼ */
+            /* ▼ 修正：JSが計算した「絶対ブレないサイズ」を適用 ▼ */
+            background-size: var(--carbon-size) var(--carbon-size); 
             background-attachment: fixed;
             background-repeat: repeat;
+        }
         }
         /* ▲▲▲ 追加ここまで ▲▲▲ */
 
@@ -996,9 +990,25 @@
 
     <script>
             // ▼▼▼ 設定 ▼▼▼
-            const GITHUB_CONFIG = { owner: "KeiAppLab", repo: "KeiAppLab" };
+            const GITHUB_CONFIG = { owner: "KeiAppLab", repo: "KeiAppLab", path: "news-data.js" };
             let previewLang = 'ja';
-            let currentProjectId = ""; // 現在入力中のプロジェクトID
+            let currentProjectId = "";
+    
+            // ▼▼▼ 追加: お父様考案「背景SVGサイズのみ絶対固定」の魔法 ▼▼▼
+            function fixBackgroundSize() {
+                // ブラウザの現在のズーム倍率を取得 (例: 110% なら 1.1)
+                const ratio = window.devicePixelRatio || 1;
+                // 基準となるカーボンのサイズ (16px)
+                const baseSize = 16;
+                // ズームされても画面上で16pxになるように逆算 (16 / 1.1 = 14.5454px)
+                const adjustedSize = baseSize / ratio;
+                
+                // 計算したサイズをCSS変数としてページ全体に適用
+                document.documentElement.style.setProperty('--carbon-size', adjustedSize + 'px');
+            }
+            
+            window.addEventListener('resize', fixBackgroundSize);
+            fixBackgroundSize(); // 起動時に実行
 
             // ▼▼▼ 「25%単位ズーム・スナップ機能」 ▼▼▼
             function enforceCleanZoom() {
@@ -1099,9 +1109,28 @@
                 }
                 // ▲▲▲ 追加ここまで ▲▲▲
                 document.querySelectorAll('.panel').forEach(e => e.classList.remove('active'));
-                document.querySelectorAll('.menu-btn').forEach(e => e.classList.remove('active'));
-                document.getElementById('panel-' + id).classList.add('active');
-                event.currentTarget.classList.add('active');
+            document.querySelectorAll('.menu-btn').forEach(e => e.classList.remove('active'));
+            
+            const targetPanel = document.getElementById('panel-' + id);
+            targetPanel.classList.add('active');
+            event.currentTarget.classList.add('active');
+
+            // ▼▼▼ 追加：iframeへのカーボン背景の自動注入魔法 ▼▼▼
+            const iframeInPanel = targetPanel.querySelector('iframe');
+                if (iframeInPanel) {
+                    iframeInPanel.onload = function() {
+                        try {
+                            const iframeDoc = iframeInPanel.contentDocument || iframeInPanel.contentWindow.document;
+                            const carbonSvg = getComputedStyle(document.documentElement).getPropertyValue('--carbon-overlay');
+                            // iframeの中の body に直接カーボン背景を書き込む
+                            iframeDoc.body.style.backgroundImage = carbonSvg;
+                            iframeDoc.body.style.backgroundAttachment = "fixed";
+                            // JSで計算した絶対サイズをそのまま渡す
+                            const currentSize = getComputedStyle(document.documentElement).getPropertyValue('--carbon-size');
+                            iframeDoc.body.style.backgroundSize = `${currentSize} ${currentSize}`;
+                        } catch(e) { console.warn("iframe背景注入失敗:", e); }
+                    };
+                }
     
                 // パネルが開かれたらデータをJSON文字列にして表示
                 if (id === 'data-master') {
