@@ -16,7 +16,7 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700;900&family=Roboto:wght@400;500;900&display=swap');
 
-        /* ▼▼▼ ここから追加：カーボン背景の大原則定義 ▼▼▼ */
+        /* ▼▼▼ カーボン背景の大原則定義 ▼▼▼ */
         :root {
             /* 
                【調整箇所 1：半透明の度合い（光と影の強さ）】
@@ -29,29 +29,26 @@
 
         .carbon-bg {
             background-image: var(--carbon-overlay);
-            /* ▼ 修正：JSが計算した「絶対ブレないサイズ」を適用 ▼ */
-            background-size: var(--carbon-size) var(--carbon-size); 
+            /* ▼ JS変数ではなく、絶対値(16px)で固定。これでズームしてもブレません ▼ */
+            background-size: 16px 16px; 
             background-attachment: fixed;
             background-repeat: repeat;
         }
-        }
-        /* ▲▲▲ 追加ここまで ▲▲▲ */
 
         /* --- 全体レイアウト --- */
-        /* ▼ 修正: 高さをタスクバー考慮の 100dvh に変更 ▼ */
-        body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Arial, sans-serif; background: #1e1e1e; color: #ddd; height: 100dvh; overflow: hidden; }
-        #mainWrapper { display: none; height: 100%; position: relative; z-index: 1; }
+        /* ▼ 高さを 100dvh (タスクバーを除いた実際の画面の高さ) に固定 ▼ */
+        body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Arial, sans-serif; background: #111111; color: #ddd; height: 100dvh; overflow: hidden; }
+        #mainWrapper { display: none; height: 100dvh; position: relative; z-index: 1; }
 
-        /* ▼▼▼ 追加：第2層「独立したSVGカーボンパネル」の定義 ▼▼▼ */
+        /* ▼▼▼ 第2層「独立したSVGカーボンパネル」 ▼▼▼ */
         #svg-carbon-panel {
             position: fixed; top: 0; left: 0;
-            width: 100vw; height: 100vh;
+            width: 100vw; height: 100dvh;
             background-image: var(--carbon-overlay);
-            /* カーボン自体の基本サイズ（これ以上大きくも小さくもならない） */
             background-size: 16px 16px; 
             background-repeat: repeat;
-            z-index: 1; /* 下地(0)より上、コンテンツ(2)より下 */
-            pointer-events: none; /* マウスクリックを邪魔しない */
+            z-index: 1; 
+            pointer-events: none; 
         }
 
         /* --- ログイン画面 --- */
@@ -72,17 +69,17 @@
         .warning-box { background: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 10px; border-radius: 5px; font-size: 0.85rem; margin-top: 15px; }
 
         /* --- メイン画面 --- */
-        .dashboard { display: grid; grid-template-columns: 250px 1fr; height: 100%; }
+        .dashboard { display: grid; grid-template-columns: 250px 1fr; height: 100dvh; }
         
         .sidebar { 
             background-color: #252526; border-right: 2px solid #111; 
             display: flex; flex-direction: column; padding: 10px; box-sizing: border-box; 
-            /* ▼ 修正: 拡大時にはみ出たメニューをスクロールできるようにする ▼ */
+            /* ▼ 修正: 高さを100dvhに固定し、中身がはみ出たらスクロールさせる ▼ */
+            height: 100dvh;
             overflow-y: auto; 
-            position: relative; /* z-indexを効かせるため */
+            position: relative;
         }
         
-        /* ▼ 追加: 第3層「コンテンツ」をカーボンより上に浮き上がらせる魔法 ▼ */
         .sidebar > *, .main-content > * {
             position: relative;
             z-index: 2; 
@@ -95,9 +92,10 @@
         .spacer { flex-grow: 1; min-height: 20px; border-bottom: 1px solid #333; margin-bottom: 10px; }
 
         .main-content { 
-            position: relative; height: 100%; 
-            background-color: #111111; /* メインエリアの下地の色 */
-            /* ▼ 修正: メインエリア自体のスクロールを有効に ▼ */
+            position: relative; 
+            /* ▼ 修正: 高さを100dvhに固定し、中身がはみ出たらスクロールさせる ▼ */
+            height: 100dvh; 
+            background-color: transparent; /* 背景色はbodyに任せるので透明に */
             overflow-y: auto; 
         }
         .panel { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; overflow-y: auto; padding: 15px 15px 15px 30px; box-sizing: border-box; }
@@ -1013,62 +1011,6 @@
             const GITHUB_CONFIG = { owner: "KeiAppLab", repo: "KeiAppLab", path: "news-data.js" };
             let previewLang = 'ja';
             let currentProjectId = ""; // 現在入力中のプロジェクトID
-    
-            // ▼▼▼ 追加: お父様考案「SVGカーボンパネルのみ100%維持」の魔法 ▼▼▼
-            function maintainCarbonScale() {
-                // ブラウザの実際のズーム倍率を取得 (例: 125% なら 1.25)
-                const ratio = window.devicePixelRatio || 1;
-                const panel = document.getElementById('svg-carbon-panel');
-                
-                if (panel) {
-                    // パネル自体に「ブラウザズームの逆数」を掛けることで、常に物理的な等倍(100%)を維持し、謎の筋を消滅させる。
-                    panel.style.zoom = 1 / ratio;
-                    
-                    // ズームを打ち消した分、パネルのサイズが小さく(または大きく)なってしまうため、
-                    // 画面幅×ratio倍のサイズに強制的に広げて、画面の端までカーボンで埋め尽くす。
-                    panel.style.width = (100 * ratio) + 'vw';
-                    panel.style.height = (100 * ratio) + 'vh';
-                }
-            }
-            // 画面のズーム変更時と、初期ロード時に実行
-            window.addEventListener('resize', maintainCarbonScale);
-            window.addEventListener('DOMContentLoaded', maintainCarbonScale);
-    
-            // ▼▼▼ 「背景SVGサイズのみ絶対固定」の魔法 ▼▼▼
-            function fixBackgroundSize() {
-                // ブラウザの現在のズーム倍率を取得 (例: 110% なら 1.1)
-                const ratio = window.devicePixelRatio || 1;
-                // 基準となるカーボンのサイズ (16px)
-                const baseSize = 16;
-                // ズームされても画面上で16pxになるように逆算 (16 / 1.1 = 14.5454px)
-                const adjustedSize = baseSize / ratio;
-                
-                // 計算したサイズをCSS変数としてページ全体に適用
-                document.documentElement.style.setProperty('--carbon-size', adjustedSize + 'px');
-            }
-            
-            window.addEventListener('resize', fixBackgroundSize);
-            fixBackgroundSize(); // 起動時に実行
-
-            // ▼▼▼ 「25%単位ズーム・スナップ機能」 ▼▼▼
-            function enforceCleanZoom() {
-                // 現在のデバイス/ブラウザの実際のズーム倍率を取得 (例: 1.1)
-                const currentRatio = window.devicePixelRatio || 1;
-                
-                // 倍率を「25% (0.25) 単位」で最も近い数値に丸め込む
-                // (例: 1.1 -> 1.0, 1.2 -> 1.25, 1.35 -> 1.25, 1.4 -> 1.5)
-                const cleanRatio = Math.round(currentRatio * 4) / 4;
-    
-                // 今の倍率から、綺麗な倍率にするための「補正値」を計算
-                const correctionScale = cleanRatio / currentRatio;
-    
-                // body要素のzoomプロパティを使って、ブラウザの描画を強制的に「綺麗な倍率」に引き戻す
-                document.body.style.zoom = correctionScale;
-            }
-    
-            // 起動時、およびブラウザのズームが変更された時に自動で実行する
-            window.addEventListener('resize', enforceCleanZoom);
-            enforceCleanZoom();
 
             // ▼▼▼ ローディング制御とBase64取得関数 ▼▼▼
             function showEditorLoading(message) {
