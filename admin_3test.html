@@ -3070,30 +3070,45 @@
                 });
             });
 
-            // ▼▼▼ SVGカーボンパネル「物理100%絶対固定」システム ▼▼▼
-            function lockCarbonSize() {
+            // =========================================================================
+            // 💎 究極の同期：物理ピクセル・スナップシステム (Shake & Seam Eliminator)
+            // =========================================================================
+            let lastPixelRatio = 0;
+    
+            function syncCarbonToPhysicalPixels() {
                 const carbonLayer = document.getElementById('carbonFilter');
                 if (!carbonLayer) return;
-
-                // 基準サイズ (16px)」
-                const baseSize = 16; 
-                
-                // 現在のブラウザのズーム倍率を取得（100%なら1、125%なら1.25）
-                const currentZoom = window.devicePixelRatio || 1;
-                
-                // ズーム倍率の逆算（拡大されているなら、その分だけ元サイズを小さく設定する）
-                const adjustedSize = baseSize / currentZoom;
-                
-                // CSSに適用（小数点第3位まで正確に指定し、丸め誤差による筋を極限まで抑える）
-                carbonLayer.style.backgroundSize = `${adjustedSize.toFixed(3)}px ${adjustedSize.toFixed(3)}px`;
+    
+                // 現在のブラウザ倍率を取得
+                const ratio = window.devicePixelRatio || 1;
+    
+                // 倍率が変わった時、または微細な揺れを検知した時だけ実行
+                if (lastPixelRatio !== ratio) {
+                    const baseSize = 16; // お父様指定の 16px
+                    
+                    /* 
+                       ★ここが魔法の計算式：
+                       1. 理想のピクセル数 (16 * ratio) を算出し、それを「整数 (Math.round)」に丸める。
+                       2. その整数を倍率で割り戻す。
+                       これにより、ブラウザの描画位置がモニターのドットと100%一致し、隙間(筋)が消えます。
+                    */
+                    const snappedPixelSize = Math.round(baseSize * ratio) / ratio;
+                    
+                    // CSSに適用（アンチエイリアスの揺れを防ぐため、常にこの値を維持）
+                    carbonLayer.style.backgroundSize = `${snappedPixelSize}px ${snappedPixelSize}px`;
+                    
+                    lastPixelRatio = ratio;
+                }
+    
+                // ブラウザの描画更新（垂直同期）に合わせて自分を呼び出し続ける（カクつき・揺れの完全排除）
+                requestAnimationFrame(syncCarbonToPhysicalPixels);
             }
-
-            // 初期ロード時と、ウィンドウのサイズ（ズーム）が変わった時に即座に再計算
-            window.addEventListener('DOMContentLoaded', lockCarbonSize);
-            window.addEventListener('resize', lockCarbonSize);
-            
-            // 安全装置：ショートカットキーによる高速ズーム時にも確実に反映させる
-            setInterval(lockCarbonSize, 1000);
+    
+            // 起動
+            window.addEventListener('DOMContentLoaded', () => {
+                requestAnimationFrame(syncCarbonToPhysicalPixels);
+            });
+            // =========================================================================
 
         </script>
     </body>
