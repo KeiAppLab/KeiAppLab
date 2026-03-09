@@ -22,15 +22,16 @@
             --carbon-6k-pro: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='vw' x1='0%25' y1='0%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='rgba(0,0,0,0.4)'/%3E%3Cstop offset='50%25' stop-color='rgba(255,255,255,0.08)'/%3E%3Cstop offset='100%25' stop-color='rgba(0,0,0,0.4)'/%3E%3C/linearGradient%3E%3ClinearGradient id='vl' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='rgba(0,0,0,0.3)'/%3E%3Cstop offset='50%25' stop-color='rgba(0,0,0,0)'/%3E%3Cstop offset='100%25' stop-color='rgba(0,0,0,0.3)'/%3E%3C/linearGradient%3E%3ClinearGradient id='hw' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='rgba(0,0,0,0.4)'/%3E%3Cstop offset='50%25' stop-color='rgba(255,255,255,0.06)'/%3E%3Cstop offset='100%25' stop-color='rgba(0,0,0,0.4)'/%3E%3C/linearGradient%3E%3ClinearGradient id='hl' x1='0%25' y1='0%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='rgba(0,0,0,0.3)'/%3E%3Cstop offset='50%25' stop-color='rgba(0,0,0,0)'/%3E%3Cstop offset='100%25' stop-color='rgba(0,0,0,0.3)'/%3E%3C/linearGradient%3E%3Cg id='V'%3E%3Crect width='4' height='8' fill='url(%23vw)'/%3E%3Crect width='4' height='8' fill='url(%23vl)'/%3E%3C/g%3E%3Cg id='H'%3E%3Crect width='8' height='4' fill='url(%23hw)'/%3E%3Crect width='8' height='4' fill='url(%23hl)'/%3E%3C/g%3E%3C/defs%3E%3Cuse href='%23H' x='8' y='0'/%3E%3Cuse href='%23H' x='12' y='4'/%3E%3Cuse href='%23H' x='-4' y='4'/%3E%3Cuse href='%23H' x='0' y='8'/%3E%3Cuse href='%23H' x='4' y='12'/%3E%3Cuse href='%23V' x='0' y='12'/%3E%3Cuse href='%23V' x='0' y='-4'/%3E%3Cuse href='%23V' x='4' y='0'/%3E%3Cuse href='%23V' x='8' y='4'/%3E%3Cuse href='%23V' x='12' y='8'/%3E%3C/svg%3E");
         }
 
-        /* 第1層 (Z: 0) メインエリアの背景色 (漆黒) */
-        body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #111111; color: #ddd; height: 100vh; overflow: hidden; }
+        /* 第1層 (Z: 0) ベースキャンバス (完全な純黒) */
+        body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #000000; color: #ddd; height: 100vh; overflow: hidden; }
         #mainWrapper { display: none; height: 100%; }
 
-        /* 第2層 (Z: 2) サイドパネルの背景色 (少し明るいグレー) */
+        /* 第2層 (Z: 2) サイドパネル用のカラーフィルター (半透明のグレー) */
+        /* ※下地の純黒と合成されて、#252526 相当の色味になります */
         .layer-sidebar-bg {
             position: fixed; top: 0; left: 0;
             width: 250px; height: 100vh;
-            background-color: #252526;
+            background-color: rgba(37, 37, 38, 0.85); /* 半透明グレー */
             border-right: 2px solid #000;
             z-index: 2;
         }
@@ -62,6 +63,7 @@
 
         /* --- 第10層 メイン画面コンテンツ --- */
         .dashboard { display: grid; grid-template-columns: 250px 1fr; height: 100%; position: relative; z-index: 10; }
+        
         .sidebar { background-color: transparent; display: flex; flex-direction: column; padding: 10px; box-sizing: border-box; overflow-y: auto; }
         .sidebar h1 { font-size: 1.2rem; color: #fff; margin: 20px 10px; border-bottom: 2px solid #007acc; padding-bottom: 10px; text-shadow: 2px 2px 4px #000; }
         .menu-btn { padding: 15px; margin-bottom: 5px; cursor: pointer; border-radius: 5px; color: #aaa; font-weight: bold; transition: 0.2s; display: flex; align-items: center; gap: 10px; }
@@ -70,7 +72,12 @@
         .spacer { flex-grow: 1; min-height: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 10px; }
 
         .main-content { position: relative; overflow: hidden; height: 100%; background-color: transparent; }
-        .panel { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; overflow-y: auto; padding: 15px 15px 15px 30px; box-sizing: border-box; }
+        /* ▼ 修正：パネル(CMSエディタ等)の背景に、薄いグレーの半透明カラーフィルターをかける ▼ */
+        .panel { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; 
+            overflow-y: auto; padding: 15px 15px 15px 30px; box-sizing: border-box;
+            background-color: rgba(30, 30, 30, 0.7); /* これがメインパネルの色調（#1e1e1e 相当に調色） */
+        }
         .panel.active { display: block; }
 
         /* --- CMSレイアウト (40:60) --- */
