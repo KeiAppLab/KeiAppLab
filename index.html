@@ -86,20 +86,22 @@
 
         .menu-link:hover { color: #003d82; }
 
-        .lang-switch {
-            font-family: 'Roboto', sans-serif;
-            border: 1px solid #0056b3;
-            padding: 5px 15px; /* 文字が長くなったので少し広げました */
-            border-radius: 20px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            color: #0056b3;
-            transition: all 0.3s;
-            white-space: nowrap;
-            user-select: none;
-        }
-
-        .lang-switch:hover { background: #0056b3; color: white; }
+        /* 新しいアニメーション言語メニューのスタイル */
+        .lang-menu-wrapper { position: relative; }
+        .lang-main-btn { background: #0056b3; color: #fff; border: none; padding: 5px 15px; border-radius: 20px; font-family: 'Roboto', sans-serif; font-weight: 900; font-size: 0.9rem; cursor: pointer; z-index: 10; position: relative; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: background 0.3s; }
+        .lang-main-btn:hover { background: #003d82; }
+        .lang-sub-btns { position: absolute; top: 5px; right: 0; display: flex; flex-direction: row-reverse; pointer-events: none; z-index: 5; }
+        .lang-circle { width: 35px; height: 35px; border-radius: 50%; color: white; border: none; font-family: 'Roboto', sans-serif; font-weight: bold; font-size: 0.8rem; display: flex; justify-content: center; align-items: center; cursor: pointer; position: absolute; right: 0; top: 0; opacity: 0; transform: translateY(0) translateX(0); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .lang-ja { background: #e74c3c; z-index: 5; } .lang-en { background: #3498db; z-index: 4; } .lang-de { background: #f1c40f; color: #333; z-index: 3; } .lang-fr { background: #9b59b6; z-index: 2; } .lang-es { background: #e67e22; z-index: 1; }
+        
+        /* メニュー開閉時のアニメーション */
+        .lang-menu-wrapper.open .lang-sub-btns { pointer-events: auto; }
+        .lang-menu-wrapper.open .lang-circle { opacity: 1; }
+        .lang-menu-wrapper.open .lang-circle:nth-child(1) { transform: translateY(45px) translateX(0); }
+        .lang-menu-wrapper.open .lang-circle:nth-child(2) { transform: translateY(45px) translateX(-45px); }
+        .lang-menu-wrapper.open .lang-circle:nth-child(3) { transform: translateY(45px) translateX(-90px); }
+        .lang-menu-wrapper.open .lang-circle:nth-child(4) { transform: translateY(45px) translateX(-135px); }
+        .lang-menu-wrapper.open .lang-circle:nth-child(5) { transform: translateY(45px) translateX(-180px); }
 
         /* --- ヒーローセクション（アニメーション演出） --- */
         .hero-section { height: 100vh; width: 100%; display: flex; justify-content: center; align-items: center; position: relative; z-index: 10; perspective: 1500px; }
@@ -469,7 +471,17 @@
             <div class="menu-group menu-right">
                 <a href="survey.html" class="menu-link" data-ja="アンケート" data-en="Survey">アンケート</a>
                 <a href="contact.html" class="menu-link" data-ja="お問い合わせ" data-en="Contact">お問い合わせ</a>
-                <div class="lang-switch" id="langSwitch">Language</div>
+                <!-- 5か国語対応のアニメーションメニュー -->
+                <div class="lang-menu-wrapper" id="langMenu">
+                    <button class="lang-main-btn" onclick="toggleLangMenu()">Language ▼</button>
+                    <div class="lang-sub-btns">
+                        <button class="lang-circle lang-es" onclick="changeLang('es')">ES</button>
+                        <button class="lang-circle lang-fr" onclick="changeLang('fr')">FR</button>
+                        <button class="lang-circle lang-de" onclick="changeLang('de')">DE</button>
+                        <button class="lang-circle lang-en" onclick="changeLang('en')">EN</button>
+                        <button class="lang-circle lang-ja" onclick="changeLang('ja')">JP</button>
+                    </div>
+                </div>
             </div>
         </nav>
     </header>
@@ -751,44 +763,52 @@
             renderPressGrid();
         });
 
-        // --- 3. 言語切り替えロジック ---
+        // --- 3. 言語切り替えロジック (5か国語対応) ---
+        const allLangs = ['ja', 'en', 'de', 'fr', 'es'];
+
+        function toggleLangMenu() { 
+            document.getElementById('langMenu').classList.toggle('open'); 
+        }
+
+        function changeLang(lang) {
+            setLanguage(lang);
+            document.getElementById('langMenu').classList.remove('open');
+        }
+
         function setLanguage(lang) {
             localStorage.setItem('preferredLang', lang);
-            const ja = document.querySelectorAll('.lang-ja');
-            const en = document.querySelectorAll('.lang-en');
-            // .menu-link と .footer-link の両方を取得
-            const links = document.querySelectorAll('.menu-link, .footer-link');
-
-            if (lang === 'en') {
-                ja.forEach(el => el.style.display = 'none');
-                en.forEach(el => el.style.display = 'inline-block');
-                links.forEach(l => l.textContent = l.getAttribute('data-en'));
-            } else {
-                ja.forEach(el => el.style.display = 'inline-block');
-                en.forEach(el => el.style.display = 'none');
-                links.forEach(l => l.textContent = l.getAttribute('data-ja'));
-            }
             
-            // ⭕️ 修正後（追加）：言語が変わったらニュース部分を強制的に再描画する
+            // 1. 各言語要素の表示/非表示を制御
+            allLangs.forEach(l => {
+                const elements = document.querySelectorAll(`.lang-${l}`);
+                elements.forEach(el => {
+                    // 選ばれた言語なら表示、それ以外は非表示
+                    el.style.display = (l === lang) ? 'inline-block' : 'none';
+                });
+            });
+
+            // 2. リンク（メニュー・フッター）のテキスト書き換え
+            const links = document.querySelectorAll('.menu-link, .footer-link');
+            links.forEach(l => {
+                // 選ばれた言語のデータがなければ、英語を代わりに出す（安全装置）
+                const text = l.getAttribute(`data-${lang}`) || l.getAttribute('data-en') || l.getAttribute('data-ja');
+                if(text) l.textContent = text;
+            });
+
+            // 3. ニュースリストの再描画（現在表示中のタブを維持して再描画）
             if (typeof indexNewsData !== 'undefined') {
-                // 現在アクティブなタブ（すべて、プレス等）の状態を取得して再描画
                 const activeTab = document.querySelector('.tab-btn.active');
                 let filterType = 'all';
                 if(activeTab) {
-                    if(activeTab.innerHTML.includes('プレスリリース') || activeTab.innerHTML.includes('Press')) filterType = 'release';
-                    if(activeTab.innerHTML.includes('更新情報') || activeTab.innerHTML.includes('Updates')) filterType = 'update';
+                    if(activeTab.innerHTML.includes('Press') || activeTab.innerHTML.includes('プレスリリース')) filterType = 'release';
+                    if(activeTab.innerHTML.includes('Updates') || activeTab.innerHTML.includes('更新情報')) filterType = 'update';
                 }
                 renderNewsList(filterType);
                 renderPressGrid();
             }
         }
 
-        const langBtn = document.getElementById('langSwitch');
-        langBtn.addEventListener('click', () => {
-            const current = localStorage.getItem('preferredLang') || 'ja';
-            setLanguage(current === 'ja' ? 'en' : 'ja');
-        });
-
+        // 初期実行：保存された言語か、デフォルトの'ja'をセット
         const savedLang = localStorage.getItem('preferredLang') || 'ja';
         setLanguage(savedLang);
 
