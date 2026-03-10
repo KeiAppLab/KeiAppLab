@@ -49,12 +49,15 @@
 
         /* --- ヘッダー --- */
         header {
+            /* 縦スクロールに追従して消えるように absolute を維持 */
             position: absolute;
-            top: 0;
-            left: 0;
+            top: 15px; /* 詳細ページに合わせて20pxから15pxに変更 */
+            left: 50%; /* 中央基準 */
+            transform: translateX(-50%); /* 中央揃えの魔法 */
             width: 100%;
-            padding-top: 20px;
-            padding-left: 2em;
+            max-width: 1100px; /* ★ここが重要：詳細ページと同じ最大幅 */
+            padding: 0 20px; /* 左右の余白を詳細ページと統一 */
+            box-sizing: border-box;
             display: flex;
             justify-content: center;
             z-index: 200;
@@ -62,8 +65,9 @@
 
         nav {
             display: flex;
-            gap: 40px;
+            justify-content: space-between; /* ★メニューを左右に振り分ける */
             align-items: center;
+            width: 100%; /* nav自体を最大幅まで広げる */
         }
 
         .menu-group {
@@ -116,11 +120,13 @@
         
         .lang-menu-wrapper.open .lang-sub-btns { pointer-events: auto; }
         .lang-menu-wrapper.open .lang-circle { opacity: 1; }
-        .lang-menu-wrapper.open .lang-circle:nth-child(1) { transform: translateY(45px) translateX(0); }
-        .lang-menu-wrapper.open .lang-circle:nth-child(2) { transform: translateY(45px) translateX(-45px); }
-        .lang-menu-wrapper.open .lang-circle:nth-child(3) { transform: translateY(45px) translateX(-90px); }
-        .lang-menu-wrapper.open .lang-circle:nth-child(4) { transform: translateY(45px) translateX(-135px); }
-        .lang-menu-wrapper.open .lang-circle:nth-child(5) { transform: translateY(45px) translateX(-180px); }
+        
+        /* 順番ではなく、クラス名で直接位置を指定して安定させる */
+        .lang-menu-wrapper.open .circle-es { transform: translateY(45px) translateX(0); }
+        .lang-menu-wrapper.open .circle-fr { transform: translateY(45px) translateX(-45px); }
+        .lang-menu-wrapper.open .circle-de { transform: translateY(45px) translateX(-90px); }
+        .lang-menu-wrapper.open .circle-en { transform: translateY(45px) translateX(-135px); }
+        .lang-menu-wrapper.open .circle-ja { transform: translateY(45px) translateX(-180px); }
 
         /* --- ヒーローセクション --- */
         .hero-section { height: 100vh; width: 100%; display: flex; justify-content: center; align-items: center; position: relative; z-index: 10; perspective: 1500px; }
@@ -621,33 +627,39 @@
 
         function changeLang(lang) {
             localStorage.setItem('preferredLang', lang);
+            
+            // 1. まずメニューを閉じる（アニメーション開始）
             document.getElementById('langMenu').classList.remove('open');
             
-            const allLangs =['ja', 'en', 'de', 'fr', 'es'];
-            allLangs.forEach(l => {
-                const elements = document.querySelectorAll('.lang-' + l);
-                if (l === lang) {
-                    elements.forEach(el => el.style.display = 'inline-block');
-                } else {
-                    elements.forEach(el => el.style.display = 'none');
-                }
-            });
+            // 2. アニメーションが終わるのを少し待つ（400ミリ秒 = 0.4秒）
+            setTimeout(() => {
+                // 3. その後で、実際の言語切り替え処理を行う
+                const allLangs =['ja', 'en', 'de', 'fr', 'es'];
+                allLangs.forEach(l => {
+                    const elements = document.querySelectorAll('.lang-' + l);
+                    if (l === lang) {
+                        elements.forEach(el => el.style.display = 'inline-block');
+                    } else {
+                        elements.forEach(el => el.style.display = 'none');
+                    }
+                });
 
-            const links = document.querySelectorAll('.menu-link, .footer-link');
-            links.forEach(l => {
-                l.textContent = l.getAttribute('data-' + lang) || l.getAttribute('data-en');
-            });
+                const links = document.querySelectorAll('.menu-link, .footer-link');
+                links.forEach(l => {
+                    l.textContent = l.getAttribute('data-' + lang) || l.getAttribute('data-en');
+                });
 
-            if (typeof indexNewsData !== 'undefined') {
-                const activeTab = document.querySelector('.tab-btn.active');
-                let filterType = 'all';
-                if(activeTab) {
-                    if(activeTab.innerHTML.includes('プレスリリース') || activeTab.innerHTML.includes('Press') || activeTab.innerHTML.includes('Presse') || activeTab.innerHTML.includes('Prensa')) filterType = 'release';
-                    if(activeTab.innerHTML.includes('更新情報') || activeTab.innerHTML.includes('Updates') || activeTab.innerHTML.includes('Mises à jour') || activeTab.innerHTML.includes('Actualizaciones')) filterType = 'update';
+                if (typeof indexNewsData !== 'undefined') {
+                    const activeTab = document.querySelector('.tab-btn.active');
+                    let filterType = 'all';
+                    if(activeTab) {
+                        if(activeTab.innerHTML.includes('プレスリリース') || activeTab.innerHTML.includes('Press') || activeTab.innerHTML.includes('Presse') || activeTab.innerHTML.includes('Prensa')) filterType = 'release';
+                        if(activeTab.innerHTML.includes('更新情報') || activeTab.innerHTML.includes('Updates') || activeTab.innerHTML.includes('Mises à jour') || activeTab.innerHTML.includes('Actualizaciones')) filterType = 'update';
+                    }
+                    renderNewsList(filterType);
+                    renderPressGrid();
                 }
-                renderNewsList(filterType);
-                renderPressGrid();
-            }
+            }, 400); // ← ここが待ち時間です（CSSの transition 0.4s と一致させています）
         }
 
         // 初期ロード時の判定
