@@ -657,29 +657,49 @@
         }
 
         // --- 2. ニュース表示ロジック ---
+        // 現在の言語設定を取得する便利関数
+        function getCurrentLang() {
+            return localStorage.getItem('preferredLang') || 'ja';
+        }
+
         function renderNewsList(filter) {
             const list = document.getElementById('newsListDisplay');
             list.innerHTML = '';
             
-            if(typeof newsData === 'undefined') {
-                list.innerHTML = '<li style="padding:15px; color:red;">エラー: news-data.js が読み込まれていません</li>';
+            // ⭕️ 修正後: indexNewsData をチェック
+            if(typeof indexNewsData === 'undefined') {
+                list.innerHTML = '<li style="padding:15px; color:red;">エラー: index_news.js が読み込まれていません（またはデータが空です）</li>';
                 return;
             }
 
-            const filtered = newsData
+            const filtered = indexNewsData
                 .filter(item => filter === 'all' || item.category === filter)
                 .sort((a, b) => new Date(b.date) - new Date(a.date))
                 .slice(0, 5);
 
+            const lang = getCurrentLang();
+            const langSuffix = lang === 'ja' ? 'ja' : 'en'; // 簡略化のため日英のみのフォールバック
+
+            // 多言語用のカテゴリ名辞書
+            const catNames = {
+                ja: { release: 'プレスリリース', update: '更新情報', start: 'プロジェクト開始', steam: 'Steamリリース', game: 'ミニゲーム' },
+                en: { release: 'Press Release', update: 'Updates', start: 'Coming Soon', steam: 'Steam Release', game: 'Mini Game' }
+            };
+
             filtered.forEach(item => {
-                const tagClass = item.category === 'release' ? 'tag-release' : 'tag-update';
-                const tagName = item.category === 'release' ? 'プレスリリース' : '更新情報';
+                // タグの色用クラス
+                const tagClass = 'tag-' + item.category; 
+                // 言語に合わせたカテゴリ名
+                const tagName = (catNames[lang] && catNames[lang][item.category]) ? catNames[lang][item.category] : item.category;
+                
+                // 言語に合わせたタイトル（英語が空なら日本語を出すフォールバック処理）
+                const title = item['title_' + langSuffix] || item.title_ja || "No Title";
                 
                 list.innerHTML += `
                     <li class="news-item">
                         <span class="news-date">${item.date}</span>
                         <span class="news-tag ${tagClass}">${tagName}</span>
-                        <a href="${item.link}" class="news-link">${item.title}</a>
+                        <a href="${item.link}?lang=${lang}" class="news-link">${title}</a>
                     </li>
                 `;
             });
@@ -689,23 +709,30 @@
             const grid = document.getElementById('pressGridDisplay');
             grid.innerHTML = '';
 
-            if(typeof newsData === 'undefined') {
-                grid.innerHTML = 'エラー: news-data.js 未検出';
+            // ⭕️ 修正後
+            if(typeof indexNewsData === 'undefined') {
+                grid.innerHTML = '<p style="color:red;">エラー: index_news.js 未検出</p>';
                 return;
             }
 
-            const visualNews = newsData
+            const visualNews = indexNewsData
                 .filter(item => item.image && item.image !== "")
                 .sort((a, b) => new Date(b.date) - new Date(a.date))
                 .slice(0, 4);
 
+            const lang = getCurrentLang();
+            const langSuffix = lang === 'ja' ? 'ja' : 'en';
+
             visualNews.forEach(item => {
+                // 言語に合わせたタイトル
+                const title = item['title_' + langSuffix] || item.title_ja || "No Title";
+
                 grid.innerHTML += `
-                    <a href="${item.link}" class="press-card">
-                        <img src="${item.image}" alt="${item.title}" class="press-img">
+                    <a href="${item.link}?lang=${lang}" class="press-card">
+                        <img src="${item.image}" alt="${title}" class="press-img">
                         <div class="press-content">
                             <span class="press-date">${item.date}</span>
-                            <div class="press-text">${item.title}</div>
+                            <div class="press-text">${title}</div>
                         </div>
                     </a>
                 `;
@@ -740,6 +767,19 @@
                 ja.forEach(el => el.style.display = 'inline-block');
                 en.forEach(el => el.style.display = 'none');
                 links.forEach(l => l.textContent = l.getAttribute('data-ja'));
+            }
+            
+            // ⭕️ 修正後（追加）：言語が変わったらニュース部分を強制的に再描画する
+            if (typeof indexNewsData !== 'undefined') {
+                // 現在アクティブなタブ（すべて、プレス等）の状態を取得して再描画
+                const activeTab = document.querySelector('.tab-btn.active');
+                let filterType = 'all';
+                if(activeTab) {
+                    if(activeTab.innerHTML.includes('プレスリリース') || activeTab.innerHTML.includes('Press')) filterType = 'release';
+                    if(activeTab.innerHTML.includes('更新情報') || activeTab.innerHTML.includes('Updates')) filterType = 'update';
+                }
+                renderNewsList(filterType);
+                renderPressGrid();
             }
         }
 
