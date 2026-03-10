@@ -4,7 +4,7 @@
         "date": "2026.03.10",
         "title": "メールフォームについて",
         "author": "Ksansansan",
-        "content": "",
+        "content": "&lt;title&gt;ページタイトル | FreeCallApp&lt;/title&gt;<br><div>このtitleの | の右側を件名とするようにしている。</div><div><br></div>",
         "likes": [],
         "delete_votes": []
     },
