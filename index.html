@@ -49,25 +49,32 @@
 
         /* --- ヘッダー --- */
         header {
-            /* 縦スクロールに追従して消えるように absolute を維持 */
             position: absolute;
-            top: 15px; /* 詳細ページに合わせて20pxから15pxに変更 */
-            left: 50%; /* 中央基準 */
-            transform: translateX(-50%); /* 中央揃えの魔法 */
+            top: 0;
+            left: 0;
             width: 100%;
-            max-width: 1100px; /* ★ここが重要：詳細ページと同じ最大幅 */
-            padding: 0 20px; /* 左右の余白を詳細ページと統一 */
-            box-sizing: border-box;
+            padding-top: 15px;
             display: flex;
             justify-content: center;
             z-index: 200;
         }
 
+        /* 1100pxの透明なガイド枠を作る */
+        .header-inner {
+            width: 100%;
+            max-width: 1100px;
+            padding: 0 20px;
+            box-sizing: border-box;
+            position: relative; /* Languageボタンを絶対配置する基準 */
+            display: flex;
+            justify-content: center; /* メニュー本体は中央に */
+            align-items: center;
+        }
+
         nav {
             display: flex;
-            justify-content: space-between; /* ★メニューを左右に振り分ける */
+            gap: 40px; /* メニュー同士の間隔 */
             align-items: center;
-            width: 100%; /* nav自体を最大幅まで広げる */
         }
 
         .menu-group {
@@ -89,15 +96,19 @@
         .menu-link:hover { color: #003d82; }
 
         /* ▼ 5言語メニュー用CSS ▼ */
-        .lang-menu-wrapper { position: relative; }
+        .lang-menu-wrapper { 
+            position: absolute; /* navから独立させる */
+            right: 20px; /* 右端から20pxに固定（詳細ページと同じX座標になる） */
+        }
         
         .lang-main-btn { 
-            background: #ffffff; color: #0056b3; border: 1px solid #0056b3; 
-            padding: 5px 15px; border-radius: 20px; font-family: 'Roboto', sans-serif; 
-            font-size: 0.9rem; font-weight: bold; cursor: pointer; 
-            z-index: 10; position: relative; transition: all 0.3s;
+            background: #0056b3; color: #fff; border: none; 
+            padding: 8px 15px; border-radius: 20px; font-family: 'Roboto', sans-serif; 
+            font-size: 0.9rem; font-weight: 900; cursor: pointer; 
+            z-index: 10; position: relative; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
-        .lang-main-btn:hover { background: #0056b3; color: #ffffff; }
+        /* ホバー時は反転せず、少しだけ濃い青にする */
+        .lang-main-btn:hover { background: #003d82; }
         
         .lang-sub-btns { position: absolute; top: 5px; right: 0; display: flex; flex-direction: row-reverse; pointer-events: none; }
         
@@ -278,9 +289,16 @@
 
         /* --- スマホ対応 --- */
         @media screen and (max-width: 768px) {
-            header { padding-top: 15px; width: 90%; }
+            header { padding-top: 15px; width: 100%; } /* 幅を100%にする */
+            .header-inner { flex-direction: column; padding: 0; } /* 縦並びに変更 */
             nav { flex-direction: column; width: 100%; gap: 8px; }
             .menu-group { width: 100%; gap: 15px; justify-content: center; }
+            
+            /* Languageボタンを右端固定から解放し、メニューの下に置く */
+            .lang-menu-wrapper {
+                position: static;
+                margin-top: 15px;
+            }
             .hero-section { height: 90vh; }
             .kanji-svg { width: 7rem; }
             .app-lab { font-size: 3.2rem; margin-left: 10px; }
@@ -301,30 +319,32 @@
 <body>
 
     <header>
-        <nav>
-            <div class="menu-group menu-left">
-                <a href="about.html" class="menu-link" data-ja="私たちについて" data-en="About Us" data-de="Über uns" data-fr="À propos" data-es="Sobre nosotros">私たちについて</a>
-                <a href="portfolio.html" class="menu-link" data-ja="開発実績" data-en="Portfolio" data-de="Portfolio" data-fr="Réalisations" data-es="Portafolio">開発実績</a>
-                <a href="playground.html" class="menu-link" data-ja="知る・楽しむ" data-en="Playground" data-de="Spielplatz" data-fr="Espace Détente" data-es="Zona de juegos">知る・楽しむ</a>
-            </div>
-            <div class="menu-group menu-right">
-                <a href="survey.html" class="menu-link" data-ja="アンケート" data-en="Survey" data-de="Umfrage" data-fr="Sondage" data-es="Encuesta">アンケート</a>
-                <a href="contact.html" class="menu-link" data-ja="お問い合わせ" data-en="Contact" data-de="Kontakt" data-fr="Contact" data-es="Contacto">お問い合わせ</a>
-                
-                <!-- 5言語展開メニュー -->
-                <div class="lang-menu-wrapper" id="langMenu">
-                    <button class="lang-main-btn" onclick="toggleLangMenu()">Language ▼</button>
-                    <div class="lang-sub-btns">
-                        <button class="lang-circle circle-es" onclick="changeLang('es')">ES</button>
-                        <button class="lang-circle circle-fr" onclick="changeLang('fr')">FR</button>
-                        <button class="lang-circle circle-de" onclick="changeLang('de')">DE</button>
-                        <button class="lang-circle circle-en" onclick="changeLang('en')">EN</button>
-                        <button class="lang-circle circle-ja" onclick="changeLang('ja')">JP</button>
-                    </div>
+        <!-- ▼ 新しい枠を追加 -->
+        <div class="header-inner">
+            <nav>
+                <div class="menu-group menu-left">
+                    <a href="about.html" class="menu-link" data-ja="私たちについて" data-en="About Us" data-de="Über uns" data-fr="À propos" data-es="Sobre nosotros">私たちについて</a>
+                    <a href="portfolio.html" class="menu-link" data-ja="開発実績" data-en="Portfolio" data-de="Portfolio" data-fr="Réalisations" data-es="Portafolio">開発実績</a>
+                    <a href="playground.html" class="menu-link" data-ja="知る・楽しむ" data-en="Playground" data-de="Spielplatz" data-fr="Espace Détente" data-es="Zona de juegos">知る・楽しむ</a>
                 </div>
+                <div class="menu-group menu-right">
+                    <a href="survey.html" class="menu-link" data-ja="アンケート" data-en="Survey" data-de="Umfrage" data-fr="Sondage" data-es="Encuesta">アンケート</a>
+                    <a href="contact.html" class="menu-link" data-ja="お問い合わせ" data-en="Contact" data-de="Kontakt" data-fr="Contact" data-es="Contacto">お問い合わせ</a>
+                </div>
+            </nav>
 
+            <!-- ▼ navの外（右端）に配置 -->
+            <div class="lang-menu-wrapper" id="langMenu">
+                <button class="lang-main-btn" onclick="toggleLangMenu()">Language ▼</button>
+                <div class="lang-sub-btns">
+                    <button class="lang-circle circle-es" onclick="changeLang('es')">ES</button>
+                    <button class="lang-circle circle-fr" onclick="changeLang('fr')">FR</button>
+                    <button class="lang-circle circle-de" onclick="changeLang('de')">DE</button>
+                    <button class="lang-circle circle-en" onclick="changeLang('en')">EN</button>
+                    <button class="lang-circle circle-ja" onclick="changeLang('ja')">JP</button>
+                </div>
             </div>
-        </nav>
+        </div>
     </header>
 
     <!-- 演出パーツ -->
