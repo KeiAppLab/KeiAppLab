@@ -5,11 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>啓 App Lab - 公式サイト</title>
 
-    <!-- 1. faviconモダンブラウザ用（高画質・軽量） -->
+    <!-- favicon設定 -->
     <link rel="icon" href="啓AppLab.svg" type="image/svg+xml">
-    <!-- 2. 予備用（SVG非対応の古い環境や一部のアプリ内ブラウザ用） -->
     <link rel="icon" href="啓.png" type="image/png">
-    <!-- 3. iPhoneのホーム画面用（これが重要！） -->
     <link rel="apple-touch-icon" href="啓.png">
 
     <!-- SNS共有用の設定 (OGP) -->
@@ -26,13 +24,13 @@
     <meta name="twitter:description" content="日常を啓く便利さ。心を啓く遊び心。">
     <meta name="twitter:image" content="https://keiapplab.github.io/KeiAppLab/lab_img.png"> 
   
-    <!-- 外部データファイルの読み込み (新CMS対応ファイル名) -->
+    <!-- 外部データファイルの読み込み (CMS連動) -->
     <script src="index_news.js"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700;900&family=Roboto:wght@400;500;900&display=swap');
 
-        /* --- はみ出し防止 --- */
+        /* --- 基本設定 --- */
         *, *::before, *::after {
             box-sizing: border-box;
         }
@@ -42,8 +40,7 @@
             padding: 0;
             width: 100%;
             min-height: 100vh;
-            background: 
-                radial-gradient(circle at 10% 10%, #ffffff 0%, #d8d8d8 45%, #b0b0b0 100%);
+            background: radial-gradient(circle at 10% 10%, #ffffff 0%, #d8d8d8 45%, #b0b0b0 100%);
             background-attachment: fixed;
             font-family: 'Roboto', 'Noto Serif JP', sans-serif;
             color: #111;
@@ -110,11 +107,12 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.2); 
         }
         
-        .lang-ja { background: #e74c3c; z-index: 5; } 
-        .lang-en { background: #3498db; z-index: 4; } 
-        .lang-de { background: #f1c40f; color: #333; z-index: 3; } 
-        .lang-fr { background: #9b59b6; z-index: 2; } 
-        .lang-es { background: #e67e22; z-index: 1; }
+        /* 🚨修正ポイント: クラス名を .lang-xx から .circle-xx に変更し、文字の背景が染まるバグを解消 */
+        .circle-ja { background: #e74c3c; z-index: 5; } 
+        .circle-en { background: #3498db; z-index: 4; } 
+        .circle-de { background: #f1c40f; color: #333; z-index: 3; } 
+        .circle-fr { background: #9b59b6; z-index: 2; } 
+        .circle-es { background: #e67e22; z-index: 1; }
         
         .lang-menu-wrapper.open .lang-sub-btns { pointer-events: auto; }
         .lang-menu-wrapper.open .lang-circle { opacity: 1; }
@@ -124,7 +122,7 @@
         .lang-menu-wrapper.open .lang-circle:nth-child(4) { transform: translateY(45px) translateX(-135px); }
         .lang-menu-wrapper.open .lang-circle:nth-child(5) { transform: translateY(45px) translateX(-180px); }
 
-        /* --- ヒーローセクション（アニメーション演出） --- */
+        /* --- ヒーローセクション --- */
         .hero-section { height: 100vh; width: 100%; display: flex; justify-content: center; align-items: center; position: relative; z-index: 10; perspective: 1500px; }
         .logo-container { position: relative; text-align: left; display: flex; flex-direction: column; align-items: flex-start; }
         .main-row { display: flex; align-items: baseline; }
@@ -152,7 +150,7 @@
             animation: emerge-long-shadow 3s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards; 
         }
         
-        /* 修正: 英語等 多言語キャッチコピーの共通スタイル */
+        /* 他言語キャッチコピーの共通スタイル */
         .lang-global-text { 
             font-family: 'Roboto', sans-serif; 
             font-weight: 500; 
@@ -160,25 +158,6 @@
         }
 
         rt { font-size: 0.6em; font-weight: normal; }
-
-        /* --- フッター用ロゴスタイル（アニメーション無し・縮小版） --- */
-        .footer-logo-container {
-            transform: scale(0.6); transform-origin: center; display: inline-block; margin-bottom: -20px;
-        }
-        .footer-logo-container .kanji-svg,
-        .footer-logo-container .app-lab,
-        .footer-logo-container .furigana,
-        .footer-logo-container .tagline {
-            opacity: 1 !important; animation: none !important;
-        }
-        .footer-logo-container .kanji-svg {
-            filter: drop-shadow(4px 4px 8px rgba(0,0,0,0.4)) drop-shadow(12px 12px 25px rgba(0,0,0,0.35)) drop-shadow(30px 30px 50px rgba(0,0,0,0.3));
-        }
-        .footer-logo-container .app-lab,
-        .footer-logo-container .furigana,
-        .footer-logo-container .tagline {
-            text-shadow: 4px 4px 8px rgba(0,0,0,0.4), 12px 12px 25px rgba(0,0,0,0.35), 30px 30px 50px rgba(0,0,0,0.3);
-        }
 
         /* --- 共通セクションスタイル --- */
         section { padding: 80px 20px; max-width: 1100px; margin: 0 auto; position: relative; z-index: 20; }
@@ -230,15 +209,24 @@
         .press-date { font-size: 0.8rem; color: #666; margin-bottom: 5px; display: block; font-family: 'Roboto', sans-serif;}
         .press-text { font-size: 0.95rem; font-weight: bold; line-height: 1.4; }
 
-        /* --- サブリンク --- */
+        /* --- サブリンク（3つ横並び） --- */
         .sub-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 20px; }
-        .sub-card { position: relative; height: 180px; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center; text-decoration: none; color: white; font-size: 1.5rem; font-weight: bold; font-family: 'Noto Serif JP', serif; background-size: cover; background-position: center; transition: transform 0.4s, box-shadow 0.4s; box-shadow: 0 10px 25px rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.3); }
+        .sub-card { 
+            position: relative; height: 180px; border-radius: 12px; overflow: hidden; 
+            display: flex; align-items: center; justify-content: center; 
+            text-decoration: none; color: white; font-size: 1.5rem; font-weight: bold; 
+            font-family: 'Noto Serif JP', serif; background-size: cover; background-position: center; 
+            transition: transform 0.4s, box-shadow 0.4s; box-shadow: 0 10px 25px rgba(0,0,0,0.15); 
+            border: 1px solid rgba(255,255,255,0.3); background-color: #555;
+        }
+        /* 画像の上に薄い影を重ねて文字を読みやすくする */
         .sub-card::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.4); transition: background 0.3s; z-index: 1; }
         .sub-card:hover::before { background: rgba(0, 0, 0, 0.2); }
-        /* 子要素の全言語spanを手前に出す */
+        /* 文字レイヤー */
         .sub-card span { position: relative; z-index: 2; text-shadow: 0 2px 10px rgba(0,0,0,0.8); text-align: center; padding: 0 10px; }
         .sub-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0,0,0,0.3); }
         
+        /* 画像の設定 */
         .bg-play { background-image: url('index_play.png'); }
         .bg-survey { background-image: url('index_surv.png'); }
         .bg-contact { background-image: url('index_cont.png'); }
@@ -252,6 +240,12 @@
         .copy { color: #888; font-size: 0.8rem; font-family: 'Roboto', sans-serif; }
         .ads-link { color: #0056b3; text-decoration: none; margin-left: 10px; font-size: 0.8rem; font-weight: normal; }
         .ads-link:hover { text-decoration: underline; color: #0056b3; }
+
+        /* フッター用ロゴスタイル（アニメーション無し・縮小版） */
+        .footer-logo-container { transform: scale(0.6); transform-origin: center; display: inline-block; margin-bottom: -20px; }
+        .footer-logo-container .kanji-svg, .footer-logo-container .app-lab, .footer-logo-container .furigana, .footer-logo-container .tagline { opacity: 1 !important; animation: none !important; }
+        .footer-logo-container .kanji-svg { filter: drop-shadow(4px 4px 8px rgba(0,0,0,0.4)) drop-shadow(12px 12px 25px rgba(0,0,0,0.35)) drop-shadow(30px 30px 50px rgba(0,0,0,0.3)); }
+        .footer-logo-container .app-lab, .footer-logo-container .furigana, .footer-logo-container .tagline { text-shadow: 4px 4px 8px rgba(0,0,0,0.4), 12px 12px 25px rgba(0,0,0,0.35), 30px 30px 50px rgba(0,0,0,0.3); }
 
         /* --- 演出用 --- */
         .overlay-shadow { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, transparent 30%, rgba(0,0,0,0.2) 90%); pointer-events: none; z-index: 2; }
@@ -315,11 +309,11 @@
                 <div class="lang-menu-wrapper" id="langMenu">
                     <button class="lang-main-btn" onclick="toggleLangMenu()">Language ▼</button>
                     <div class="lang-sub-btns">
-                        <button class="lang-circle lang-es" onclick="changeLang('es')">ES</button>
-                        <button class="lang-circle lang-fr" onclick="changeLang('fr')">FR</button>
-                        <button class="lang-circle lang-de" onclick="changeLang('de')">DE</button>
-                        <button class="lang-circle lang-en" onclick="changeLang('en')">EN</button>
-                        <button class="lang-circle lang-ja" onclick="changeLang('ja')">JP</button>
+                        <button class="lang-circle circle-es" onclick="changeLang('es')">ES</button>
+                        <button class="lang-circle circle-fr" onclick="changeLang('fr')">FR</button>
+                        <button class="lang-circle circle-de" onclick="changeLang('de')">DE</button>
+                        <button class="lang-circle circle-en" onclick="changeLang('en')">EN</button>
+                        <button class="lang-circle circle-ja" onclick="changeLang('ja')">JP</button>
                     </div>
                 </div>
 
@@ -328,7 +322,7 @@
     </header>
 
     <!-- 演出パーツ -->
-    <div class="overlay-shadow" style="position:fixed; top:0; left:0; width:100%; height:100%; background:linear-gradient(135deg, transparent 30%, rgba(0,0,0,0.2) 90%); pointer-events:none; z-index:2;"></div>
+    <div class="overlay-shadow"></div>
     <div id="dust-container"></div>
 
     <!-- ヒーローセクション -->
@@ -394,7 +388,6 @@
             </button>
         </div>
         
-        <!-- デバッグ用エリア(赤枠)を削除し、クリーンに -->
         <ul class="news-list" id="newsListDisplay">
             <!-- JSでここにニュースが入ります -->
         </ul>
@@ -439,7 +432,6 @@
             <span class="lang-es" style="display:none;">Destacados</span>
         </h3>
         
-        <!-- デバッグ用エリア(赤枠)を削除し、クリーンに -->
         <div class="press-grid" id="pressGridDisplay">
             <!-- JSでここに画像付きニュースが入ります -->
         </div>
@@ -542,7 +534,6 @@
             const list = document.getElementById('newsListDisplay');
             list.innerHTML = '';
             
-            // index_news.js のデータをチェック
             if(typeof indexNewsData === 'undefined') {
                 return;
             }
@@ -554,7 +545,6 @@
 
             const lang = getCurrentLang();
 
-            // 多言語用のカテゴリ名辞書（5カ国語）
             const catNames = {
                 ja: { release: 'プレスリリース', update: '更新情報', start: 'プロジェクト開始', steam: 'Steamリリース', game: 'ミニゲーム' },
                 en: { release: 'Press Release', update: 'Updates', start: 'Coming Soon', steam: 'Steam Release', game: 'Mini Game' },
@@ -567,7 +557,6 @@
                 const tagClass = 'tag-' + item.category; 
                 const tagName = (catNames[lang] && catNames[lang][item.category]) ? catNames[lang][item.category] : item.category;
                 
-                // 指定言語のタイトルがなければ英語、それでもなければ日本語を出す（フォールバック）
                 const title = item['title_' + lang] || item.title_en || item.title_ja || "No Title";
                 
                 list.innerHTML += `
@@ -596,7 +585,6 @@
             const lang = getCurrentLang();
 
             visualNews.forEach(item => {
-                // 指定言語のタイトルがなければ英語、それでもなければ日本語を出す
                 const title = item['title_' + lang] || item.title_en || item.title_ja || "No Title";
 
                 grid.innerHTML += `
@@ -623,7 +611,7 @@
             renderPressGrid();
         });
 
-        // --- 3. 言語切り替えロジック（5言語アニメーション対応版） ---
+        // --- 3. 言語切り替えロジック ---
         function toggleLangMenu() { 
             document.getElementById('langMenu').classList.toggle('open'); 
         }
@@ -632,7 +620,6 @@
             localStorage.setItem('preferredLang', lang);
             document.getElementById('langMenu').classList.remove('open');
             
-            // 1. 全ての言語の表示/非表示を切り替え
             const allLangs =['ja', 'en', 'de', 'fr', 'es'];
             allLangs.forEach(l => {
                 const elements = document.querySelectorAll('.lang-' + l);
@@ -643,13 +630,11 @@
                 }
             });
 
-            // 2. リンクテキストの切り替え (該当言語がなければ英語にフォールバック)
             const links = document.querySelectorAll('.menu-link, .footer-link');
             links.forEach(l => {
                 l.textContent = l.getAttribute('data-' + lang) || l.getAttribute('data-en');
             });
 
-            // 3. JSで生成しているニュース部分の再描画
             if (typeof indexNewsData !== 'undefined') {
                 const activeTab = document.querySelector('.tab-btn.active');
                 let filterType = 'all';
@@ -668,7 +653,7 @@
             
             if (!savedLang) {
                 const browserLang = (window.navigator.language || window.navigator.userLanguage || '').slice(0, 2).toLowerCase();
-                const supportedLangs = ['ja', 'en', 'de', 'fr', 'es'];
+                const supportedLangs =['ja', 'en', 'de', 'fr', 'es'];
                 savedLang = supportedLangs.includes(browserLang) ? browserLang : 'en';
             }
             
@@ -679,7 +664,6 @@
         const backToTopBtn = document.getElementById('backToTop');
 
         window.addEventListener('scroll', () => {
-            // 500px以上スクロールしたら表示クラス(.show)をつける
             if (window.scrollY > 500) {
                 backToTopBtn.classList.add('show');
             } else {
