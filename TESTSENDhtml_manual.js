@@ -220,7 +220,7 @@ Email: keiapplab@gmail.com
         var iframe = document.getElementById('contactIframe');
         var btn = document.querySelector('.open-contact-btn');
         
-        var appName = document.title.split('|')[1] ? document.title.split('|')[1].trim() : "FreeCallApp";
+        var appName = document.title.split('|')[1] ? document.title.split('|')[1].trim() : "";
 
         if (wrapper.style.display === 'none' || wrapper.style.display === '') {
             wrapper.style.display = 'block';
