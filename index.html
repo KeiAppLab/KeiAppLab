@@ -577,8 +577,11 @@
                 return;
             }
 
+            // 許可するカテゴリを定義し、画像あり ＋ 該当カテゴリ のみを抽出する
+            const allowedCats = ['release', 'start', 'steam'];
+            
             const visualNews = indexNewsData
-                .filter(item => item.image && item.image !== "")
+                .filter(item => item.image && item.image !== "" && allowedCats.includes(item.category))
                 .sort((a, b) => new Date(b.date) - new Date(a.date))
                 .slice(0, 4);
 
