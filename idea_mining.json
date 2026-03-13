@@ -40,7 +40,7 @@
         "date": "2026.03.10",
         "title": "FreeCallApp",
         "author": "Ksansansan",
-        "content": "**3/9 アプリ間通話が完成**<div>Telnyxの設定ほぼ完了\nアメリカの電話番号 $1/月\n日本の電話番号 $30/月\n日本は高いのでアメリカの電話番号を購入するつもり</div><div>【Tier1（$30番号）】\nあなたのアプリ\n↓\nTelnyx\n↓ ← Telnyxが日本キャリアと直接契約\nNTT / KDDI（日本Tier1キャリア）\n↓\n相手の固定電話 ✅ 確実に届く\n\n【Tier2（他社050 + Verified Number）】\nあなたのアプリ\n↓\nTelnyx\n↓ ← 中間業者（ブローカー）経由\nどこかの中継キャリア\n↓ ← ここで日本キャリアが怪しいと判定する可能性\nNTT / KDDI\n↓\n相手の固定電話 ⚠️ 届かない場合あり\n<br></div><div>アプリ公開の必要条件</div>",
+        "content": "**3/9 アプリ間通話が完成**<div>Telnyxの設定ほぼ完了\nアメリカの電話番号 $1/月\n日本の電話番号 $30/月\n<br></div><div>【Tier1（$30番号）】\nあなたのアプリ\n↓\nTelnyx\n↓ ← Telnyxが日本キャリアと直接契約\nNTT / KDDI（日本Tier1キャリア）\n↓\n相手の固定電話 ✅ 確実に届く\n\n【Tier2（他社050 + Verified Number）】\nあなたのアプリ\n↓\nTelnyx\n↓ ← 中間業者（ブローカー）経由\nどこかの中継キャリア\n↓ ← ここで日本キャリアが怪しいと判定する可能性\nNTT / KDDI\n↓\n相手の固定電話 ⚠️ 届かない場合あり\n<br></div><div>アプリ公開の必要条件</div>",
         "likes": [],
         "delete_votes": []
     },
