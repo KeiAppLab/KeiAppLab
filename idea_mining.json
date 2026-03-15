@@ -40,7 +40,7 @@
         "date": "2026.03.10",
         "title": "FreeCallApp",
         "author": "Ksansansan",
-        "content": "<div><br></div><div><br></div><div>**電話番号料金について**</div><div><br></div><div>アメリカの電話番号 $1/月\n日本の電話番号 $30/月\n<br></div><div>【Tier1（$30番号）】\nあなたのアプリ\n↓\nTelnyx\n↓ ← Telnyxが日本キャリアと直接契約\nNTT / KDDI（日本Tier1キャリア）\n↓\n相手の固定電話 ✅ 確実に届く\n<br></div><div><br></div><div><br></div><div>アプリ公開の必要条件</div>",
+        "content": "<div>1. 通信網 ＆ バックエンド（インフラ層） ① Firebase (Google) アプリの「頭脳」と「リアルタイム連絡網」を担う、心臓部のBaaS（Backend as a Service）です。 機能: Realtime Database: WebRTCの通信経路情報（SDP/ICE）の高速交換、通話可能時間の残高管理（トランザクション処理）、ブロックリスト・通報データの保存、動画視聴でもらえる秒数の遠隔操作。 Cloud Messaging (FCM): 着信を知らせるプッシュ通知（スリ</div><div><br></div><div>**電話番号料金について**</div><div><br></div><div>アメリカの電話番号 $1/月\n日本の電話番号 $30/月\n<br></div><div>【Tier1（$30番号）】\nあなたのアプリ\n↓\nTelnyx\n↓ ← Telnyxが日本キャリアと直接契約\nNTT / KDDI（日本Tier1キャリア）\n↓\n相手の固定電話 ✅ 確実に届く\n<br></div><div><br></div><div><br></div><div>アプリ公開の必要条件</div>",
         "likes": [],
         "delete_votes": []
     },
